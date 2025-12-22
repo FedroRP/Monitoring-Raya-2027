@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONITORING RAYA 2027</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* Custom Scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- ICON COMPONENTS (Replaces lucide-react for single file portability) ---
+        const IconWrapper = ({ children, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+
+        const Icons = {
+            LayoutDashboard: (props) => <IconWrapper {...props}><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></IconWrapper>,
+            BarChart2: (props) => <IconWrapper {...props}><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></IconWrapper>,
+            List: (props) => <IconWrapper {...props}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></IconWrapper>,
+            Wallet: (props) => <IconWrapper {...props}><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></IconWrapper>,
+            CheckCircle: (props) => <IconWrapper {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></IconWrapper>,
+            AlertTriangle: (props) => <IconWrapper {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></IconWrapper>,
+            Clock: (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></IconWrapper>,
+            AlertOctagon: (props) => <IconWrapper {...props}><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconWrapper>,
+            TrendingUp: (props) => <IconWrapper {...props}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></IconWrapper>,
+            Lightbulb: (props) => <IconWrapper {...props}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5 0-3-2.5-5-5-5s-5 2-5 5c0 1.5.5 2.5 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></IconWrapper>,
+            Coins: (props) => <IconWrapper {...props}><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7 .71-2.82 2.82"/></IconWrapper>,
+            Save: (props) => <IconWrapper {...props}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></IconWrapper>,
+            Trash2: (props) => <IconWrapper {...props}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></IconWrapper>,
+            CheckSquare: (props) => <IconWrapper {...props}><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></IconWrapper>,
+            Square: (props) => <IconWrapper {...props}><rect width="18" height="18" x="3" y="3" rx="2"/></IconWrapper>,
+            Hourglass: (props) => <IconWrapper {...props}><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></IconWrapper>,
+            Filter: (props) => <IconWrapper {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconWrapper>,
+            X: (props) => <IconWrapper {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>
+        };
+
+        // --- CONFIGURATION & CONSTANTS ---
+        const SERIES_CONFIG = [
+            {
+                id: 1,
+                name: "Series 1",
+                launchDate: "2027-01-04",
+                schedule: [
+                    { id: 1, start: "2026-06-01", end: "2026-06-14", leadTime: 14 },
+                    { id: 2, start: "2026-06-15", end: "2026-06-19", leadTime: 5 },
+                    { id: 3, start: "2026-06-20", end: "2026-06-24", leadTime: 5 },
+                    { id: 4, start: "2026-06-25", end: "2026-06-29", leadTime: 5 },
+                    { id: 5, start: "2026-06-30", end: "2026-07-06", leadTime: 7 },
+                    { id: 6, start: "2026-07-07", end: "2026-09-11", leadTime: 67 },
+                    { id: 7, start: "2026-07-07", end: "2026-08-20", leadTime: 45 },
+                    { id: 8, start: "2026-09-12", end: "2026-11-17", leadTime: 67 },
+                    { id: 9, start: "2026-11-18", end: "2026-11-22", leadTime: 5 },
+                    { id: 10, start: "2026-11-18", end: "2026-11-27", leadTime: 10 },
+                    { id: 11, start: "2026-11-23", end: "2026-12-07", leadTime: 15 }
+                ]
+            },
+            {
+                id: 2,
+                name: "Series 2",
+                launchDate: "2027-01-11",
+                schedule: [
+                    { id: 1, start: "2026-06-15", end: "2026-06-29", leadTime: 15 },
+                    { id: 2, start: "2026-06-30", end: "2026-07-04", leadTime: 5 },
+                    { id: 3, start: "2026-07-05", end: "2026-07-09", leadTime: 5 },
+                    { id: 4, start: "2026-07-10", end: "2026-07-14", leadTime: 5 },
+                    { id: 5, start: "2026-07-15", end: "2026-07-21", leadTime: 7 },
+                    { id: 6, start: "2026-07-22", end: "2026-09-26", leadTime: 67 },
+                    { id: 7, start: "2026-07-22", end: "2026-09-04", leadTime: 45 },
+                    { id: 8, start: "2026-09-27", end: "2026-12-02", leadTime: 67 },
+                    { id: 9, start: "2026-12-03", end: "2026-12-07", leadTime: 5 },
+                    { id: 10, start: "2026-12-03", end: "2026-12-12", leadTime: 10 },
+                    { id: 11, start: "2026-12-12", end: "2026-12-26", leadTime: 15 }
+                ]
+            },
+            {
+                id: 3,
+                name: "Series 3",
+                launchDate: "2027-01-18",
+                schedule: [
+                    { id: 1, start: "2026-07-01", end: "2026-07-14", leadTime: 14 },
+                    { id: 2, start: "2026-07-15", end: "2026-07-19", leadTime: 5 },
+                    { id: 3, start: "2026-07-20", end: "2026-07-24", leadTime: 5 },
+                    { id: 4, start: "2026-07-25", end: "2026-07-29", leadTime: 5 },
+                    { id: 5, start: "2026-07-30", end: "2026-08-05", leadTime: 7 },
+                    { id: 6, start: "2026-08-06", end: "2026-09-11", leadTime: 37 },
+                    { id: 7, start: "2026-08-06", end: "2026-09-19", leadTime: 45 },
+                    { id: 8, start: "2026-10-12", end: "2026-12-17", leadTime: 67 },
+                    { id: 9, start: "2026-12-18", end: "2026-12-22", leadTime: 5 },
+                    { id: 10, start: "2026-12-18", end: "2026-12-27", leadTime: 10 },
+                    { id: 11, start: "2026-12-27", end: "2027-01-08", leadTime: 13 }
+                ]
+            },
+            {
+                id: 4,
+                name: "Series 4",
+                launchDate: "2027-01-25",
+                schedule: [
+                    { id: 1, start: "2026-07-15", end: "2026-07-29", leadTime: 15 },
+                    { id: 2, start: "2026-07-30", end: "2026-08-03", leadTime: 5 },
+                    { id: 3, start: "2026-08-04", end: "2026-08-08", leadTime: 5 },
+                    { id: 4, start: "2026-08-09", end: "2026-08-13", leadTime: 5 },
+                    { id: 5, start: "2026-08-14", end: "2026-08-20", leadTime: 7 },
+                    { id: 6, start: "2026-08-21", end: "2026-10-26", leadTime: 67 },
+                    { id: 7, start: "2026-08-21", end: "2026-10-04", leadTime: 45 },
+                    { id: 8, start: "2026-10-27", end: "2027-01-01", leadTime: 67 },
+                    { id: 9, start: "2027-01-02", end: "2027-01-06", leadTime: 5 },
+                    { id: 10, start: "2027-01-02", end: "2027-01-11", leadTime: 10 },
+                    { id: 11, start: "2027-01-06", end: "2027-01-15", leadTime: 10 }
+                ]
+            },
+            {
+                id: 5,
+                name: "Series 5",
+                launchDate: "2027-02-01",
+                schedule: [
+                    { id: 1, start: "2026-08-01", end: "2026-08-14", leadTime: 14 },
+                    { id: 2, start: "2026-08-15", end: "2026-08-19", leadTime: 5 },
+                    { id: 3, start: "2026-08-20", end: "2026-08-24", leadTime: 5 },
+                    { id: 4, start: "2026-08-25", end: "2026-08-29", leadTime: 5 },
+                    { id: 5, start: "2026-08-30", end: "2026-09-05", leadTime: 7 },
+                    { id: 6, start: "2026-09-06", end: "2026-11-11", leadTime: 67 },
+                    { id: 7, start: "2026-09-06", end: "2026-10-20", leadTime: 45 },
+                    { id: 8, start: "2026-11-12", end: "2027-01-17", leadTime: 67 },
+                    { id: 9, start: "2027-01-18", end: "2027-01-22", leadTime: 5 },
+                    { id: 10, start: "2027-01-18", end: "2027-01-22", leadTime: 5 },
+                    { id: 11, start: "2027-01-23", end: "2027-01-24", leadTime: 2 }
+                ]
+            }
+        ];
+
+        const TASK_NAMES = [
+            "Approval Design",
+            "Approval Bahan",
+            "Approval Motif",
+            "Approval Color",
+            "Payment Paperworks",
+            "Material Production - Fabric",
+            "Material Procurement - Brocade",
+            "Mass Production",
+            "Inbound",
+            "Photoshoot & Catalog",
+            "Offline Distribution"
+        ];
+
+        const TIMELINE_START = "2026-06-01";
+        const TIMELINE_END = "2027-03-31";
+
+        // --- HELPER FUNCTIONS ---
+        const getDiffDays = (start, end) => {
+            const date1 = new Date(start);
+            const date2 = new Date(end);
+            const diffTime = date2 - date1;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        };
+
+        const formatDate = (dateStr) => {
+            if (!dateStr) return "-";
+            const options = { day: 'numeric', month: 'short', year: '2-digit' };
+            return new Date(dateStr).toLocaleDateString('id-ID', options);
+        };
+
+        const addDays = (dateStr, days) => {
+            const result = new Date(dateStr);
+            result.setDate(result.getDate() + days);
+            return result.toISOString().split('T')[0];
+        };
+
+        const subtractDays = (dateStr, days) => {
+            const result = new Date(dateStr);
+            result.setDate(result.getDate() - days);
+            return result.toISOString().split('T')[0];
+        };
+
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(number);
+        };
+
+        const getRecommendation = (taskName) => {
+            if (taskName.includes("Approval")) return `Solusi ${taskName}: Eskalasi ke Manajemen/Owner, minta prioritas review, atau jadwalkan meeting darurat.`;
+            if (taskName.includes("Payment")) return `Solusi ${taskName}: Follow up Finance segera, cek kelengkapan dokumen invoice/PO.`;
+            if (taskName.includes("Fabric") || taskName.includes("Brocade") || taskName.includes("Material")) return `Solusi ${taskName}: Cek stok supplier lain, minta pengiriman parsial (split shipment), atau gunakan ekspedisi udara.`;
+            if (taskName.includes("Mass Production")) return `Solusi ${taskName}: Tambah shift lembur (overtime), tambah manpower, atau sub-kon ke vendor jahit rekanan.`;
+            if (taskName.includes("Inbound")) return `Solusi ${taskName}: Prioritaskan slot bongkar di gudang, tambah tenaga bantuan (helper) inbound.`;
+            if (taskName.includes("Photoshoot")) return `Solusi ${taskName}: Gunakan sample yang ada (mockup), booking studio/fotografer alternatif.`;
+            if (taskName.includes("Distribution")) return `Solusi ${taskName}: Gunakan logistik express/cargo udara, prioritaskan area dengan demand tertinggi.`;
+            return `Solusi ${taskName}: Evaluasi ulang timeline dan koordinasi dengan PIC terkait.`;
+        };
+
+        const getMonths = (startDate, endDate) => {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const months = [];
+            let current = new Date(start);
+            current.setDate(1);
+
+            while (current <= end) {
+                months.push(new Date(current));
+                current.setMonth(current.getMonth() + 1);
+            }
+            return months;
+        };
+
+        const calculateBarStyles = (startStr, endStr, totalStartStr, totalDurationMs) => {
+            if (!startStr || !endStr) return null;
+            const start = new Date(startStr).getTime();
+            const end = new Date(endStr).getTime();
+            const totalStart = new Date(totalStartStr).getTime();
+
+            if (end < totalStart) return null;
+
+            const left = ((start - totalStart) / totalDurationMs) * 100;
+            const width = ((end - start) / totalDurationMs) * 100;
+
+            return { left: `${Math.max(0, left)}%`, width: `${width}%` };
+        };
+
+        // --- MAIN APP COMPONENT ---
+        function App() {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [data, setData] = useState([]);
+            const [isClient, setIsClient] = useState(false);
+            const [projectStart, setProjectStart] = useState("");
+
+            // Budgeting State
+            const [budgetList, setBudgetList] = useState([]);
+            const [budgetForm, setBudgetForm] = useState({
+                seriesId: '',
+                vendor: '',
+                totalAmount: '',
+                top: 0,
+                leadTime: '',
+                paymentTerm: ''
+            });
+
+            // Specific Filters
+            const [dpFilterMonth, setDpFilterMonth] = useState(""); 
+            const [repaymentFilterMonth, setRepaymentFilterMonth] = useState("");
+
+            // Setup Timeline Vars
+            const timelineMonths = useMemo(() => getMonths(TIMELINE_START, TIMELINE_END), []);
+            const timelineTotalDuration = new Date(TIMELINE_END).getTime() - new Date(TIMELINE_START).getTime();
+
+            useEffect(() => {
+                setIsClient(true);
+                let earliestStart = "2099-12-31";
+
+                // Load Initial Data
+                const initialData = SERIES_CONFIG.map((config) => {
+                    const tasks = config.schedule.map((sch, index) => {
+                        if (sch.start < earliestStart) earliestStart = sch.start;
+
+                        return {
+                            id: index + 1,
+                            name: TASK_NAMES[index],
+                            leadTime: sch.leadTime,
+                            planStart: sch.start,
+                            planEnd: sch.end,
+                            actualStart: "",
+                            actualEnd: "",
+                            status: "pending"
+                        };
+                    });
+
+                    return {
+                        id: config.id,
+                        name: config.name,
+                        launchDate: config.launchDate,
+                        activities: tasks
+                    };
+                });
+
+                setProjectStart(earliestStart);
+                setData(initialData);
+            }, []);
+
+            const handleUpdateActual = (seriesIndex, actIndex, field, value) => {
+                const newData = [...data];
+                newData[seriesIndex].activities[actIndex][field] = value;
+                setData(newData);
+            };
+
+            // Budget Logic
+            const dpNominal = useMemo(() => {
+                const amount = parseFloat(budgetForm.totalAmount) || 0;
+                const percentage = parseInt(budgetForm.top) || 0;
+                return amount * (percentage / 100);
+            }, [budgetForm.totalAmount, budgetForm.top]);
+
+            const settlementNominal = useMemo(() => {
+                const amount = parseFloat(budgetForm.totalAmount) || 0;
+                return amount - dpNominal;
+            }, [budgetForm.totalAmount, dpNominal]);
+
+            // Budget Filter Logic (Get Unique Months for DP)
+            const uniqueDpMonths = useMemo(() => {
+                const months = new Set();
+                budgetList.forEach(item => {
+                if (item.dpDate && item.dpDate !== '-') months.add(item.dpDate.substring(0, 7));
+                });
+                return Array.from(months).sort();
+            }, [budgetList]);
+
+            // Budget Filter Logic (Get Unique Months for Repayment)
+            const uniqueRepaymentMonths = useMemo(() => {
+                const months = new Set();
+                budgetList.forEach(item => {
+                if (item.repaymentDate && item.repaymentDate !== '-') months.add(item.repaymentDate.substring(0, 7));
+                });
+                return Array.from(months).sort();
+            }, [budgetList]);
+
+            // Apply Specific Filters
+            const filteredBudgetList = useMemo(() => {
+                return budgetList.filter(item => {
+                const dpMatch = !dpFilterMonth || (item.dpDate && item.dpDate.startsWith(dpFilterMonth));
+                const repaymentMatch = !repaymentFilterMonth || (item.repaymentDate && item.repaymentDate.startsWith(repaymentFilterMonth));
+                return dpMatch && repaymentMatch;
+                });
+            }, [budgetList, dpFilterMonth, repaymentFilterMonth]);
+
+            const budgetStats = useMemo(() => {
+                let budgetPlanning = 0; 
+                let paidAmount = 0;     
+                let outstandingAmount = 0; 
+
+                const today = new Date();
+
+                budgetList.forEach(item => {
+                    // 1. Calculate Budget Planning & Paid Amount
+                    if (item.paymentStatus === 'fully_paid') {
+                        budgetPlanning += 0;
+                        paidAmount += item.totalAmount;
+                    } else if (item.paymentStatus === 'dp_paid') {
+                        budgetPlanning += item.settlementNominal;
+                        paidAmount += item.dpNominal;
+                    } else {
+                        budgetPlanning += item.totalAmount;
+                        paidAmount += 0;
+                    }
+
+                    // 2. Calculate Outstanding
+                    const dpDate = item.dpDate && item.dpDate !== '-' ? new Date(item.dpDate) : null;
+                    const repaymentDate = item.repaymentDate && item.repaymentDate !== '-' ? new Date(item.repaymentDate) : null;
+
+                    if (item.paymentStatus === 'unpaid') {
+                        if (dpDate && today > dpDate) outstandingAmount += item.dpNominal;
+                        if (repaymentDate && today > repaymentDate) outstandingAmount += item.settlementNominal;
+                    } else if (item.paymentStatus === 'dp_paid') {
+                        if (repaymentDate && today > repaymentDate) outstandingAmount += item.settlementNominal;
+                    }
+                });
+
+                return { budgetPlanning, paidAmount, outstandingAmount };
+            }, [budgetList]);
+
+
+            const handleSaveBudget = () => {
+                if (!budgetForm.vendor || !budgetForm.totalAmount || !budgetForm.seriesId) return;
+
+                const selectedSeries = SERIES_CONFIG.find(s => s.name === budgetForm.seriesId);
+                let dpDateCalculated = "-";
+                let repaymentDateCalculated = "-";
+
+                if (selectedSeries) {
+                    const launchDate = selectedSeries.launchDate;
+                    const lt = parseInt(budgetForm.leadTime) || 0;
+                    const pt = parseInt(budgetForm.paymentTerm) || 0;
+
+                    const baseDate = subtractDays(launchDate, 14);
+                    dpDateCalculated = subtractDays(baseDate, lt);
+                    repaymentDateCalculated = addDays(baseDate, pt);
+                }
+
+                const newItem = {
+                    id: Date.now(),
+                    series: budgetForm.seriesId,
+                    vendor: budgetForm.vendor,
+                    totalAmount: parseFloat(budgetForm.totalAmount),
+                    top: parseInt(budgetForm.top),
+                    leadTime: budgetForm.leadTime || '-',
+                    paymentTerm: budgetForm.paymentTerm || '-',
+                    dpNominal: dpNominal,
+                    settlementNominal: settlementNominal,
+                    dpDate: dpDateCalculated,
+                    repaymentDate: repaymentDateCalculated,
+                    date: new Date().toISOString().split('T')[0],
+                    paymentStatus: 'unpaid'
+                };
+
+                setBudgetList([newItem, ...budgetList]);
+                setBudgetForm({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
+            };
+
+            const handleDeleteBudget = (id) => {
+                setBudgetList(budgetList.filter(item => item.id !== id));
+            };
+
+            const handleCycleStatus = (id) => {
+                setBudgetList(budgetList.map(item => {
+                    if (item.id === id) {
+                        if (item.paymentStatus === 'unpaid') return { ...item, paymentStatus: 'dp_paid' };
+                        if (item.paymentStatus === 'dp_paid') return { ...item, paymentStatus: 'fully_paid' };
+                        return { ...item, paymentStatus: 'unpaid' };
+                    }
+                    return item;
+                }));
+            };
+
+            const renderStatusBadge = (status) => {
+                switch (status) {
+                    case 'fully_paid':
+                        return <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold uppercase border border-emerald-200">Lunas</span>;
+                    case 'dp_paid':
+                        return <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase border border-blue-200">Sudah DP</span>;
+                    default:
+                        return <span className="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[10px] font-bold uppercase border border-slate-200">Belum</span>;
+                }
+            };
+
+            // Stats Logic
+            const stats = useMemo(() => {
+                let totalTasks = 0;
+                let completed = 0;
+                let delayed = 0;
+                let onTrack = 0;
+                
+                let delayedSeriesSummary = []; 
+                let allRecommendations = [];
+
+                data.forEach(series => {
+                    let currentSeriesDelayed = 0;
+                    series.activities.forEach(act => {
+                        totalTasks++;
+                        
+                        const isDoneLate = act.actualEnd && new Date(act.actualEnd) > new Date(act.planEnd);
+                        const isPendingLate = !act.actualEnd && new Date() > new Date(act.planEnd);
+
+                        if (isDoneLate || isPendingLate) {
+                            delayed++;
+                            currentSeriesDelayed++;
+                            allRecommendations.push({
+                                id: `${series.id}-${act.id}`,
+                                seriesName: series.name,
+                                message: getRecommendation(act.name)
+                            });
+                        } else if (act.actualEnd) {
+                            completed++;
+                        } else {
+                            onTrack++;
+                        }
+                    });
+                    
+                    if (currentSeriesDelayed > 0) {
+                        delayedSeriesSummary.push(`${series.name} (${currentSeriesDelayed} item)`);
+                    }
+                });
+
+                return { 
+                    totalTasks, 
+                    completed, 
+                    delayed, 
+                    onTrack, 
+                    delayedSeriesString: delayedSeriesSummary.join(", "),
+                    recommendations: allRecommendations
+                };
+            }, [data]);
+
+            const completionRate = stats.totalTasks ? Math.round((stats.completed / stats.totalTasks) * 100) : 0;
+
+            const renderDashboard = () => (
+                <div className="space-y-6 animate-fade-in pb-10">
+                    {/* Header Card */}
+                    <div className="bg-gradient-to-r from-slate-800 to-indigo-900 rounded-xl p-6 text-white shadow-lg mb-6">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h2 className="text-2xl font-bold mb-1">Production Monitor Raya 2027</h2>
+                                <p className="text-indigo-200 text-sm">Target Launching: Jan - Feb 2027</p>
+                            </div>
+                            <div className="flex gap-4 text-center">
+                                <div className="bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10">
+                                    <p className="text-xs text-indigo-200 uppercase tracking-wide">Project Kickoff</p>
+                                    <p className="font-mono font-bold text-sm">{formatDate(projectStart)}</p>
+                                </div>
+                                <div className="bg-emerald-500/20 px-4 py-2 rounded-lg border border-emerald-500/30 backdrop-blur-sm">
+                                    <p className="text-xs text-emerald-300 uppercase tracking-wide">Launch Period</p>
+                                    <p className="font-mono font-bold text-emerald-300 text-sm">
+                                        {formatDate(SERIES_CONFIG[0].launchDate)} - {formatDate(SERIES_CONFIG[SERIES_CONFIG.length - 1].launchDate)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Insight Section */}
+                    <div className={`rounded-xl p-6 shadow-sm border mb-8 flex flex-col md:flex-row items-start gap-4 transition-colors duration-500 ${stats.delayed > 0 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'}`}>
+                        <div className="flex items-start gap-4 w-full">
+                            <div className={`p-3 rounded-full shadow-sm shrink-0 ${stats.delayed > 0 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                {stats.delayed > 0 ? <Icons.AlertOctagon size={28} /> : <Icons.TrendingUp size={28} />}
+                            </div>
+                            <div className="w-full">
+                                <h3 className={`text-lg font-bold mb-1 ${stats.delayed > 0 ? 'text-rose-800' : 'text-emerald-800'}`}>
+                                    {stats.delayed > 0 ? "Risiko Keterlambatan Terdeteksi" : "Produksi On Track"}
+                                </h3>
+                                <p className={`text-sm mb-4 ${stats.delayed > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>
+                                    {stats.delayed > 0 
+                                        ? `Terdapat total ${stats.delayed} aktivitas terlambat yang tersebar di: ${stats.delayedSeriesString}.` 
+                                        : "Seluruh aktivitas berjalan sesuai timeline. Tidak ada isu kritis saat ini."}
+                                </p>
+                                {stats.delayed > 0 && stats.recommendations.length > 0 && (
+                                    <div className="bg-white/60 rounded-lg p-4 border border-rose-200/50">
+                                        <div className="flex items-center gap-2 mb-2 text-rose-800 font-semibold text-sm">
+                                            <Icons.Lightbulb size={16} className="text-amber-500 fill-amber-500"/>
+                                            <span>Saran Tindakan Perbaikan:</span>
+                                        </div>
+                                        <ul className="list-none space-y-2">
+                                            {stats.recommendations.map((rec) => (
+                                                <li key={rec.id} className="text-xs text-slate-700 font-medium flex gap-2 items-start">
+                                                    <span className="font-bold text-rose-600 shrink-0 mt-0.5">[{rec.seriesName}]</span>
+                                                    <span>{rec.message}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 relative overflow-hidden group hover:border-indigo-100 transition-colors">
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <p className="text-slate-500 text-sm font-medium">Total Progress</p>
+                                    <h3 className="text-4xl font-bold text-slate-800 mt-1">{completionRate}%</h3>
+                                </div>
+                                <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                    <Icons.BarChart2 size={24} />
+                                </div>
+                            </div>
+                            <div className="w-full bg-slate-100 rounded-full h-2">
+                                <div className="bg-indigo-600 h-2 rounded-full transition-all duration-1000" style={{ width: `${completionRate}%` }}></div>
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 group hover:border-emerald-100 transition-colors">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-slate-500 text-sm font-medium">Completed</p>
+                                    <h3 className="text-4xl font-bold text-emerald-600 mt-1">{stats.completed}</h3>
+                                    <p className="text-xs text-slate-400 mt-1">Tasks finished</p>
+                                </div>
+                                <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                    <Icons.CheckCircle size={24} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 group hover:border-rose-100 transition-colors">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-slate-500 text-sm font-medium">Delayed</p>
+                                    <h3 className="text-4xl font-bold text-rose-500 mt-1">{stats.delayed}</h3>
+                                    <p className="text-xs text-slate-400 mt-1">Needs attention</p>
+                                </div>
+                                <div className="p-3 bg-rose-50 rounded-lg text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                                    <Icons.AlertTriangle size={24} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 group hover:border-blue-100 transition-colors">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-slate-500 text-sm font-medium">Pending</p>
+                                    <h3 className="text-4xl font-bold text-slate-600 mt-1">{stats.onTrack}</h3>
+                                    <p className="text-xs text-slate-400 mt-1">On schedule</p>
+                                </div>
+                                <div className="p-3 bg-slate-100 rounded-lg text-slate-500 group-hover:bg-slate-600 group-hover:text-white transition-colors">
+                                    <Icons.Clock size={24} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Series Status */}
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                            <h3 className="font-bold text-slate-800">Series Status Overview</h3>
+                            <span className="text-xs text-slate-500">Breakdown per series</span>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 gap-6">
+                                {data.map((series) => {
+                                    const seriesTotal = series.activities.length;
+                                    let lateCount = 0;
+                                    let onTimeCount = 0;
+                                    
+                                    series.activities.forEach(a => {
+                                        const isLate = (a.actualEnd && new Date(a.actualEnd) > new Date(a.planEnd)) || 
+                                                    (!a.actualEnd && new Date() > new Date(a.planEnd));
+                                        const isDoneOnTime = a.actualEnd && !isLate;
+                                        if (isLate) lateCount++;
+                                        if (isDoneOnTime) onTimeCount++;
+                                    });
+
+                                    const latePercent = (lateCount / seriesTotal) * 100;
+                                    const onTimePercent = (onTimeCount / seriesTotal) * 100;
+
+                                    return (
+                                        <div key={series.id} className="group">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="font-bold text-slate-700">{series.name}</h4>
+                                                    <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded">Target: {formatDate(series.launchDate)}</span>
+                                                </div>
+                                                <div className="flex items-center gap-3 text-xs font-semibold">
+                                                    <span className="text-emerald-600">{onTimeCount} On-Time</span>
+                                                    <span className="text-rose-600">{lateCount} Late</span>
+                                                    <span className="text-slate-400">{(seriesTotal - onTimeCount - lateCount)} Pending</span>
+                                                </div>
+                                            </div>
+                                            <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
+                                                <div className="bg-emerald-500 h-full transition-all duration-1000" style={{ width: `${onTimePercent}%` }} title={`On Time: ${onTimeCount}`}></div>
+                                                <div className="bg-rose-500 h-full transition-all duration-1000" style={{ width: `${latePercent}%` }} title={`Late: ${lateCount}`}></div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const renderGantt = () => (
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[85vh]">
+                    <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
+                        <div>
+                            <h3 className="font-bold text-slate-800 text-lg">Master Schedule</h3>
+                            <p className="text-xs text-slate-500">Timeline: Jun 2026 - Mar 2027</p>
+                        </div>
+                        <div className="flex items-center gap-6 text-xs font-medium bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-slate-300 rounded-sm"></span> Plan</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-emerald-500 rounded-sm"></span> Actual (On Time)</div>
+                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-rose-500 rounded-sm"></span> Actual (Late)</div>
+                        </div>
+                    </div>
+                    
+                    <div className="flex-1 overflow-auto relative">
+                        <table className="w-full text-sm text-left border-collapse table-fixed">
+                            <thead className="bg-white text-slate-600 sticky top-0 z-30 shadow-md">
+                                <tr className="h-12">
+                                    <th className="w-[250px] px-4 border-b border-r border-slate-200 bg-slate-50 sticky left-0 z-40 align-middle font-bold text-slate-700">Activity Name</th>
+                                    <th className="w-[85px] px-1 text-center border-b border-slate-200 bg-slate-50 align-middle text-xs font-semibold">Plan Start</th>
+                                    <th className="w-[85px] px-1 text-center border-b border-r border-slate-200 bg-slate-50 align-middle text-xs font-semibold">Plan End</th>
+                                    <th className="w-[50px] px-1 text-center border-b border-r border-slate-200 bg-slate-50 align-middle text-xs font-semibold">LT</th>
+                                    <th className="w-[95px] px-1 text-center border-b border-slate-200 bg-blue-50/50 align-middle text-xs font-semibold text-blue-800">Act. Start</th>
+                                    <th className="w-[95px] px-1 text-center border-b border-r border-slate-200 bg-blue-50/50 align-middle text-xs font-semibold text-blue-800">Act. End</th>
+                                    <th className="w-[50px] px-1 text-center border-b border-r border-slate-200 bg-slate-50 align-middle text-xs font-semibold">Var</th>
+                                    {timelineMonths.map((date, idx) => (
+                                        <th key={idx} colSpan="4" className="border-b border-r border-slate-200 bg-slate-50 text-center text-xs font-bold text-slate-700 uppercase min-w-[120px]">
+                                            {date.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' })}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {data.map((series, sIdx) => (
+                                    <React.Fragment key={series.id}>
+                                        <tr className="bg-slate-800 text-white shadow-sm z-20 relative">
+                                            <td className="px-4 py-2 sticky left-0 z-20 bg-slate-800 border-r border-slate-700 font-bold text-xs uppercase tracking-wider flex items-center h-10">
+                                                {series.name}
+                                            </td>
+                                            <td colSpan="6" className="px-2 text-xs text-right text-slate-300 h-10 align-middle border-r border-slate-700 bg-slate-800">
+                                                Launch: {formatDate(series.launchDate)}
+                                            </td>
+                                            <td colSpan={timelineMonths.length * 4} className="bg-slate-800 h-10"></td>
+                                        </tr>
+                                        {series.activities.map((act, aIdx) => {
+                                            const delay = act.actualEnd 
+                                                ? getDiffDays(act.planEnd, act.actualEnd) 
+                                                : (new Date() > new Date(act.planEnd) && !act.actualEnd ? getDiffDays(act.planEnd, new Date()) : 0);
+                                            const isLate = delay > 0;
+                                            const isDone = !!act.actualEnd;
+                                            const planStyle = calculateBarStyles(act.planStart, act.planEnd, TIMELINE_START, timelineTotalDuration);
+                                            const actStyle = calculateBarStyles(act.actualStart, act.actualEnd, TIMELINE_START, timelineTotalDuration);
+
+                                            return (
+                                                <tr key={act.id} className="hover:bg-slate-50 transition-colors h-11 group border-b border-slate-50">
+                                                    <td className="px-4 py-1 font-medium text-slate-700 border-r border-slate-200 sticky left-0 bg-white group-hover:bg-slate-50 z-10 text-xs">
+                                                        <div className="flex items-center gap-2 truncate w-full">
+                                                            <span className="text-slate-400 text-[10px] min-w-[15px]">{act.id}.</span>
+                                                            <span title={act.name} className="truncate">{act.name}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-1 text-slate-500 text-[10px] text-center border-r border-slate-100 bg-slate-50/30">{formatDate(act.planStart)}</td>
+                                                    <td className="px-1 text-slate-500 text-[10px] text-center border-r border-slate-200 bg-slate-50/30">{formatDate(act.planEnd)}</td>
+                                                    <td className="px-1 text-slate-500 text-[10px] text-center border-r border-slate-200 bg-slate-50/30">{act.leadTime}</td>
+                                                    <td className="px-1 py-1 bg-blue-50/10 border-r border-slate-100 text-center">
+                                                        <input type="date" className="w-full text-[10px] p-1 border border-blue-100 rounded bg-white text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none" value={act.actualStart} onChange={(e) => handleUpdateActual(sIdx, aIdx, 'actualStart', e.target.value)} />
+                                                    </td>
+                                                    <td className="px-1 py-1 bg-blue-50/10 border-r border-slate-200 text-center">
+                                                        <input type="date" className={`w-full text-[10px] p-1 border rounded bg-white text-slate-700 focus:ring-1 outline-none ${isLate ? 'border-rose-300 text-rose-600' : 'border-blue-100'}`} value={act.actualEnd} onChange={(e) => handleUpdateActual(sIdx, aIdx, 'actualEnd', e.target.value)} />
+                                                    </td>
+                                                    <td className={`px-1 text-center font-bold text-[10px] border-r border-slate-200 ${isLate ? 'text-rose-600 bg-rose-50' : (isDone ? 'text-emerald-600' : 'text-slate-300')}`}>
+                                                        {isLate ? `+${delay}` : (isDone ? <Icons.CheckCircle size={12} className="mx-auto"/> : "-")}
+                                                    </td>
+                                                    <td colSpan={timelineMonths.length * 4} className="relative p-0 h-11 align-middle">
+                                                        <div className="relative w-full h-full flex items-center">
+                                                            <div className="absolute inset-0 flex w-full h-full pointer-events-none">
+                                                                {timelineMonths.map((_, mIdx) => (
+                                                                    <React.Fragment key={mIdx}>
+                                                                        <div className="flex-1 border-r border-slate-100 h-full border-dashed"></div>
+                                                                        <div className="flex-1 border-r border-slate-100 h-full border-dashed"></div>
+                                                                        <div className="flex-1 border-r border-slate-100 h-full border-dashed"></div>
+                                                                        <div className="flex-1 border-r border-slate-300 h-full"></div>
+                                                                    </React.Fragment>
+                                                                ))}
+                                                            </div>
+                                                            {planStyle && <div className="absolute h-3 bg-slate-300 rounded-sm top-2 opacity-60" style={planStyle} title={`Plan: ${formatDate(act.planStart)}`}></div>}
+                                                            {actStyle && <div className={`absolute h-2.5 rounded-sm shadow-sm top-5 border border-white/20 ${isLate ? 'bg-rose-500' : 'bg-emerald-500'}`} style={actStyle} title={`Actual`}></div>}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </React.Fragment>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
+            const renderActivities = () => {
+                const allActivities = [];
+                data.forEach(s => {
+                    s.activities.forEach(a => {
+                        allActivities.push({ ...a, seriesName: s.name });
+                    });
+                });
+
+                const overdue = allActivities.filter(a => {
+                    const planEnd = new Date(a.planEnd);
+                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
+                    const today = new Date();
+                    const isDoneLate = actualEnd && actualEnd > planEnd;
+                    const isPendingLate = !actualEnd && today > planEnd;
+                    return isDoneLate || isPendingLate;
+                });
+
+                const upcoming = allActivities.filter(a => !a.actualEnd && new Date() <= new Date(a.planEnd)).sort((a,b) => new Date(a.planStart) - new Date(b.planStart));
+
+                return (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pb-10">
+                        <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-rose-100 bg-rose-50 flex items-center gap-3">
+                                <Icons.AlertTriangle size={20} className="text-rose-600"/>
+                                <h3 className="font-bold text-rose-800">Attention Needed</h3>
+                            </div>
+                            <div className="divide-y divide-rose-50 max-h-[600px] overflow-auto">
+                                {overdue.length === 0 ? (
+                                    <div className="p-12 text-center text-slate-400"><p>No overdue items.</p></div>
+                                ) : (
+                                    overdue.map((item, idx) => {
+                                        const isDone = !!item.actualEnd;
+                                        return (
+                                            <div key={idx} className="p-4 hover:bg-rose-50/50 transition-colors flex justify-between items-center">
+                                                <div>
+                                                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 mb-1">{item.seriesName}</span>
+                                                    <h4 className="font-medium text-slate-800">{item.name}</h4>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className="text-xs text-rose-500 font-medium">Plan: {formatDate(item.planEnd)}</span>
+                                                        {isDone ? <span className="text-[10px] text-white bg-rose-500 px-1.5 rounded font-bold">Done Late</span> : <span className="text-[10px] text-rose-600 bg-rose-100 px-1.5 rounded font-bold">Pending Overdue</span>}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
+                                <Icons.List size={20} className="text-slate-600"/>
+                                <h3 className="font-bold text-slate-800">Operational Queue</h3>
+                            </div>
+                            <div className="divide-y divide-slate-100 max-h-[600px] overflow-auto">
+                                {upcoming.map((item, idx) => (
+                                    <div key={idx} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center">
+                                        <div>
+                                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 mb-1">{item.seriesName}</span>
+                                            <h4 className="font-medium text-slate-800">{item.name}</h4>
+                                            <p className="text-xs text-slate-500 mt-1">Start: {formatDate(item.planStart)}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const renderBudgeting = () => (
+                <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Budget Planning</p>
+                                <p className="text-2xl font-bold text-slate-800 mt-1">{formatRupiah(budgetStats.budgetPlanning)}</p>
+                                <p className="text-[10px] text-slate-400 mt-1">Sisa Anggaran</p>
+                            </div>
+                            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Icons.Wallet size={24}/></div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Paid Amount</p>
+                                <p className="text-2xl font-bold text-emerald-600 mt-1">{formatRupiah(budgetStats.paidAmount)}</p>
+                                <p className="text-[10px] text-slate-400 mt-1">Total Dibayar</p>
+                            </div>
+                            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><Icons.CheckCircle size={24}/></div>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Outstanding</p>
+                                <p className="text-2xl font-bold text-rose-600 mt-1">{formatRupiah(budgetStats.outstandingAmount)}</p>
+                                <p className="text-[10px] text-slate-400 mt-1">Jatuh Tempo (Telat)</p>
+                            </div>
+                            <div className="p-3 bg-rose-50 text-rose-600 rounded-xl"><Icons.AlertOctagon size={24}/></div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
+                            <Icons.Wallet className="text-slate-600" size={20}/>
+                            <h3 className="font-bold text-slate-800">Budgeting & Payment Calculator</h3>
+                        </div>
+                        <div className="p-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Select Series</label>
+                                        <select className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={budgetForm.seriesId} onChange={(e) => setBudgetForm({...budgetForm, seriesId: e.target.value})}>
+                                            <option value="">-- Choose Series --</option>
+                                            {SERIES_CONFIG.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Vendor Name</label>
+                                        <input type="text" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={budgetForm.vendor} onChange={(e) => setBudgetForm({...budgetForm, vendor: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Total Amount (IDR)</label>
+                                        <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={budgetForm.totalAmount} onChange={(e) => setBudgetForm({...budgetForm, totalAmount: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">TOP (%)</label>
+                                        <div className="grid grid-cols-5 gap-2">
+                                            {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90].map((val) => (
+                                                <label key={val} className={`cursor-pointer border rounded-md px-1 py-2 text-center text-xs font-medium transition-all ${budgetForm.top === val ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200'}`}>
+                                                    <input type="radio" name="top" value={val} className="hidden" checked={budgetForm.top === val} onChange={() => setBudgetForm({...budgetForm, top: val})} />
+                                                    {val}%
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Lead Time (Hari)</label>
+                                        <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={budgetForm.leadTime} onChange={(e) => setBudgetForm({...budgetForm, leadTime: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Pelunasan H+</label>
+                                        <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={budgetForm.paymentTerm} onChange={(e) => setBudgetForm({...budgetForm, paymentTerm: e.target.value})} />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col justify-between bg-slate-50 p-6 rounded-xl border border-slate-100">
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Calculation</h4>
+                                        <div className="space-y-3 text-sm">
+                                            <div className="flex justify-between"><span className="text-slate-500">Series</span><span className="font-medium text-slate-800">{budgetForm.seriesId || '-'}</span></div>
+                                            <div className="flex justify-between"><span className="text-slate-500">Total</span><span className="font-medium text-slate-800">{formatRupiah(budgetForm.totalAmount || 0)}</span></div>
+                                            <div className="flex justify-between"><span className="text-slate-500">TOP</span><span className="font-medium text-blue-600">{budgetForm.top}%</span></div>
+                                            <div className="h-px bg-slate-200 my-2"></div>
+                                            <div className="flex justify-between"><span className="text-slate-600 font-bold">DP</span><span className="text-xl font-bold text-slate-900">{formatRupiah(dpNominal)}</span></div>
+                                            <div className="flex justify-between"><span className="text-slate-600 font-bold">Pelunasan</span><span className="text-xl font-bold text-emerald-600">{formatRupiah(settlementNominal)}</span></div>
+                                        </div>
+                                    </div>
+                                    <button onClick={handleSaveBudget} disabled={!budgetForm.vendor || !budgetForm.totalAmount} className="mt-6 w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center gap-2"><Icons.Save size={18}/> Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
+                            <Icons.Coins className="text-slate-600" size={20}/>
+                            <h3 className="font-bold text-slate-800">Saved Budget Records</h3>
+                        </div>
+                        {budgetList.length === 0 ? <div className="p-12 text-center text-slate-400">No records.</div> : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                                        <tr>
+                                            <th className="px-4 py-3 w-[140px] text-center">Status</th>
+                                            <th className="px-4 py-3">Date</th>
+                                            <th className="px-4 py-3">Series</th>
+                                            <th className="px-4 py-3">Vendor</th>
+                                            <th className="px-4 py-3 text-right">Total</th>
+                                            <th className="px-4 py-3 text-center">TOP</th>
+                                            <th className="px-4 py-3 text-center bg-blue-50/50">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span>Jadwal DP</span>
+                                                    <select className="text-[10px] border border-blue-200 rounded px-1" value={dpFilterMonth} onChange={(e) => setDpFilterMonth(e.target.value)}>
+                                                        <option value="">All</option>
+                                                        {uniqueDpMonths.map(m => <option key={m} value={m}>{new Date(m + "-01").toLocaleDateString('id-ID', {month: 'short', year: '2-digit'})}</option>)}
+                                                    </select>
+                                                </div>
+                                            </th>
+                                            <th className="px-4 py-3 text-right text-blue-700 bg-blue-50/30">Nominal DP</th>
+                                            <th className="px-4 py-3 text-center bg-emerald-50/50">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span>Jadwal Pelunasan</span>
+                                                    <select className="text-[10px] border border-emerald-200 rounded px-1" value={repaymentFilterMonth} onChange={(e) => setRepaymentFilterMonth(e.target.value)}>
+                                                        <option value="">All</option>
+                                                        {uniqueRepaymentMonths.map(m => <option key={m} value={m}>{new Date(m + "-01").toLocaleDateString('id-ID', {month: 'short', year: '2-digit'})}</option>)}
+                                                    </select>
+                                                </div>
+                                            </th>
+                                            <th className="px-4 py-3 text-right text-emerald-700 bg-emerald-50/30">Nominal Pelunasan</th>
+                                            <th className="px-4 py-3 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {filteredBudgetList.map((item) => (
+                                            <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                                <td className="px-4 py-3 text-center">
+                                                    <button onClick={() => handleCycleStatus(item.id)} className="focus:outline-none hover:scale-105 transition-transform">{renderStatusBadge(item.paymentStatus)}</button>
+                                                </td>
+                                                <td className="px-4 py-3 text-slate-500 text-xs">{item.date}</td>
+                                                <td className="px-4 py-3 font-medium text-slate-800">{item.series}</td>
+                                                <td className="px-4 py-3 font-medium text-slate-800">{item.vendor}</td>
+                                                <td className="px-4 py-3 text-right text-slate-600">{formatRupiah(item.totalAmount)}</td>
+                                                <td className="px-4 py-3 text-center"><span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">{item.top}%</span></td>
+                                                <td className="px-4 py-3 text-center bg-blue-50/30 text-blue-700 font-medium text-xs">{item.dpDate ? formatDate(item.dpDate) : '-'}</td>
+                                                <td className="px-4 py-3 text-right font-bold text-blue-600 bg-blue-50/30">{formatRupiah(item.dpNominal)}</td>
+                                                <td className="px-4 py-3 text-center bg-emerald-50/30 text-emerald-700 font-medium text-xs">{item.repaymentDate ? formatDate(item.repaymentDate) : '-'}</td>
+                                                <td className="px-4 py-3 text-right font-bold text-emerald-600 bg-emerald-50/30">{formatRupiah(item.settlementNominal)}</td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <button onClick={() => handleDeleteBudget(item.id)} className="text-rose-500 hover:text-rose-700"><Icons.Trash2 size={16}/></button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+
+            if (!isClient) return null;
+
+            return (
+                <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20">
+                    <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+                        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between items-center h-16">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">H</div>
+                                    <div>
+                                        <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">WORLDWHITE ENTERPRISE</h1>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Raya 2027 Planner</p>
+                                    </div>
+                                </div>
+                                <nav className="flex space-x-1 bg-slate-100 p-1 rounded-lg">
+                                    <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'dashboard' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Dashboard</button>
+                                    <button onClick={() => setActiveTab('gantt')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'gantt' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Gantt Chart</button>
+                                    <button onClick={() => setActiveTab('activities')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'activities' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Activities</button>
+                                    <button onClick={() => setActiveTab('budgeting')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${activeTab === 'budgeting' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Icons.Wallet size={14}/> Budgeting</button>
+                                </nav>
+                            </div>
+                        </div>
+                    </header>
+                    <main className="max-w-[1900px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                        {activeTab === 'dashboard' && renderDashboard()}
+                        {activeTab === 'gantt' && renderGantt()}
+                        {activeTab === 'activities' && renderActivities()}
+                        {activeTab === 'budgeting' && renderBudgeting()}
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
