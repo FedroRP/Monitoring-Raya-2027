@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MONITORING TIME LINE RAYA 2027</title>
+    <title>MONITORING RAYA 2027</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,10 +26,6 @@
         
         /* Bar Animation */
         .bar-transition { transition: width 1s ease-in-out; }
-        
-        /* Tooltip Animation */
-        .tooltip-anim { animation: tooltipFade 0.2s ease-out; }
-        @keyframes tooltipFade { from { opacity: 0; transform: translate(-50%, 5px); } to { opacity: 1; transform: translate(-50%, 0); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans">
@@ -419,8 +415,6 @@
 
             const completionRate = stats.totalTasks ? Math.round(((stats.completed + (stats.inProgress * 0.5)) / stats.totalTasks) * 100) : 0;
 
-            // --- RENDER FUNCTIONS ---
-            
             const renderDashboard = () => (
                 <div className="space-y-6 animate-fade-in pb-10">
                     <div className="bg-gradient-to-r from-slate-800 to-indigo-900 rounded-xl p-6 text-white shadow-lg mb-6">
@@ -472,6 +466,8 @@
                                     const seriesTotal = series.activities.length;
                                     let lateCount = 0;
                                     let onTimeCount = 0;
+                                    let inProgressCount = 0;
+                                    let pendingCount = 0;
                                     let accumulatedProgress = 0; 
                                     const today = new Date();
                                     today.setHours(0,0,0,0);
@@ -479,31 +475,45 @@
                                     series.activities.forEach(act => {
                                         const planEndObj = new Date(act.planEnd);
                                         const startObj = act.actualStart ? parseDateLocal(act.actualStart) : null;
+                                        
                                         const isDoneLate = act.actualEnd && new Date(act.actualEnd) > planEndObj;
                                         const isPendingLate = !act.actualEnd && today > planEndObj;
                                         const isDoneOnTime = act.actualEnd && !isDoneLate;
                                         const isInProgress = act.actualStart && !act.actualEnd && !isPendingLate;
 
-                                        if (isDoneLate || isPendingLate) lateCount++;
-                                        else if (isDoneOnTime) onTimeCount++;
-                                        else if (isInProgress && startObj) {
-                                            const endObj = new Date(act.planEnd);
-                                            let totalDur = (endObj - startObj) / (1000 * 60 * 60 * 24);
-                                            if (totalDur <= 0) totalDur = 1;
-                                            const elapsed = (today - startObj) / (1000 * 60 * 60 * 24);
-                                            let p = elapsed / totalDur;
-                                            if (p < 0.05) p = 0.05; 
-                                            if (p > 1) p = 1;
-                                            accumulatedProgress += p;
+                                        if (isDoneLate || isPendingLate) {
+                                            lateCount++;
+                                        } else if (isDoneOnTime) {
+                                            onTimeCount++;
+                                        } else if (isInProgress) {
+                                            inProgressCount++;
+                                            if (startObj) {
+                                                const endObj = new Date(act.planEnd);
+                                                let totalDur = (endObj - startObj) / (1000 * 60 * 60 * 24);
+                                                if (totalDur <= 0) totalDur = 1;
+                                                const elapsed = (today - startObj) / (1000 * 60 * 60 * 24);
+                                                let p = elapsed / totalDur;
+                                                if (p < 0.1) p = 0.1; // Minimal 10% progress if started
+                                                if (p > 1) p = 1;
+                                                accumulatedProgress += p;
+                                            }
+                                        } else {
+                                            pendingCount++;
                                         }
                                     });
 
-                                    const latePercent = (lateCount / seriesTotal) * 100;
-                                    const onTimePercent = (onTimeCount / seriesTotal) * 100;
-                                    const progressPercent = (accumulatedProgress / seriesTotal) * 100;
-                                    const pendingCount = seriesTotal - onTimeCount - lateCount - Math.ceil(accumulatedProgress);
-                                    const inProgressCount = Math.ceil(accumulatedProgress);
-                                    const displayProgressPercent = inProgressCount > 0 && Math.round(progressPercent) === 0 ? 1 : Math.round(progressPercent);
+                                    // FIX LOGIC PENDING COUNT:
+                                    // Pending should be strictly: Total - Done - Late - InProgress
+                                    pendingCount = seriesTotal - onTimeCount - lateCount - inProgressCount;
+                                    
+                                    // Calculate Visual Widths
+                                    const pOnTime = (onTimeCount / seriesTotal) * 100;
+                                    const pLate = (lateCount / seriesTotal) * 100;
+                                    const pInProgressWidth = (inProgressCount / seriesTotal) * 100;
+                                    const pPending = (pendingCount / seriesTotal) * 100;
+
+                                    // Text Display Logic
+                                    const avgProgress = inProgressCount > 0 ? Math.round((accumulatedProgress / inProgressCount) * 100) : 0;
 
                                     return (
                                         <div key={series.id} className="group">
@@ -512,14 +522,15 @@
                                                 <div className="flex items-center gap-3 text-xs font-semibold">
                                                     <span className="text-emerald-600">{onTimeCount} Done</span>
                                                     <span className="text-rose-600">{lateCount} Late</span>
-                                                    <span className="text-blue-600">{inProgressCount} In Progress ({displayProgressPercent}%)</span>
+                                                    <span className="text-blue-600">{inProgressCount} In Progress ({avgProgress}%)</span>
                                                     <span className="text-slate-400">{Math.max(0, pendingCount)} Pending</span>
                                                 </div>
                                             </div>
                                             <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden flex bar-transition">
-                                                <div className="bg-emerald-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${onTimePercent}%` }} title={`On Time`}>{onTimePercent > 5 && onTimeCount}</div>
-                                                <div className="bg-rose-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${latePercent}%` }} title={`Late`}>{latePercent > 5 && lateCount}</div>
-                                                <div className="bg-blue-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${progressPercent}%` }} title={`In Progress`}>{progressPercent > 5 && `${displayProgressPercent}%`}</div>
+                                                <div className="bg-emerald-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pOnTime}%` }} title={`On Time`}>{pOnTime > 5 && onTimeCount}</div>
+                                                <div className="bg-rose-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pLate}%` }} title={`Late`}>{pLate > 5 && lateCount}</div>
+                                                <div className="bg-blue-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pInProgressWidth}%` }} title={`In Progress`}>{pInProgressWidth > 5 && `${avgProgress}%`}</div>
+                                                <div className="bg-slate-200 h-full flex items-center justify-center text-[9px] text-slate-500 font-bold" style={{ width: `${pPending}%` }} title={`Pending`}>{pPending > 5 && pendingCount}</div>
                                             </div>
                                         </div>
                                     );
@@ -677,8 +688,25 @@
                                                                 <div 
                                                                     className={`absolute h-2.5 rounded-sm shadow-sm top-5 border border-white/20 ${isLate ? 'bg-rose-500' : (isDone ? 'bg-emerald-500' : 'bg-blue-500')} flex items-center justify-center group/bar cursor-help`} 
                                                                     style={actStyle} 
-                                                                    title={isLate ? 'Delayed' : (isDone ? 'Completed' : 'In Progress')}
                                                                 >
+                                                                    {isInProgress && !isLate && (
+                                                                        <span className="text-[8px] text-white font-bold leading-none px-1 drop-shadow-md truncate">{progressPercent}%</span>
+                                                                    )}
+                                                                    {isLate && (
+                                                                        <span className="text-[8px] text-white font-bold leading-none px-1 drop-shadow-md">!</span>
+                                                                    )}
+
+                                                                    {/* POPUP / TOOLTIP */}
+                                                                    <div className="hidden group-hover/bar:block absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-50 w-max max-w-[200px]">
+                                                                        <div className="bg-gray-900 text-white text-[10px] rounded-md py-1 px-2 shadow-xl border border-gray-700 relative">
+                                                                            <div className="font-bold border-b border-gray-700 pb-0.5 mb-0.5">{isLate ? 'Terlambat' : (isDone ? 'Selesai' : 'Sedang Berjalan')}</div>
+                                                                            <div>{formatDate(visualActStart)} - {formatDate(visualActEnd)}</div>
+                                                                            {isInProgress && !isLate && <div className="text-blue-300 font-semibold mt-0.5">Progress: {progressPercent}%</div>}
+                                                                            {isLate && <div className="text-rose-300 font-semibold mt-0.5">Telat: {delay} Hari</div>}
+                                                                            {/* Arrow */}
+                                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -977,7 +1005,7 @@
                                     <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">H</div>
                                     <div>
                                         <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">WORLDWHITE ENTERPRISE</h1>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Raya 2027 Planner</p>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">RAYA 2027 PLANNER</p>
                                     </div>
                                 </div>
                                 <nav className="flex space-x-1 bg-slate-100 p-1 rounded-lg">
