@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEYMALE x HEYLOCAL Planner Raya 2027</title>
+    <title>MONITORING TIME LINE RAYA 2027</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,6 +23,13 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Bar Animation */
+        .bar-transition { transition: width 1s ease-in-out; }
+        
+        /* Tooltip Animation */
+        .tooltip-anim { animation: tooltipFade 0.2s ease-out; }
+        @keyframes tooltipFade { from { opacity: 0; transform: translate(-50%, 5px); } to { opacity: 1; transform: translate(-50%, 0); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans">
@@ -57,115 +64,23 @@
             Hourglass: (props) => <IconWrapper {...props}><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></IconWrapper>,
             Filter: (props) => <IconWrapper {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconWrapper>,
             X: (props) => <IconWrapper {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>,
-            RefreshCw: (props) => <IconWrapper {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></IconWrapper>
+            RefreshCw: (props) => <IconWrapper {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></IconWrapper>,
+            History: (props) => <IconWrapper {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></IconWrapper>
         };
 
-        // --- CONFIGURATION & CONSTANTS ---
+        // --- CONFIGURATION ---
         const SERIES_CONFIG = [
-            {
-                id: 1,
-                name: "Series 1",
-                launchDate: "2027-01-04",
-                schedule: [
-                    { id: 1, start: "2026-06-01", end: "2026-06-14", leadTime: 14 },
-                    { id: 2, start: "2026-06-15", end: "2026-06-19", leadTime: 5 },
-                    { id: 3, start: "2026-06-20", end: "2026-06-24", leadTime: 5 },
-                    { id: 4, start: "2026-06-25", end: "2026-06-29", leadTime: 5 },
-                    { id: 5, start: "2026-06-30", end: "2026-07-06", leadTime: 7 },
-                    { id: 6, start: "2026-07-07", end: "2026-09-11", leadTime: 67 },
-                    { id: 7, start: "2026-07-07", end: "2026-08-20", leadTime: 45 },
-                    { id: 8, start: "2026-09-12", end: "2026-11-17", leadTime: 67 },
-                    { id: 9, start: "2026-11-18", end: "2026-11-22", leadTime: 5 },
-                    { id: 10, start: "2026-11-18", end: "2026-11-27", leadTime: 10 },
-                    { id: 11, start: "2026-11-23", end: "2026-12-07", leadTime: 15 }
-                ]
-            },
-            {
-                id: 2,
-                name: "Series 2",
-                launchDate: "2027-01-11",
-                schedule: [
-                    { id: 1, start: "2026-06-15", end: "2026-06-29", leadTime: 15 },
-                    { id: 2, start: "2026-06-30", end: "2026-07-04", leadTime: 5 },
-                    { id: 3, start: "2026-07-05", end: "2026-07-09", leadTime: 5 },
-                    { id: 4, start: "2026-07-10", end: "2026-07-14", leadTime: 5 },
-                    { id: 5, start: "2026-07-15", end: "2026-07-21", leadTime: 7 },
-                    { id: 6, start: "2026-07-22", end: "2026-09-26", leadTime: 67 },
-                    { id: 7, start: "2026-07-22", end: "2026-09-04", leadTime: 45 },
-                    { id: 8, start: "2026-09-27", end: "2026-12-02", leadTime: 67 },
-                    { id: 9, start: "2026-12-03", end: "2026-12-07", leadTime: 5 },
-                    { id: 10, start: "2026-12-03", end: "2026-12-12", leadTime: 10 },
-                    { id: 11, start: "2026-12-12", end: "2026-12-26", leadTime: 15 }
-                ]
-            },
-            {
-                id: 3,
-                name: "Series 3",
-                launchDate: "2027-01-18",
-                schedule: [
-                    { id: 1, start: "2026-07-01", end: "2026-07-14", leadTime: 14 },
-                    { id: 2, start: "2026-07-15", end: "2026-07-19", leadTime: 5 },
-                    { id: 3, start: "2026-07-20", end: "2026-07-24", leadTime: 5 },
-                    { id: 4, start: "2026-07-25", end: "2026-07-29", leadTime: 5 },
-                    { id: 5, start: "2026-07-30", end: "2026-08-05", leadTime: 7 },
-                    { id: 6, start: "2026-08-06", end: "2026-09-11", leadTime: 37 },
-                    { id: 7, start: "2026-08-06", end: "2026-09-19", leadTime: 45 },
-                    { id: 8, start: "2026-10-12", end: "2026-12-17", leadTime: 67 },
-                    { id: 9, start: "2026-12-18", end: "2026-12-22", leadTime: 5 },
-                    { id: 10, start: "2026-12-18", end: "2026-12-27", leadTime: 10 },
-                    { id: 11, start: "2026-12-27", end: "2027-01-08", leadTime: 13 }
-                ]
-            },
-            {
-                id: 4,
-                name: "Series 4",
-                launchDate: "2027-01-25",
-                schedule: [
-                    { id: 1, start: "2026-07-15", end: "2026-07-29", leadTime: 15 },
-                    { id: 2, start: "2026-07-30", end: "2026-08-03", leadTime: 5 },
-                    { id: 3, start: "2026-08-04", end: "2026-08-08", leadTime: 5 },
-                    { id: 4, start: "2026-08-09", end: "2026-08-13", leadTime: 5 },
-                    { id: 5, start: "2026-08-14", end: "2026-08-20", leadTime: 7 },
-                    { id: 6, start: "2026-08-21", end: "2026-10-26", leadTime: 67 },
-                    { id: 7, start: "2026-08-21", end: "2026-10-04", leadTime: 45 },
-                    { id: 8, start: "2026-10-27", end: "2027-01-01", leadTime: 67 },
-                    { id: 9, start: "2027-01-02", end: "2027-01-06", leadTime: 5 },
-                    { id: 10, start: "2027-01-02", end: "2027-01-11", leadTime: 10 },
-                    { id: 11, start: "2027-01-06", end: "2027-01-15", leadTime: 10 }
-                ]
-            },
-            {
-                id: 5,
-                name: "Series 5",
-                launchDate: "2027-02-01",
-                schedule: [
-                    { id: 1, start: "2026-08-01", end: "2026-08-14", leadTime: 14 },
-                    { id: 2, start: "2026-08-15", end: "2026-08-19", leadTime: 5 },
-                    { id: 3, start: "2026-08-20", end: "2026-08-24", leadTime: 5 },
-                    { id: 4, start: "2026-08-25", end: "2026-08-29", leadTime: 5 },
-                    { id: 5, start: "2026-08-30", end: "2026-09-05", leadTime: 7 },
-                    { id: 6, start: "2026-09-06", end: "2026-11-11", leadTime: 67 },
-                    { id: 7, start: "2026-09-06", end: "2026-10-20", leadTime: 45 },
-                    { id: 8, start: "2026-11-12", end: "2027-01-17", leadTime: 67 },
-                    { id: 9, start: "2027-01-18", end: "2027-01-22", leadTime: 5 },
-                    { id: 10, start: "2027-01-18", end: "2027-01-22", leadTime: 5 },
-                    { id: 11, start: "2027-01-23", end: "2027-01-24", leadTime: 2 }
-                ]
-            }
+            { id: 1, name: "Series 1", launchDate: "2027-01-04", schedule: [ { id: 1, start: "2026-06-01", end: "2026-06-14", leadTime: 14 }, { id: 2, start: "2026-06-15", end: "2026-06-19", leadTime: 5 }, { id: 3, start: "2026-06-20", end: "2026-06-24", leadTime: 5 }, { id: 4, start: "2026-06-25", end: "2026-06-29", leadTime: 5 }, { id: 5, start: "2026-06-30", end: "2026-07-06", leadTime: 7 }, { id: 6, start: "2026-07-07", end: "2026-09-11", leadTime: 67 }, { id: 7, start: "2026-07-07", end: "2026-08-20", leadTime: 45 }, { id: 8, start: "2026-09-12", end: "2026-11-17", leadTime: 67 }, { id: 9, start: "2026-11-18", end: "2026-11-22", leadTime: 5 }, { id: 10, start: "2026-11-18", end: "2026-11-27", leadTime: 10 }, { id: 11, start: "2026-11-23", end: "2026-12-07", leadTime: 15 } ] },
+            { id: 2, name: "Series 2", launchDate: "2027-01-11", schedule: [ { id: 1, start: "2026-06-15", end: "2026-06-29", leadTime: 15 }, { id: 2, start: "2026-06-30", end: "2026-07-04", leadTime: 5 }, { id: 3, start: "2026-07-05", end: "2026-07-09", leadTime: 5 }, { id: 4, start: "2026-07-10", end: "2026-07-14", leadTime: 5 }, { id: 5, start: "2026-07-15", end: "2026-07-21", leadTime: 7 }, { id: 6, start: "2026-07-22", end: "2026-09-26", leadTime: 67 }, { id: 7, start: "2026-07-22", end: "2026-09-04", leadTime: 45 }, { id: 8, start: "2026-09-27", end: "2026-12-02", leadTime: 67 }, { id: 9, start: "2026-12-03", end: "2026-12-07", leadTime: 5 }, { id: 10, start: "2026-12-03", end: "2026-12-12", leadTime: 10 }, { id: 11, start: "2026-12-12", end: "2026-12-26", leadTime: 15 } ] },
+            { id: 3, name: "Series 3", launchDate: "2027-01-18", schedule: [ { id: 1, start: "2026-07-01", end: "2026-07-14", leadTime: 14 }, { id: 2, start: "2026-07-15", end: "2026-07-19", leadTime: 5 }, { id: 3, start: "2026-07-20", end: "2026-07-24", leadTime: 5 }, { id: 4, start: "2026-07-25", end: "2026-07-29", leadTime: 5 }, { id: 5, start: "2026-07-30", end: "2026-08-05", leadTime: 7 }, { id: 6, start: "2026-08-06", end: "2026-09-11", leadTime: 37 }, { id: 7, start: "2026-08-06", end: "2026-09-19", leadTime: 45 }, { id: 8, start: "2026-10-12", end: "2026-12-17", leadTime: 67 }, { id: 9, start: "2026-12-18", end: "2026-12-22", leadTime: 5 }, { id: 10, start: "2026-12-18", end: "2026-12-27", leadTime: 10 }, { id: 11, start: "2026-12-27", end: "2027-01-08", leadTime: 13 } ] },
+            { id: 4, name: "Series 4", launchDate: "2027-01-25", schedule: [ { id: 1, start: "2026-07-15", end: "2026-07-29", leadTime: 15 }, { id: 2, start: "2026-07-30", end: "2026-08-03", leadTime: 5 }, { id: 3, start: "2026-08-04", end: "2026-08-08", leadTime: 5 }, { id: 4, start: "2026-08-09", end: "2026-08-13", leadTime: 5 }, { id: 5, start: "2026-08-14", end: "2026-08-20", leadTime: 7 }, { id: 6, start: "2026-08-21", end: "2026-10-26", leadTime: 67 }, { id: 7, start: "2026-08-21", end: "2026-10-04", leadTime: 45 }, { id: 8, start: "2026-10-27", end: "2027-01-01", leadTime: 67 }, { id: 9, start: "2027-01-02", end: "2027-01-06", leadTime: 5 }, { id: 10, start: "2027-01-02", end: "2027-01-11", leadTime: 10 }, { id: 11, start: "2027-01-06", end: "2027-01-15", leadTime: 10 } ] },
+            { id: 5, name: "Series 5", launchDate: "2027-02-01", schedule: [ { id: 1, start: "2026-08-01", end: "2026-08-14", leadTime: 14 }, { id: 2, start: "2026-08-15", end: "2026-08-19", leadTime: 5 }, { id: 3, start: "2026-08-20", end: "2026-08-24", leadTime: 5 }, { id: 4, start: "2026-08-25", end: "2026-08-29", leadTime: 5 }, { id: 5, start: "2026-08-30", end: "2026-09-05", leadTime: 7 }, { id: 6, start: "2026-09-06", end: "2026-11-11", leadTime: 67 }, { id: 7, start: "2026-09-06", end: "2026-10-20", leadTime: 45 }, { id: 8, start: "2026-11-12", end: "2027-01-17", leadTime: 67 }, { id: 9, start: "2027-01-18", end: "2027-01-22", leadTime: 5 }, { id: 10, start: "2027-01-18", end: "2027-01-22", leadTime: 5 }, { id: 11, start: "2027-01-23", end: "2027-01-24", leadTime: 2 } ] }
         ];
 
         const TASK_NAMES = [
-            "Approval Design",
-            "Approval Bahan",
-            "Approval Motif",
-            "Approval Color",
-            "Payment Paperworks",
-            "Material Production - Fabric",
-            "Material Procurement - Brocade",
-            "Mass Production",
-            "Inbound",
-            "Photoshoot & Catalog",
-            "Offline Distribution"
+            "Approval Design", "Approval Bahan", "Approval Motif", "Approval Color", "Payment Paperworks",
+            "Material Production - Fabric", "Material Procurement - Brocade", "Mass Production",
+            "Inbound", "Photoshoot & Catalog", "Offline Distribution"
         ];
 
         const TIMELINE_START = "2026-06-01";
@@ -197,6 +112,12 @@
             return result.toISOString().split('T')[0];
         };
 
+        const parseDateLocal = (dateStr) => {
+            if(!dateStr) return null;
+            const [y, m, d] = dateStr.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        };
+
         const formatRupiah = (number) => {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(number);
         };
@@ -218,7 +139,6 @@
             const months = [];
             let current = new Date(start);
             current.setDate(1);
-
             while (current <= end) {
                 months.push(new Date(current));
                 current.setMonth(current.getMonth() + 1);
@@ -231,12 +151,9 @@
             const start = new Date(startStr).getTime();
             const end = new Date(endStr).getTime();
             const totalStart = new Date(totalStartStr).getTime();
-
             if (end < totalStart) return null;
-
             const left = ((start - totalStart) / totalDurationMs) * 100;
             const width = ((end - start) / totalDurationMs) * 100;
-
             return { left: `${Math.max(0, left)}%`, width: `${width}%` };
         };
 
@@ -252,15 +169,10 @@
             // Budgeting State
             const [budgetList, setBudgetList] = useState([]);
             const [budgetForm, setBudgetForm] = useState({
-                seriesId: '',
-                vendor: '',
-                totalAmount: '',
-                top: 0,
-                leadTime: '',
-                paymentTerm: ''
+                seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: ''
             });
 
-            // Specific Filters
+            // Filters
             const [dpFilterMonth, setDpFilterMonth] = useState(""); 
             const [repaymentFilterMonth, setRepaymentFilterMonth] = useState("");
 
@@ -270,12 +182,8 @@
 
             useEffect(() => {
                 setIsClient(true);
+                const timer = setInterval(() => { setCurrentTime(new Date()); }, 1000);
                 
-                const timer = setInterval(() => {
-                    setCurrentTime(new Date());
-                }, 1000);
-
-                // 1. Calculate Project Start from Config
                 let earliestStart = "2099-12-31";
                 SERIES_CONFIG.forEach(series => {
                     series.schedule.forEach(sch => {
@@ -284,7 +192,7 @@
                 });
                 setProjectStart(earliestStart);
 
-                // 2. Load Data from Local Storage
+                // Load Data
                 const savedData = localStorage.getItem('planner_data_v1');
                 const savedBudget = localStorage.getItem('planner_budget_v1');
 
@@ -304,39 +212,36 @@
                                 status: "pending"
                             };
                         });
-                        return {
-                            id: config.id,
-                            name: config.name,
-                            launchDate: config.launchDate,
-                            activities: tasks
-                        };
+                        return { id: config.id, name: config.name, launchDate: config.launchDate, activities: tasks };
                     });
                     setData(initialData);
                 }
 
                 if (savedBudget) {
-                    setBudgetList(JSON.parse(savedBudget));
+                    const parsedBudget = JSON.parse(savedBudget);
+                    const sanitizedBudget = parsedBudget.map(item => ({
+                        ...item,
+                        dpDate: item.dpDate || '-',
+                        repaymentDate: item.repaymentDate || '-',
+                        paymentStatus: item.paymentStatus || 'unpaid',
+                        dpNominal: item.dpNominal || 0,
+                        settlementNominal: item.settlementNominal || 0,
+                        top: item.top || 0
+                    }));
+                    setBudgetList(sanitizedBudget);
                 }
                 
                 setIsDataLoaded(true);
-
                 return () => clearInterval(timer);
-
             }, []);
 
-            // --- SAVE EFFECTS ---
             useEffect(() => {
-                if (isDataLoaded) {
-                    localStorage.setItem('planner_data_v1', JSON.stringify(data));
-                }
+                if (isDataLoaded) localStorage.setItem('planner_data_v1', JSON.stringify(data));
             }, [data, isDataLoaded]);
 
             useEffect(() => {
-                if (isDataLoaded) {
-                    localStorage.setItem('planner_budget_v1', JSON.stringify(budgetList));
-                }
+                if (isDataLoaded) localStorage.setItem('planner_budget_v1', JSON.stringify(budgetList));
             }, [budgetList, isDataLoaded]);
-
 
             const handleResetData = () => {
                 if (confirm("Apakah Anda yakin ingin mereset semua data? Data yang sudah diinput akan hilang.")) {
@@ -345,7 +250,6 @@
                     window.location.reload();
                 }
             };
-
 
             const handleUpdateActual = (seriesIndex, actIndex, field, value) => {
                 const newData = [...data];
@@ -364,28 +268,24 @@
                 return amount - dpNominal;
             }, [budgetForm.totalAmount, dpNominal]);
 
-            // Budget Filter Logic
+            // Budget Filters
             const uniqueDpMonths = useMemo(() => {
                 const months = new Set();
-                budgetList.forEach(item => {
-                if (item.dpDate && item.dpDate !== '-') months.add(item.dpDate.substring(0, 7));
-                });
+                budgetList.forEach(item => { if (item.dpDate && item.dpDate !== '-') months.add(item.dpDate.substring(0, 7)); });
                 return Array.from(months).sort();
             }, [budgetList]);
 
             const uniqueRepaymentMonths = useMemo(() => {
                 const months = new Set();
-                budgetList.forEach(item => {
-                if (item.repaymentDate && item.repaymentDate !== '-') months.add(item.repaymentDate.substring(0, 7));
-                });
+                budgetList.forEach(item => { if (item.repaymentDate && item.repaymentDate !== '-') months.add(item.repaymentDate.substring(0, 7)); });
                 return Array.from(months).sort();
             }, [budgetList]);
 
             const filteredBudgetList = useMemo(() => {
                 return budgetList.filter(item => {
-                const dpMatch = !dpFilterMonth || (item.dpDate && item.dpDate.startsWith(dpFilterMonth));
-                const repaymentMatch = !repaymentFilterMonth || (item.repaymentDate && item.repaymentDate.startsWith(repaymentFilterMonth));
-                return dpMatch && repaymentMatch;
+                    const dpMatch = !dpFilterMonth || (item.dpDate && item.dpDate.startsWith(dpFilterMonth));
+                    const repaymentMatch = !repaymentFilterMonth || (item.repaymentDate && item.repaymentDate.startsWith(repaymentFilterMonth));
+                    return dpMatch && repaymentMatch;
                 });
             }, [budgetList, dpFilterMonth, repaymentFilterMonth]);
 
@@ -393,10 +293,9 @@
                 let budgetPlanning = 0; 
                 let paidAmount = 0;     
                 let outstandingAmount = 0; 
-
                 const today = new Date();
 
-                budgetList.forEach(item => {
+                filteredBudgetList.forEach(item => {
                     if (item.paymentStatus === 'fully_paid') {
                         budgetPlanning += 0;
                         paidAmount += item.totalAmount;
@@ -418,14 +317,11 @@
                         if (repaymentDate && today > repaymentDate) outstandingAmount += item.settlementNominal;
                     }
                 });
-
                 return { budgetPlanning, paidAmount, outstandingAmount };
-            }, [budgetList]);
-
+            }, [filteredBudgetList]);
 
             const handleSaveBudget = () => {
                 if (!budgetForm.vendor || !budgetForm.totalAmount || !budgetForm.seriesId) return;
-
                 const selectedSeries = SERIES_CONFIG.find(s => s.name === budgetForm.seriesId);
                 let dpDateCalculated = "-";
                 let repaymentDateCalculated = "-";
@@ -434,7 +330,6 @@
                     const launchDate = selectedSeries.launchDate;
                     const lt = parseInt(budgetForm.leadTime) || 0;
                     const pt = parseInt(budgetForm.paymentTerm) || 0;
-
                     const baseDate = subtractDays(launchDate, 14);
                     dpDateCalculated = subtractDays(baseDate, lt);
                     repaymentDateCalculated = addDays(baseDate, pt);
@@ -455,7 +350,6 @@
                     date: new Date().toISOString().split('T')[0],
                     paymentStatus: 'unpaid'
                 };
-
                 setBudgetList([newItem, ...budgetList]);
                 setBudgetForm({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
             };
@@ -477,23 +371,18 @@
 
             const renderStatusBadge = (status) => {
                 switch (status) {
-                    case 'fully_paid':
-                        return <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold uppercase border border-emerald-200">Lunas</span>;
-                    case 'dp_paid':
-                        return <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase border border-blue-200">Sudah DP</span>;
-                    default:
-                        return <span className="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[10px] font-bold uppercase border border-slate-200">Belum</span>;
+                    case 'fully_paid': return <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold uppercase border border-emerald-200">Lunas</span>;
+                    case 'dp_paid': return <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase border border-blue-200">Sudah DP</span>;
+                    default: return <span className="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[10px] font-bold uppercase border border-slate-200">Belum</span>;
                 }
             };
 
-            // Stats Logic
             const stats = useMemo(() => {
                 let totalTasks = 0;
                 let completed = 0;
                 let delayed = 0;
                 let onTrack = 0;
-                let inProgress = 0; // Count in progress
-                
+                let inProgress = 0;
                 let delayedSeriesSummary = []; 
                 let allRecommendations = [];
 
@@ -501,8 +390,11 @@
                     let currentSeriesDelayed = 0;
                     series.activities.forEach(act => {
                         totalTasks++;
-                        const isDoneLate = act.actualEnd && new Date(act.actualEnd) > new Date(act.planEnd);
-                        const isPendingLate = !act.actualEnd && new Date() > new Date(act.planEnd);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const planEndObj = new Date(act.planEnd);
+                        const isDoneLate = act.actualEnd && new Date(act.actualEnd) > planEndObj;
+                        const isPendingLate = !act.actualEnd && today > planEndObj;
 
                         if (isDoneLate || isPendingLate) {
                             delayed++;
@@ -515,184 +407,119 @@
                         } else if (act.actualEnd) {
                             completed++;
                         } else {
-                            if (act.actualStart && !act.actualEnd) {
-                                inProgress++;
-                            }
+                            if (act.actualStart && !act.actualEnd) inProgress++;
                             onTrack++; 
                         }
                     });
-                    
-                    if (currentSeriesDelayed > 0) {
-                        delayedSeriesSummary.push(`${series.name} (${currentSeriesDelayed} item)`);
-                    }
+                    if (currentSeriesDelayed > 0) delayedSeriesSummary.push(`${series.name} (${currentSeriesDelayed} item)`);
                 });
 
-                return { 
-                    totalTasks, 
-                    completed, 
-                    delayed, 
-                    onTrack, 
-                    inProgress,
-                    delayedSeriesString: delayedSeriesSummary.join(", "),
-                    recommendations: allRecommendations
-                };
+                return { totalTasks, completed, delayed, onTrack, inProgress, delayedSeriesString: delayedSeriesSummary.join(", "), recommendations: allRecommendations };
             }, [data]);
 
             const completionRate = stats.totalTasks ? Math.round(((stats.completed + (stats.inProgress * 0.5)) / stats.totalTasks) * 100) : 0;
 
+            // --- RENDER FUNCTIONS ---
+            
             const renderDashboard = () => (
                 <div className="space-y-6 animate-fade-in pb-10">
-                    {/* Header Card */}
                     <div className="bg-gradient-to-r from-slate-800 to-indigo-900 rounded-xl p-6 text-white shadow-lg mb-6">
                         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                            <div>
-                                <h2 className="text-2xl font-bold mb-1">Production Monitor Raya 2027</h2>
-                                <p className="text-indigo-200 text-sm">Target Launching: Jan - Feb 2027</p>
-                            </div>
+                            <div><h2 className="text-2xl font-bold mb-1">Production Monitor Raya 2027</h2><p className="text-indigo-200 text-sm">Target Launching: Jan - Feb 2027</p></div>
                             <div className="flex gap-4 text-center">
-                                <div className="bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10">
-                                    <p className="text-xs text-indigo-200 uppercase tracking-wide">Project Kickoff</p>
-                                    <p className="font-mono font-bold text-sm">{formatDate(projectStart)}</p>
-                                </div>
-                                <div className="bg-emerald-500/20 px-4 py-2 rounded-lg border border-emerald-500/30 backdrop-blur-sm">
-                                    <p className="text-xs text-emerald-300 uppercase tracking-wide">Launch Period</p>
-                                    <p className="font-mono font-bold text-emerald-300 text-sm">
-                                        {formatDate(SERIES_CONFIG[0].launchDate)} - {formatDate(SERIES_CONFIG[SERIES_CONFIG.length - 1].launchDate)}
-                                    </p>
-                                </div>
+                                <div className="bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10"><p className="text-xs text-indigo-200 uppercase tracking-wide">Project Kickoff</p><p className="font-mono font-bold text-sm">{formatDate(projectStart)}</p></div>
+                                <div className="bg-emerald-500/20 px-4 py-2 rounded-lg border border-emerald-500/30 backdrop-blur-sm"><p className="text-xs text-emerald-300 uppercase tracking-wide">Launch Period</p><p className="font-mono font-bold text-emerald-300 text-sm">{formatDate(SERIES_CONFIG[0].launchDate)} - {formatDate(SERIES_CONFIG[SERIES_CONFIG.length - 1].launchDate)}</p></div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Insight Section */}
                     <div className={`rounded-xl p-6 shadow-sm border mb-8 flex flex-col md:flex-row items-start gap-4 transition-colors duration-500 ${stats.delayed > 0 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'}`}>
                         <div className="flex items-start gap-4 w-full">
                             <div className={`p-3 rounded-full shadow-sm shrink-0 ${stats.delayed > 0 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
                                 {stats.delayed > 0 ? <Icons.AlertOctagon size={28} /> : <Icons.TrendingUp size={28} />}
                             </div>
                             <div className="w-full">
-                                <h3 className={`text-lg font-bold mb-1 ${stats.delayed > 0 ? 'text-rose-800' : 'text-emerald-800'}`}>
-                                    {stats.delayed > 0 ? "Risiko Keterlambatan Terdeteksi" : "Produksi On Track"}
-                                </h3>
-                                <p className={`text-sm mb-4 ${stats.delayed > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>
-                                    {stats.delayed > 0 
-                                        ? `Terdapat total ${stats.delayed} aktivitas terlambat yang tersebar di: ${stats.delayedSeriesString}.` 
-                                        : "Seluruh aktivitas berjalan sesuai timeline. Tidak ada isu kritis saat ini."}
-                                </p>
+                                <h3 className={`text-lg font-bold mb-1 ${stats.delayed > 0 ? 'text-rose-800' : 'text-emerald-800'}`}>{stats.delayed > 0 ? "Risiko Keterlambatan Terdeteksi" : "Produksi On Track"}</h3>
+                                <p className={`text-sm mb-4 ${stats.delayed > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{stats.delayed > 0 ? `Terdapat total ${stats.delayed} aktivitas terlambat yang tersebar di: ${stats.delayedSeriesString}.` : "Seluruh aktivitas berjalan sesuai timeline. Tidak ada isu kritis saat ini."}</p>
                                 {stats.delayed > 0 && stats.recommendations.length > 0 && (
                                     <div className="bg-white/60 rounded-lg p-4 border border-rose-200/50">
-                                        <div className="flex items-center gap-2 mb-2 text-rose-800 font-semibold text-sm">
-                                            <Icons.Lightbulb size={16} className="text-amber-500 fill-amber-500"/>
-                                            <span>Saran Tindakan Perbaikan:</span>
-                                        </div>
-                                        <ul className="list-none space-y-2">
-                                            {stats.recommendations.map((rec) => (
-                                                <li key={rec.id} className="text-xs text-slate-700 font-medium flex gap-2 items-start">
-                                                    <span className="font-bold text-rose-600 shrink-0 mt-0.5">[{rec.seriesName}]</span>
-                                                    <span>{rec.message}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
+                                        <div className="flex items-center gap-2 mb-2 text-rose-800 font-semibold text-sm"><Icons.Lightbulb size={16} className="text-amber-500 fill-amber-500"/><span>Saran Tindakan Perbaikan:</span></div>
+                                        <ul className="list-none space-y-2">{stats.recommendations.map((rec) => (<li key={rec.id} className="text-xs text-slate-700 font-medium flex gap-2 items-start"><span className="font-bold text-rose-600 shrink-0 mt-0.5">[{rec.seriesName}]</span><span>{rec.message}</span></li>))}</ul>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 relative overflow-hidden group hover:border-indigo-100 transition-colors">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <p className="text-slate-500 text-sm font-medium">Total Progress</p>
-                                    <h3 className="text-4xl font-bold text-slate-800 mt-1">{completionRate}%</h3>
-                                </div>
-                                <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                                    <Icons.BarChart2 size={24} />
-                                </div>
-                            </div>
-                            <div className="w-full bg-slate-100 rounded-full h-2">
-                                <div className="bg-indigo-600 h-2 rounded-full transition-all duration-1000" style={{ width: `${completionRate}%` }}></div>
-                            </div>
+                            <div className="flex justify-between items-start mb-4"><div><p className="text-slate-500 text-sm font-medium">Total Progress</p><h3 className="text-4xl font-bold text-slate-800 mt-1">{completionRate}%</h3></div><div className="p-3 bg-indigo-50 rounded-lg text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors"><Icons.BarChart2 size={24} /></div></div>
+                            <div className="w-full bg-slate-100 rounded-full h-2"><div className="bg-indigo-600 h-2 rounded-full transition-all duration-1000" style={{ width: `${completionRate}%` }}></div></div>
                         </div>
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 group hover:border-emerald-100 transition-colors">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-slate-500 text-sm font-medium">Completed</p>
-                                    <h3 className="text-4xl font-bold text-emerald-600 mt-1">{stats.completed}</h3>
-                                    <p className="text-xs text-slate-400 mt-1">Tasks finished</p>
-                                </div>
-                                <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                                    <Icons.CheckCircle size={24} />
-                                </div>
-                            </div>
+                            <div className="flex justify-between items-start"><div><p className="text-slate-500 text-sm font-medium">Completed</p><h3 className="text-4xl font-bold text-emerald-600 mt-1">{stats.completed}</h3><p className="text-xs text-slate-400 mt-1">Tasks finished</p></div><div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors"><Icons.CheckCircle size={24} /></div></div>
                         </div>
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 group hover:border-rose-100 transition-colors">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-slate-500 text-sm font-medium">Delayed</p>
-                                    <h3 className="text-4xl font-bold text-rose-500 mt-1">{stats.delayed}</h3>
-                                    <p className="text-xs text-slate-400 mt-1">Needs attention</p>
-                                </div>
-                                <div className="p-3 bg-rose-50 rounded-lg text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-colors">
-                                    <Icons.AlertTriangle size={24} />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 group hover:border-blue-100 transition-colors">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-slate-500 text-sm font-medium">Pending</p>
-                                    <h3 className="text-4xl font-bold text-slate-600 mt-1">{stats.onTrack}</h3>
-                                    <p className="text-xs text-slate-400 mt-1">On schedule</p>
-                                </div>
-                                <div className="p-3 bg-slate-100 rounded-lg text-slate-500 group-hover:bg-slate-600 group-hover:text-white transition-colors">
-                                    <Icons.Clock size={24} />
-                                </div>
-                            </div>
+                            <div className="flex justify-between items-start"><div><p className="text-slate-500 text-sm font-medium">Delayed</p><h3 className="text-4xl font-bold text-rose-500 mt-1">{stats.delayed}</h3><p className="text-xs text-slate-400 mt-1">Needs attention</p></div><div className="p-3 bg-rose-50 rounded-lg text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-colors"><Icons.AlertTriangle size={24} /></div></div>
                         </div>
                     </div>
 
-                    {/* Series Status */}
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                            <h3 className="font-bold text-slate-800">Series Status Overview</h3>
-                            <span className="text-xs text-slate-500">Breakdown per series</span>
-                        </div>
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center"><h3 className="font-bold text-slate-800">Series Status Overview</h3><span className="text-xs text-slate-500">Breakdown per series</span></div>
                         <div className="p-6">
                             <div className="grid grid-cols-1 gap-6">
                                 {data.map((series) => {
                                     const seriesTotal = series.activities.length;
                                     let lateCount = 0;
                                     let onTimeCount = 0;
+                                    let accumulatedProgress = 0; 
+                                    const today = new Date();
+                                    today.setHours(0,0,0,0);
                                     
-                                    series.activities.forEach(a => {
-                                        const isLate = (a.actualEnd && new Date(a.actualEnd) > new Date(a.planEnd)) || 
-                                                    (!a.actualEnd && new Date() > new Date(a.planEnd));
-                                        const isDoneOnTime = a.actualEnd && !isLate;
-                                        if (isLate) lateCount++;
-                                        if (isDoneOnTime) onTimeCount++;
+                                    series.activities.forEach(act => {
+                                        const planEndObj = new Date(act.planEnd);
+                                        const startObj = act.actualStart ? parseDateLocal(act.actualStart) : null;
+                                        const isDoneLate = act.actualEnd && new Date(act.actualEnd) > planEndObj;
+                                        const isPendingLate = !act.actualEnd && today > planEndObj;
+                                        const isDoneOnTime = act.actualEnd && !isDoneLate;
+                                        const isInProgress = act.actualStart && !act.actualEnd && !isPendingLate;
+
+                                        if (isDoneLate || isPendingLate) lateCount++;
+                                        else if (isDoneOnTime) onTimeCount++;
+                                        else if (isInProgress && startObj) {
+                                            const endObj = new Date(act.planEnd);
+                                            let totalDur = (endObj - startObj) / (1000 * 60 * 60 * 24);
+                                            if (totalDur <= 0) totalDur = 1;
+                                            const elapsed = (today - startObj) / (1000 * 60 * 60 * 24);
+                                            let p = elapsed / totalDur;
+                                            if (p < 0.05) p = 0.05; 
+                                            if (p > 1) p = 1;
+                                            accumulatedProgress += p;
+                                        }
                                     });
 
                                     const latePercent = (lateCount / seriesTotal) * 100;
                                     const onTimePercent = (onTimeCount / seriesTotal) * 100;
+                                    const progressPercent = (accumulatedProgress / seriesTotal) * 100;
+                                    const pendingCount = seriesTotal - onTimeCount - lateCount - Math.ceil(accumulatedProgress);
+                                    const inProgressCount = Math.ceil(accumulatedProgress);
+                                    const displayProgressPercent = inProgressCount > 0 && Math.round(progressPercent) === 0 ? 1 : Math.round(progressPercent);
 
                                     return (
                                         <div key={series.id} className="group">
                                             <div className="flex justify-between items-center mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <h4 className="font-bold text-slate-700">{series.name}</h4>
-                                                    <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded">Target: {formatDate(series.launchDate)}</span>
-                                                </div>
+                                                <div className="flex items-center gap-2"><h4 className="font-bold text-slate-700">{series.name}</h4><span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded">Target: {formatDate(series.launchDate)}</span></div>
                                                 <div className="flex items-center gap-3 text-xs font-semibold">
-                                                    <span className="text-emerald-600">{onTimeCount} On-Time</span>
+                                                    <span className="text-emerald-600">{onTimeCount} Done</span>
                                                     <span className="text-rose-600">{lateCount} Late</span>
-                                                    <span className="text-slate-400">{(seriesTotal - onTimeCount - lateCount)} Pending</span>
+                                                    <span className="text-blue-600">{inProgressCount} In Progress ({displayProgressPercent}%)</span>
+                                                    <span className="text-slate-400">{Math.max(0, pendingCount)} Pending</span>
                                                 </div>
                                             </div>
-                                            <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden flex">
-                                                <div className="bg-emerald-500 h-full transition-all duration-1000" style={{ width: `${onTimePercent}%` }} title={`On Time: ${onTimeCount}`}></div>
-                                                <div className="bg-rose-500 h-full transition-all duration-1000" style={{ width: `${latePercent}%` }} title={`Late: ${lateCount}`}></div>
+                                            <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden flex bar-transition">
+                                                <div className="bg-emerald-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${onTimePercent}%` }} title={`On Time`}>{onTimePercent > 5 && onTimeCount}</div>
+                                                <div className="bg-rose-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${latePercent}%` }} title={`Late`}>{latePercent > 5 && lateCount}</div>
+                                                <div className="bg-blue-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${progressPercent}%` }} title={`In Progress`}>{progressPercent > 5 && `${displayProgressPercent}%`}</div>
                                             </div>
                                         </div>
                                     );
@@ -760,13 +587,19 @@
                                             const planEndObj = new Date(act.planEnd);
                                             let effectiveActualEnd = act.actualEnd;
                                             
+                                            // Auto-progress logic: if started but not finished
                                             if (act.actualStart && !act.actualEnd) {
-                                                const startObj = new Date(act.actualStart);
-                                                effectiveActualEnd = today < startObj 
-                                                    ? act.actualStart 
-                                                    : today.toISOString().split('T')[0];
+                                                const startObj = parseDateLocal(act.actualStart);
+                                                // Clamp effective end to today, but not earlier than actual start
+                                                if (today >= startObj) {
+                                                    effectiveActualEnd = today.toISOString().split('T')[0];
+                                                } else {
+                                                    // Future start date entered
+                                                    effectiveActualEnd = act.actualStart; 
+                                                }
                                             }
 
+                                            // Delay calculation for visualization
                                             let delay = 0;
                                             if (act.actualEnd) {
                                                 const diff = getDiffDays(act.planEnd, act.actualEnd);
@@ -779,7 +612,21 @@
                                             const isDone = !!act.actualEnd;
                                             const isInProgress = act.actualStart && !act.actualEnd;
 
+                                            // PROGRESS PERCENTAGE CALCULATION
+                                            let progressPercent = 0;
+                                            if (isInProgress) {
+                                                const start = parseDateLocal(act.actualStart);
+                                                const end = new Date(act.planEnd);
+                                                let totalDur = (end - start) / (1000 * 60 * 60 * 24);
+                                                if(totalDur <= 0) totalDur = 1;
+                                                const elapsed = (today - start) / (1000 * 60 * 60 * 24);
+                                                progressPercent = Math.round((elapsed / totalDur) * 100);
+                                                if (progressPercent < 0) progressPercent = 0;
+                                                if (progressPercent > 100) progressPercent = 100;
+                                            }
+
                                             const planStyle = calculateBarStyles(act.planStart, act.planEnd, TIMELINE_START, timelineTotalDuration);
+                                            
                                             let visualActStart = act.actualStart;
                                             let visualActEnd = effectiveActualEnd;
 
@@ -828,10 +675,11 @@
                                                             {planStyle && <div className="absolute h-3 bg-slate-300 rounded-sm top-2 opacity-60" style={planStyle} title={`Plan: ${formatDate(act.planStart)}`}></div>}
                                                             {actStyle && (
                                                                 <div 
-                                                                    className={`absolute h-2.5 rounded-sm shadow-sm top-5 border border-white/20 ${isLate ? 'bg-rose-500' : (isDone ? 'bg-emerald-500' : 'bg-blue-500')}`} 
+                                                                    className={`absolute h-2.5 rounded-sm shadow-sm top-5 border border-white/20 ${isLate ? 'bg-rose-500' : (isDone ? 'bg-emerald-500' : 'bg-blue-500')} flex items-center justify-center group/bar cursor-help`} 
                                                                     style={actStyle} 
                                                                     title={isLate ? 'Delayed' : (isDone ? 'Completed' : 'In Progress')}
-                                                                ></div>
+                                                                >
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </td>
@@ -863,52 +711,98 @@
                     return isDoneLate || isPendingLate;
                 });
 
+                const completed = allActivities.filter(a => {
+                    const planEnd = new Date(a.planEnd);
+                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
+                    return actualEnd && actualEnd <= planEnd;
+                });
+
                 const upcoming = allActivities.filter(a => !a.actualEnd && new Date() <= new Date(a.planEnd)).sort((a,b) => new Date(a.planStart) - new Date(b.planStart));
 
                 return (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pb-10">
-                        <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
-                            <div className="px-6 py-4 border-b border-rose-100 bg-rose-50 flex items-center gap-3">
-                                <Icons.AlertTriangle size={20} className="text-rose-600"/>
-                                <h3 className="font-bold text-rose-800">Attention Needed</h3>
-                            </div>
-                            <div className="divide-y divide-rose-50 max-h-[600px] overflow-auto">
-                                {overdue.length === 0 ? (
-                                    <div className="p-12 text-center text-slate-400"><p>No overdue items.</p></div>
-                                ) : (
-                                    overdue.map((item, idx) => {
-                                        const isDone = !!item.actualEnd;
-                                        return (
-                                            <div key={idx} className="p-4 hover:bg-rose-50/50 transition-colors flex justify-between items-center">
-                                                <div>
-                                                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 mb-1">{item.seriesName}</span>
-                                                    <h4 className="font-medium text-slate-800">{item.name}</h4>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="text-xs text-rose-500 font-medium">Plan: {formatDate(item.planEnd)}</span>
-                                                        {isDone ? <span className="text-[10px] text-white bg-rose-500 px-1.5 rounded font-bold">Done Late</span> : <span className="text-[10px] text-rose-600 bg-rose-100 px-1.5 rounded font-bold">Pending Overdue</span>}
+                    <div className="space-y-8 pb-10">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
+                                <div className="px-6 py-4 border-b border-rose-100 bg-rose-50 flex items-center gap-3">
+                                    <Icons.AlertTriangle size={20} className="text-rose-600"/>
+                                    <h3 className="font-bold text-rose-800">Attention Needed</h3>
+                                </div>
+                                <div className="divide-y divide-rose-50 max-h-[400px] overflow-auto">
+                                    {overdue.length === 0 ? (
+                                        <div className="p-12 text-center text-slate-400"><p>No overdue items.</p></div>
+                                    ) : (
+                                        overdue.map((item, idx) => {
+                                            const isDone = !!item.actualEnd;
+                                            return (
+                                                <div key={idx} className="p-4 hover:bg-rose-50/50 transition-colors flex justify-between items-center">
+                                                    <div>
+                                                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 mb-1">{item.seriesName}</span>
+                                                        <h4 className="font-medium text-slate-800">{item.name}</h4>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-xs text-rose-500 font-medium">Plan: {formatDate(item.planEnd)}</span>
+                                                            {isDone ? <span className="text-[10px] text-white bg-rose-500 px-1.5 rounded font-bold">Done Late</span> : <span className="text-[10px] text-rose-600 bg-rose-100 px-1.5 rounded font-bold">Pending Overdue</span>}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
+                                    <Icons.List size={20} className="text-slate-600"/>
+                                    <h3 className="font-bold text-slate-800">Operational Queue</h3>
+                                </div>
+                                <div className="divide-y divide-slate-100 max-h-[400px] overflow-auto">
+                                    {upcoming.map((item, idx) => (
+                                        <div key={idx} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center">
+                                            <div>
+                                                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 mb-1">{item.seriesName}</span>
+                                                <h4 className="font-medium text-slate-800">{item.name}</h4>
+                                                <p className="text-xs text-slate-500 mt-1">Start: {formatDate(item.planStart)}</p>
                                             </div>
-                                        );
-                                    })
-                                )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
+
+                        {/* Completed History Section */}
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                             <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
-                                <Icons.List size={20} className="text-slate-600"/>
-                                <h3 className="font-bold text-slate-800">Operational Queue</h3>
+                                <Icons.History size={20} className="text-emerald-600"/>
+                                <h3 className="font-bold text-slate-800">Completed History</h3>
                             </div>
-                            <div className="divide-y divide-slate-100 max-h-[600px] overflow-auto">
-                                {upcoming.map((item, idx) => (
-                                    <div key={idx} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center">
-                                        <div>
-                                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 mb-1">{item.seriesName}</span>
-                                            <h4 className="font-medium text-slate-800">{item.name}</h4>
-                                            <p className="text-xs text-slate-500 mt-1">Start: {formatDate(item.planStart)}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="p-0 overflow-auto max-h-[300px]">
+                                {completed.length === 0 ? (
+                                    <div className="p-8 text-center text-slate-400">No completed tasks yet.</div>
+                                ) : (
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 sticky top-0">
+                                            <tr>
+                                                <th className="px-6 py-3">Series</th>
+                                                <th className="px-6 py-3">Activity</th>
+                                                <th className="px-6 py-3">Plan End</th>
+                                                <th className="px-6 py-3">Actual End</th>
+                                                <th className="px-6 py-3">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {completed.map((item, idx) => (
+                                                <tr key={idx} className="hover:bg-slate-50">
+                                                    <td className="px-6 py-3 font-medium text-slate-600">{item.seriesName}</td>
+                                                    <td className="px-6 py-3 text-slate-800">{item.name}</td>
+                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.planEnd)}</td>
+                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.actualEnd)}</td>
+                                                    <td className="px-6 py-3">
+                                                        <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">On Time</span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -1082,7 +976,7 @@
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">H</div>
                                     <div>
-                                        <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">HEYMALE x HEYLOCAL</h1>
+                                        <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">WORLDWHITE ENTERPRISE</h1>
                                         <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Raya 2027 Planner</p>
                                     </div>
                                 </div>
