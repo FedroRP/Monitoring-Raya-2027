@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MONITORING RAYA 2027</title>
+    <title>HEYMALE x HEYLOCAL Planner Raya 2027</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -469,6 +469,7 @@
                      finalPrice: pricingResult.finalPrice,
                      mpGmPct: pricingResult.mpGmPct,
                      mpGmAbs: pricingResult.mpGmAbs,
+                     webGmPct: pricingResult.webGmPct, // Added webGmPct to save
                      date: new Date().toISOString().split('T')[0] 
                  };
                  setPricingList([newItem, ...pricingList]);
@@ -633,7 +634,7 @@
                     if (currentSeriesDelayed > 0) delayedSeriesSummary.push(`${series.name} (${currentSeriesDelayed} item)`);
                 });
 
-                return { totalTasks, completed, delayed, onTrack, inProgress, delayedSeriesString: delayedSeriesSummary, allRecommendations };
+                return { totalTasks, completed, delayed, onTrack, inProgress, delayedSeriesSummary, allRecommendations };
             }, [data]);
 
             const completionRate = stats.totalTasks ? Math.round(((stats.completed + (stats.inProgress * 0.5)) / stats.totalTasks) * 100) : 0;
@@ -746,9 +747,9 @@
                                                 </div>
                                             </div>
                                             <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden flex bar-transition">
-                                                <div className="bg-emerald-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pOnTime}%` }} title={`On Time`}>{pOnTime > 5 && onTimeCount}</div>
-                                                <div className="bg-rose-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pLate}%` }} title={`Late`}>{pLate > 5 && lateCount}</div>
-                                                <div className="bg-blue-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pInProgressWidth}%` }} title={`In Progress`}>{pInProgressWidth > 5 && `${avgProgress}%`}</div>
+                                                <div className="bg-emerald-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pOnTime}%` }} title={`On Time`}>{onTimeCount > 0 && onTimeCount}</div>
+                                                <div className="bg-rose-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pLate}%` }} title={`Late`}>{lateCount > 0 && lateCount}</div>
+                                                <div className="bg-blue-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pInProgressWidth}%` }} title={`In Progress`}>{inProgressCount > 0 && `${avgProgress}%`}</div>
                                                 <div className="bg-slate-200 h-full flex items-center justify-center text-[9px] text-slate-500 font-bold" style={{ width: `${pPending}%` }} title={`Pending`}>{pendingCount > 0 && pendingCount}</div>
                                             </div>
                                         </div>
@@ -759,121 +760,6 @@
                     </div>
                 </div>
             );
-
-            const renderActivities = () => {
-                const allActivities = [];
-                data.forEach(s => {
-                    s.activities.forEach(a => {
-                        allActivities.push({ ...a, seriesName: s.name });
-                    });
-                });
-
-                const overdue = allActivities.filter(a => {
-                    const planEnd = new Date(a.planEnd);
-                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
-                    const today = new Date();
-                    const isDoneLate = actualEnd && actualEnd > planEnd;
-                    const isPendingLate = !actualEnd && today > planEnd;
-                    return isDoneLate || isPendingLate;
-                });
-
-                const completed = allActivities.filter(a => {
-                    const planEnd = new Date(a.planEnd);
-                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
-                    return actualEnd && actualEnd <= planEnd;
-                });
-
-                const upcoming = allActivities.filter(a => !a.actualEnd && new Date() <= new Date(a.planEnd)).sort((a,b) => new Date(a.planStart) - new Date(b.planStart));
-
-                return (
-                    <div className="space-y-8 pb-10">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
-                                <div className="px-6 py-4 border-b border-rose-100 bg-rose-50 flex items-center gap-3">
-                                    <Icons.AlertTriangle size={20} className="text-rose-600"/>
-                                    <h3 className="font-bold text-rose-800">Attention Needed</h3>
-                                </div>
-                                <div className="divide-y divide-rose-50 max-h-[400px] overflow-auto">
-                                    {overdue.length === 0 ? (
-                                        <div className="p-12 text-center text-slate-400"><p>No overdue items.</p></div>
-                                    ) : (
-                                        overdue.map((item, idx) => {
-                                            const isDone = !!item.actualEnd;
-                                            return (
-                                                <div key={idx} className="p-4 hover:bg-rose-50/50 transition-colors flex justify-between items-center">
-                                                    <div>
-                                                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 mb-1">{item.seriesName}</span>
-                                                        <h4 className="font-medium text-slate-800">{item.name}</h4>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <span className="text-xs text-rose-500 font-medium">Plan: {formatDate(item.planEnd)}</span>
-                                                            {isDone ? <span className="text-[10px] text-white bg-rose-500 px-1.5 rounded font-bold">Done Late</span> : <span className="text-[10px] text-rose-600 bg-rose-100 px-1.5 rounded font-bold">Pending Overdue</span>}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            </div>
-                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
-                                    <Icons.List size={20} className="text-slate-600"/>
-                                    <h3 className="font-bold text-slate-800">Operational Queue</h3>
-                                </div>
-                                <div className="divide-y divide-slate-100 max-h-[400px] overflow-auto">
-                                    {upcoming.map((item, idx) => (
-                                        <div key={idx} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center">
-                                            <div>
-                                                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 mb-1">{item.seriesName}</span>
-                                                <h4 className="font-medium text-slate-800">{item.name}</h4>
-                                                <p className="text-xs text-slate-500 mt-1">Start: {formatDate(item.planStart)}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Completed History Section */}
-                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
-                                <Icons.History size={20} className="text-emerald-600"/>
-                                <h3 className="font-bold text-slate-800">Completed History</h3>
-                            </div>
-                            <div className="p-0 overflow-auto max-h-[300px]">
-                                {completed.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400">No completed tasks yet.</div>
-                                ) : (
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 sticky top-0">
-                                            <tr>
-                                                <th className="px-6 py-3">Series</th>
-                                                <th className="px-6 py-3">Activity</th>
-                                                <th className="px-6 py-3">Plan End</th>
-                                                <th className="px-6 py-3">Actual End</th>
-                                                <th className="px-6 py-3">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {completed.map((item, idx) => (
-                                                <tr key={idx} className="hover:bg-slate-50">
-                                                    <td className="px-6 py-3 font-medium text-slate-600">{item.seriesName}</td>
-                                                    <td className="px-6 py-3 text-slate-800">{item.name}</td>
-                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.planEnd)}</td>
-                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.actualEnd)}</td>
-                                                    <td className="px-6 py-3">
-                                                        <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">On Time</span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                );
-            };
 
             const renderGantt = () => (
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[85vh]">
@@ -1344,6 +1230,7 @@
                                             <th className="px-4 py-3">Article Name</th>
                                             <th className="px-4 py-3 text-center">Brand</th>
                                             <th className="px-4 py-3 text-right">RSP Web</th>
+                                            <th className="px-4 py-3 text-right">Web GM</th>
                                             <th className="px-4 py-3 text-right">HPP</th>
                                             <th className="px-4 py-3 text-right font-bold text-indigo-600">RSP MP Final</th>
                                             <th className="px-4 py-3 text-right text-emerald-600">MP GM</th>
@@ -1357,6 +1244,7 @@
                                                 <td className="px-4 py-3 font-medium text-slate-800">{item.articleName}</td>
                                                 <td className="px-4 py-3 text-center text-xs font-bold text-slate-500 bg-slate-100 rounded">{item.brand}</td>
                                                 <td className="px-4 py-3 text-right text-slate-600">{formatRupiah(item.rspWeb)}</td>
+                                                <td className="px-4 py-3 text-right text-slate-500">{item.webGmPct ? item.webGmPct.toFixed(1) : 0}%</td>
                                                 <td className="px-4 py-3 text-right text-slate-600">{formatRupiah(item.hpp)}</td>
                                                 <td className="px-4 py-3 text-right font-bold text-indigo-600">{formatRupiah(item.finalPrice)}</td>
                                                 <td className="px-4 py-3 text-right font-bold text-emerald-600">{item.mpGmPct.toFixed(1)}%</td>
@@ -1384,8 +1272,8 @@
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">H</div>
                                     <div>
-                                        <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">WORLDWHITE ENTERPRISE</h1>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">RAYA 2027 PLANNER</p>
+                                        <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">HEYMALE x HEYLOCAL</h1>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Raya 2027 Planner</p>
                                     </div>
                                 </div>
                                 <nav className="flex space-x-1 bg-slate-100 p-1 rounded-lg">
