@@ -26,6 +26,10 @@
         
         /* Bar Animation */
         .bar-transition { transition: width 1s ease-in-out; }
+        
+        /* Tooltip Animation */
+        .tooltip-anim { animation: tooltipFade 0.2s ease-out; }
+        @keyframes tooltipFade { from { opacity: 0; transform: translate(-50%, 5px); } to { opacity: 1; transform: translate(-50%, 0); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans">
@@ -61,7 +65,11 @@
             Filter: (props) => <IconWrapper {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconWrapper>,
             X: (props) => <IconWrapper {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconWrapper>,
             RefreshCw: (props) => <IconWrapper {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></IconWrapper>,
-            History: (props) => <IconWrapper {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></IconWrapper>
+            History: (props) => <IconWrapper {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></IconWrapper>,
+            Tag: (props) => <IconWrapper {...props}><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></IconWrapper>,
+            Calculator: (props) => <IconWrapper {...props}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></IconWrapper>,
+            Search: (props) => <IconWrapper {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></IconWrapper>,
+            Info: (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconWrapper>
         };
 
         // --- CONFIGURATION ---
@@ -78,6 +86,52 @@
             "Material Production - Fabric", "Material Procurement - Brocade", "Mass Production",
             "Inbound", "Photoshoot & Catalog", "Offline Distribution"
         ];
+
+        const BRAND_TARGETS = {
+            "HEYMALE": 57,
+            "HEYLOCAL": 42,
+            "BOONABOO": 44,
+            "SHUWA": 42
+        };
+
+        const COMPETITOR_DB = {
+            "Dress/Gamis Basic": { 
+                price: 215000, 
+                note: "Avg. Market: HeyLocal (229k), Shuwa (199k), Boonaboo (215k)" 
+            },
+            "Dress/Gamis Premium": { 
+                price: 425000, 
+                note: "Avg. Market: HeyLocal (459k), Shuwa (389k), Boonaboo (425k)" 
+            },
+            "Scarf Printing": { 
+                price: 205000, 
+                note: "Avg. Market: HeyLocal (225k), Shuwa (189k), Boonaboo (195k)" 
+            },
+            "Scarf Polos": { 
+                price: 89000, 
+                note: "Avg. Market: HeyLocal (99k), Shuwa (79k), Boonaboo (89k)" 
+            },
+            "Blouse/Tunic": { 
+                price: 159000, 
+                note: "Avg. Market: HeyLocal (169k), Shuwa (149k), Boonaboo (159k)" 
+            },
+            "Prayer Set/Mukena": { 
+                price: 459000, 
+                note: "Avg. Market: HeyLocal (499k), Shuwa (429k), Boonaboo (459k)" 
+            },
+            "Pants/Bawahan": { 
+                price: 129000, 
+                note: "Avg. Market: HeyLocal (139k), Shuwa (119k), Boonaboo (129k)" 
+            },
+            "Bag/Accessories": { 
+                price: 299000, 
+                note: "Avg. Market: HeyLocal (329k), Shuwa (279k), Boonaboo (299k)" 
+            },
+            "Outer/Jacket": { 
+                price: 199000, 
+                note: "Avg. Market: HeyLocal (219k), Shuwa (189k), Boonaboo (199k)" 
+            }
+        };
 
         const TIMELINE_START = "2026-06-01";
         const TIMELINE_END = "2027-03-31";
@@ -168,6 +222,12 @@
                 seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: ''
             });
 
+            // Pricing State
+            const [pricingList, setPricingList] = useState([]);
+            const [pricingForm, setPricingForm] = useState({
+                seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: ''
+            });
+
             // Filters
             const [dpFilterMonth, setDpFilterMonth] = useState(""); 
             const [repaymentFilterMonth, setRepaymentFilterMonth] = useState("");
@@ -191,6 +251,7 @@
                 // Load Data
                 const savedData = localStorage.getItem('planner_data_v1');
                 const savedBudget = localStorage.getItem('planner_budget_v1');
+                const savedPricing = localStorage.getItem('planner_pricing_v1');
 
                 if (savedData) {
                     setData(JSON.parse(savedData));
@@ -226,6 +287,10 @@
                     }));
                     setBudgetList(sanitizedBudget);
                 }
+
+                if (savedPricing) {
+                    setPricingList(JSON.parse(savedPricing));
+                }
                 
                 setIsDataLoaded(true);
                 return () => clearInterval(timer);
@@ -239,10 +304,15 @@
                 if (isDataLoaded) localStorage.setItem('planner_budget_v1', JSON.stringify(budgetList));
             }, [budgetList, isDataLoaded]);
 
+             useEffect(() => {
+                if (isDataLoaded) localStorage.setItem('planner_pricing_v1', JSON.stringify(pricingList));
+            }, [pricingList, isDataLoaded]);
+
             const handleResetData = () => {
                 if (confirm("Apakah Anda yakin ingin mereset semua data? Data yang sudah diinput akan hilang.")) {
                     localStorage.removeItem('planner_data_v1');
                     localStorage.removeItem('planner_budget_v1');
+                    localStorage.removeItem('planner_pricing_v1');
                     window.location.reload();
                 }
             };
@@ -263,6 +333,133 @@
                 const amount = parseFloat(budgetForm.totalAmount) || 0;
                 return amount - dpNominal;
             }, [budgetForm.totalAmount, dpNominal]);
+
+            // --- PRICING LOGIC ---
+            const pricingResult = useMemo(() => {
+                const rspWeb = parseFloat(pricingForm.rspWeb) || 0;
+                const hpp = parseFloat(pricingForm.hpp) || 0;
+                const platformFeePct = parseFloat(pricingForm.platformFee) || 0;
+                const marketingFeePct = parseFloat(pricingForm.marketingFee) || 0;
+                const competitorPrice = parseFloat(pricingForm.competitorPrice) || 0;
+                
+                const brandTarget = BRAND_TARGETS[pricingForm.brand] || 0;
+                const fixedCost = 0; 
+
+                const webGmAbs = rspWeb - hpp - fixedCost;
+                const webGmPct = rspWeb > 0 ? (webGmAbs / rspWeb) * 100 : 0;
+                const isBelowTarget = webGmPct < brandTarget;
+
+                const totalFeePct = platformFeePct + marketingFeePct;
+                let rspMpRaw = 0;
+                if ((1 - (totalFeePct/100)) > 0) {
+                     rspMpRaw = rspWeb / (1 - (totalFeePct/100));
+                }
+
+                let rspMpSuggested = Math.ceil(rspMpRaw / 1000) * 1000;
+                const remainder = rspMpSuggested % 10000;
+                if (remainder !== 9000) {
+                    rspMpSuggested = Math.ceil(rspMpSuggested / 10000) * 10000 - 1000; 
+                    if (rspMpSuggested < rspMpRaw) rspMpSuggested += 10000;
+                }
+                
+                const finalPrice = parseFloat(pricingForm.manualPrice) || rspMpSuggested;
+
+                const mpFeeNominal = finalPrice * (totalFeePct/100);
+                const mpNetReceived = finalPrice - mpFeeNominal;
+                const mpGmAbs = mpNetReceived - hpp - fixedCost;
+                const mpGmPct = finalPrice > 0 ? (mpGmAbs / finalPrice) * 100 : 0;
+                const growth = finalPrice - rspWeb;
+
+                let competitiveAnalysis = {
+                    status: 'neutral',
+                    message: 'Input harga kompetitor untuk analisa.',
+                    gap: 0,
+                    suggestedAction: null
+                };
+
+                if (competitorPrice > 0) {
+                    const gap = finalPrice - competitorPrice;
+                    if (gap > 0) {
+                        competitiveAnalysis = {
+                            status: 'danger',
+                            message: `Harga Final (Rp${finalPrice.toLocaleString()}) lebih mahal Rp${gap.toLocaleString()} dari kompetitor.`,
+                            gap: gap,
+                            suggestedAction: {
+                                label: "Samakan dengan Kompetitor",
+                                price: competitorPrice
+                            }
+                        };
+                    } else if (gap < 0) {
+                         if (finalPrice < rspWeb) {
+                             competitiveAnalysis = {
+                                status: 'warning',
+                                message: `Harga Final lebih murah dari kompetitor, TAPI di bawah RSP Web! Ini tidak disarankan.`,
+                                gap: gap,
+                                suggestedAction: {
+                                    label: "Naikkan ke minimal RSP Web + Fee",
+                                    price: rspWeb * 1.1 
+                                }
+                            };
+                        } else {
+                            competitiveAnalysis = {
+                                status: 'good',
+                                message: `Harga Final lebih murah Rp${Math.abs(gap).toLocaleString()} dari kompetitor.`,
+                                gap: gap,
+                                suggestedAction: {
+                                    label: "Naikkan Sedikit (Profit Boost)",
+                                    price: competitorPrice - 1000 
+                                }
+                            };
+                        }
+                    } else {
+                        competitiveAnalysis = {
+                            status: 'neutral',
+                            message: `Harga Final sama dengan kompetitor.`,
+                            gap: 0,
+                            suggestedAction: null
+                        };
+                    }
+                }
+
+                return { 
+                    webGmPct, webGmAbs, isBelowTarget, 
+                    rspMpRaw, rspMpSuggested, 
+                    mpFeeNominal, mpGmAbs, mpGmPct, growth, brandTarget,
+                    competitiveAnalysis, finalPrice
+                };
+            }, [pricingForm]);
+
+            const handleCategoryChange = (e) => {
+                const selectedCat = e.target.value;
+                const compData = COMPETITOR_DB[selectedCat];
+                setPricingForm(prev => ({
+                    ...prev,
+                    category: selectedCat,
+                    competitorPrice: compData ? compData.price : '',
+                    notes: compData ? `Auto-filled based on ${compData.note}` : ''
+                }));
+            };
+
+            const handleSavePricing = () => {
+                 if (!pricingForm.articleName || !pricingForm.rspWeb || !pricingForm.hpp) return;
+                 const newItem = { 
+                     id: Date.now(), 
+                     ...pricingForm, 
+                     finalPrice: pricingResult.finalPrice,
+                     mpGmPct: pricingResult.mpGmPct,
+                     mpGmAbs: pricingResult.mpGmAbs,
+                     date: new Date().toISOString().split('T')[0] 
+                 };
+                 setPricingList([newItem, ...pricingList]);
+                 setPricingForm(prev => ({ 
+                     ...prev, 
+                     articleName: '', rspWeb: '', hpp: '', competitorPrice: '', manualPrice: '', notes: '', category: '' 
+                 })); 
+            };
+
+            const handleDeletePricing = (id) => {
+                setPricingList(pricingList.filter(item => item.id !== id));
+            };
 
             // Budget Filters
             const uniqueDpMonths = useMemo(() => {
@@ -373,6 +570,7 @@
                 }
             };
 
+            // STATS LOGIC
             const stats = useMemo(() => {
                 let totalTasks = 0;
                 let completed = 0;
@@ -389,8 +587,10 @@
                         const today = new Date();
                         today.setHours(0,0,0,0);
                         const planEndObj = new Date(act.planEnd);
-                        const isDoneLate = act.actualEnd && new Date(act.actualEnd) > planEndObj;
-                        const isPendingLate = !act.actualEnd && today > planEndObj;
+                        const isDone = !!act.actualEnd;
+                        const isStarted = !!act.actualStart;
+                        const isDoneLate = isDone && new Date(act.actualEnd) > planEndObj;
+                        const isPendingLate = !isDone && today > planEndObj;
 
                         if (isDoneLate || isPendingLate) {
                             delayed++;
@@ -400,21 +600,25 @@
                                 seriesName: series.name,
                                 message: getRecommendation(act.name)
                             });
-                        } else if (act.actualEnd) {
+                        } else if (isDone) {
                             completed++;
                         } else {
-                            if (act.actualStart && !act.actualEnd) inProgress++;
+                            if (isStarted) {
+                                inProgress++;
+                            }
                             onTrack++; 
                         }
                     });
                     if (currentSeriesDelayed > 0) delayedSeriesSummary.push(`${series.name} (${currentSeriesDelayed} item)`);
                 });
 
-                return { totalTasks, completed, delayed, onTrack, inProgress, delayedSeriesString: delayedSeriesSummary.join(", "), recommendations: allRecommendations };
+                return { totalTasks, completed, delayed, onTrack, inProgress, delayedSeriesSummary, allRecommendations };
             }, [data]);
 
             const completionRate = stats.totalTasks ? Math.round(((stats.completed + (stats.inProgress * 0.5)) / stats.totalTasks) * 100) : 0;
 
+            // --- RENDER FUNCTIONS ---
+            
             const renderDashboard = () => (
                 <div className="space-y-6 animate-fade-in pb-10">
                     <div className="bg-gradient-to-r from-slate-800 to-indigo-900 rounded-xl p-6 text-white shadow-lg mb-6">
@@ -434,11 +638,11 @@
                             </div>
                             <div className="w-full">
                                 <h3 className={`text-lg font-bold mb-1 ${stats.delayed > 0 ? 'text-rose-800' : 'text-emerald-800'}`}>{stats.delayed > 0 ? "Risiko Keterlambatan Terdeteksi" : "Produksi On Track"}</h3>
-                                <p className={`text-sm mb-4 ${stats.delayed > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{stats.delayed > 0 ? `Terdapat total ${stats.delayed} aktivitas terlambat yang tersebar di: ${stats.delayedSeriesString}.` : "Seluruh aktivitas berjalan sesuai timeline. Tidak ada isu kritis saat ini."}</p>
-                                {stats.delayed > 0 && stats.recommendations.length > 0 && (
+                                <p className={`text-sm mb-4 ${stats.delayed > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{stats.delayed > 0 ? `Terdapat total ${stats.delayed} aktivitas terlambat yang tersebar di: ${stats.delayedSeriesSummary.join(', ')}.` : "Seluruh aktivitas berjalan sesuai timeline. Tidak ada isu kritis saat ini."}</p>
+                                {stats.delayed > 0 && stats.allRecommendations.length > 0 && (
                                     <div className="bg-white/60 rounded-lg p-4 border border-rose-200/50">
                                         <div className="flex items-center gap-2 mb-2 text-rose-800 font-semibold text-sm"><Icons.Lightbulb size={16} className="text-amber-500 fill-amber-500"/><span>Saran Tindakan Perbaikan:</span></div>
-                                        <ul className="list-none space-y-2">{stats.recommendations.map((rec) => (<li key={rec.id} className="text-xs text-slate-700 font-medium flex gap-2 items-start"><span className="font-bold text-rose-600 shrink-0 mt-0.5">[{rec.seriesName}]</span><span>{rec.message}</span></li>))}</ul>
+                                        <ul className="list-none space-y-2">{stats.allRecommendations.map((rec) => (<li key={rec.id} className="text-xs text-slate-700 font-medium flex gap-2 items-start"><span className="font-bold text-rose-600 shrink-0 mt-0.5">[{rec.seriesName}]</span><span>{rec.message}</span></li>))}</ul>
                                     </div>
                                 )}
                             </div>
@@ -475,7 +679,6 @@
                                     series.activities.forEach(act => {
                                         const planEndObj = new Date(act.planEnd);
                                         const startObj = act.actualStart ? parseDateLocal(act.actualStart) : null;
-                                        
                                         const isDoneLate = act.actualEnd && new Date(act.actualEnd) > planEndObj;
                                         const isPendingLate = !act.actualEnd && today > planEndObj;
                                         const isDoneOnTime = act.actualEnd && !isDoneLate;
@@ -493,7 +696,7 @@
                                                 if (totalDur <= 0) totalDur = 1;
                                                 const elapsed = (today - startObj) / (1000 * 60 * 60 * 24);
                                                 let p = elapsed / totalDur;
-                                                if (p < 0.1) p = 0.1; // Minimal 10% progress if started
+                                                if (p < 0.1) p = 0.1; 
                                                 if (p > 1) p = 1;
                                                 accumulatedProgress += p;
                                             }
@@ -502,17 +705,13 @@
                                         }
                                     });
 
-                                    // FIX LOGIC PENDING COUNT:
-                                    // Pending should be strictly: Total - Done - Late - InProgress
+                                    // Logic correction for Pending
                                     pendingCount = seriesTotal - onTimeCount - lateCount - inProgressCount;
                                     
-                                    // Calculate Visual Widths
                                     const pOnTime = (onTimeCount / seriesTotal) * 100;
                                     const pLate = (lateCount / seriesTotal) * 100;
                                     const pInProgressWidth = (inProgressCount / seriesTotal) * 100;
                                     const pPending = (pendingCount / seriesTotal) * 100;
-
-                                    // Text Display Logic
                                     const avgProgress = inProgressCount > 0 ? Math.round((accumulatedProgress / inProgressCount) * 100) : 0;
 
                                     return (
@@ -527,10 +726,10 @@
                                                 </div>
                                             </div>
                                             <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden flex bar-transition">
-                                                <div className="bg-emerald-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pOnTime}%` }} title={`On Time`}>{pOnTime > 5 && onTimeCount}</div>
-                                                <div className="bg-rose-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pLate}%` }} title={`Late`}>{pLate > 5 && lateCount}</div>
-                                                <div className="bg-blue-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pInProgressWidth}%` }} title={`In Progress`}>{pInProgressWidth > 5 && `${avgProgress}%`}</div>
-                                                <div className="bg-slate-200 h-full flex items-center justify-center text-[9px] text-slate-500 font-bold" style={{ width: `${pPending}%` }} title={`Pending`}>{pPending > 5 && pendingCount}</div>
+                                                <div className="bg-emerald-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pOnTime}%` }} title={`On Time`}>{onTimeCount > 0 && onTimeCount}</div>
+                                                <div className="bg-rose-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pLate}%` }} title={`Late`}>{lateCount > 0 && lateCount}</div>
+                                                <div className="bg-blue-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pInProgressWidth}%` }} title={`In Progress`}>{inProgressCount > 0 && `${avgProgress}%`}</div>
+                                                <div className="bg-slate-200 h-full flex items-center justify-center text-[9px] text-slate-500 font-bold" style={{ width: `${pPending}%` }} title={`Pending`}>{pendingCount > 0 && pendingCount}</div>
                                             </div>
                                         </div>
                                     );
@@ -540,6 +739,121 @@
                     </div>
                 </div>
             );
+
+            const renderActivities = () => {
+                const allActivities = [];
+                data.forEach(s => {
+                    s.activities.forEach(a => {
+                        allActivities.push({ ...a, seriesName: s.name });
+                    });
+                });
+
+                const overdue = allActivities.filter(a => {
+                    const planEnd = new Date(a.planEnd);
+                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
+                    const today = new Date();
+                    const isDoneLate = actualEnd && actualEnd > planEnd;
+                    const isPendingLate = !actualEnd && today > planEnd;
+                    return isDoneLate || isPendingLate;
+                });
+
+                const completed = allActivities.filter(a => {
+                    const planEnd = new Date(a.planEnd);
+                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
+                    return actualEnd && actualEnd <= planEnd;
+                });
+
+                const upcoming = allActivities.filter(a => !a.actualEnd && new Date() <= new Date(a.planEnd)).sort((a,b) => new Date(a.planStart) - new Date(b.planStart));
+
+                return (
+                    <div className="space-y-8 pb-10">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
+                                <div className="px-6 py-4 border-b border-rose-100 bg-rose-50 flex items-center gap-3">
+                                    <Icons.AlertTriangle size={20} className="text-rose-600"/>
+                                    <h3 className="font-bold text-rose-800">Attention Needed</h3>
+                                </div>
+                                <div className="divide-y divide-rose-50 max-h-[400px] overflow-auto">
+                                    {overdue.length === 0 ? (
+                                        <div className="p-12 text-center text-slate-400"><p>No overdue items.</p></div>
+                                    ) : (
+                                        overdue.map((item, idx) => {
+                                            const isDone = !!item.actualEnd;
+                                            return (
+                                                <div key={idx} className="p-4 hover:bg-rose-50/50 transition-colors flex justify-between items-center">
+                                                    <div>
+                                                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 mb-1">{item.seriesName}</span>
+                                                        <h4 className="font-medium text-slate-800">{item.name}</h4>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-xs text-rose-500 font-medium">Plan: {formatDate(item.planEnd)}</span>
+                                                            {isDone ? <span className="text-[10px] text-white bg-rose-500 px-1.5 rounded font-bold">Done Late</span> : <span className="text-[10px] text-rose-600 bg-rose-100 px-1.5 rounded font-bold">Pending Overdue</span>}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
+                                    <Icons.List size={20} className="text-slate-600"/>
+                                    <h3 className="font-bold text-slate-800">Operational Queue</h3>
+                                </div>
+                                <div className="divide-y divide-slate-100 max-h-[400px] overflow-auto">
+                                    {upcoming.map((item, idx) => (
+                                        <div key={idx} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center">
+                                            <div>
+                                                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 mb-1">{item.seriesName}</span>
+                                                <h4 className="font-medium text-slate-800">{item.name}</h4>
+                                                <p className="text-xs text-slate-500 mt-1">Start: {formatDate(item.planStart)}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Completed History Section */}
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
+                                <Icons.History size={20} className="text-emerald-600"/>
+                                <h3 className="font-bold text-slate-800">Completed History</h3>
+                            </div>
+                            <div className="p-0 overflow-auto max-h-[300px]">
+                                {completed.length === 0 ? (
+                                    <div className="p-8 text-center text-slate-400">No completed tasks yet.</div>
+                                ) : (
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 sticky top-0">
+                                            <tr>
+                                                <th className="px-6 py-3">Series</th>
+                                                <th className="px-6 py-3">Activity</th>
+                                                <th className="px-6 py-3">Plan End</th>
+                                                <th className="px-6 py-3">Actual End</th>
+                                                <th className="px-6 py-3">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {completed.map((item, idx) => (
+                                                <tr key={idx} className="hover:bg-slate-50">
+                                                    <td className="px-6 py-3 font-medium text-slate-600">{item.seriesName}</td>
+                                                    <td className="px-6 py-3 text-slate-800">{item.name}</td>
+                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.planEnd)}</td>
+                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.actualEnd)}</td>
+                                                    <td className="px-6 py-3">
+                                                        <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">On Time</span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
 
             const renderGantt = () => (
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[85vh]">
@@ -722,121 +1036,7 @@
                 </div>
             );
 
-            const renderActivities = () => {
-                const allActivities = [];
-                data.forEach(s => {
-                    s.activities.forEach(a => {
-                        allActivities.push({ ...a, seriesName: s.name });
-                    });
-                });
-
-                const overdue = allActivities.filter(a => {
-                    const planEnd = new Date(a.planEnd);
-                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
-                    const today = new Date();
-                    const isDoneLate = actualEnd && actualEnd > planEnd;
-                    const isPendingLate = !actualEnd && today > planEnd;
-                    return isDoneLate || isPendingLate;
-                });
-
-                const completed = allActivities.filter(a => {
-                    const planEnd = new Date(a.planEnd);
-                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
-                    return actualEnd && actualEnd <= planEnd;
-                });
-
-                const upcoming = allActivities.filter(a => !a.actualEnd && new Date() <= new Date(a.planEnd)).sort((a,b) => new Date(a.planStart) - new Date(b.planStart));
-
-                return (
-                    <div className="space-y-8 pb-10">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
-                                <div className="px-6 py-4 border-b border-rose-100 bg-rose-50 flex items-center gap-3">
-                                    <Icons.AlertTriangle size={20} className="text-rose-600"/>
-                                    <h3 className="font-bold text-rose-800">Attention Needed</h3>
-                                </div>
-                                <div className="divide-y divide-rose-50 max-h-[400px] overflow-auto">
-                                    {overdue.length === 0 ? (
-                                        <div className="p-12 text-center text-slate-400"><p>No overdue items.</p></div>
-                                    ) : (
-                                        overdue.map((item, idx) => {
-                                            const isDone = !!item.actualEnd;
-                                            return (
-                                                <div key={idx} className="p-4 hover:bg-rose-50/50 transition-colors flex justify-between items-center">
-                                                    <div>
-                                                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 mb-1">{item.seriesName}</span>
-                                                        <h4 className="font-medium text-slate-800">{item.name}</h4>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <span className="text-xs text-rose-500 font-medium">Plan: {formatDate(item.planEnd)}</span>
-                                                            {isDone ? <span className="text-[10px] text-white bg-rose-500 px-1.5 rounded font-bold">Done Late</span> : <span className="text-[10px] text-rose-600 bg-rose-100 px-1.5 rounded font-bold">Pending Overdue</span>}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            </div>
-                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
-                                    <Icons.List size={20} className="text-slate-600"/>
-                                    <h3 className="font-bold text-slate-800">Operational Queue</h3>
-                                </div>
-                                <div className="divide-y divide-slate-100 max-h-[400px] overflow-auto">
-                                    {upcoming.map((item, idx) => (
-                                        <div key={idx} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center">
-                                            <div>
-                                                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 mb-1">{item.seriesName}</span>
-                                                <h4 className="font-medium text-slate-800">{item.name}</h4>
-                                                <p className="text-xs text-slate-500 mt-1">Start: {formatDate(item.planStart)}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Completed History Section */}
-                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
-                                <Icons.History size={20} className="text-emerald-600"/>
-                                <h3 className="font-bold text-slate-800">Completed History</h3>
-                            </div>
-                            <div className="p-0 overflow-auto max-h-[300px]">
-                                {completed.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400">No completed tasks yet.</div>
-                                ) : (
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 sticky top-0">
-                                            <tr>
-                                                <th className="px-6 py-3">Series</th>
-                                                <th className="px-6 py-3">Activity</th>
-                                                <th className="px-6 py-3">Plan End</th>
-                                                <th className="px-6 py-3">Actual End</th>
-                                                <th className="px-6 py-3">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {completed.map((item, idx) => (
-                                                <tr key={idx} className="hover:bg-slate-50">
-                                                    <td className="px-6 py-3 font-medium text-slate-600">{item.seriesName}</td>
-                                                    <td className="px-6 py-3 text-slate-800">{item.name}</td>
-                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.planEnd)}</td>
-                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.actualEnd)}</td>
-                                                    <td className="px-6 py-3">
-                                                        <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">On Time</span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                );
-            };
-
+            // --- RENDER BUDGETING ---
             const renderBudgeting = () => (
                 <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -994,6 +1194,166 @@
                 </div>
             );
 
+            // --- RENDER PRICING ---
+            const renderPricing = () => (
+                <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
+                            <Icons.Tag className="text-slate-600" size={20}/>
+                            <h3 className="font-bold text-slate-800">RSP Marketplace Calculator</h3>
+                        </div>
+                        <div className="p-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Brand</label>
+                                        <select className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={pricingForm.brand} onChange={(e) => setPricingForm({...pricingForm, brand: e.target.value})}>
+                                            {Object.keys(BRAND_TARGETS).map(brand => <option key={brand} value={brand}>{brand} (Target: {BRAND_TARGETS[brand]}%)</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Kategori Produk</label>
+                                        <select className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={pricingForm.category} onChange={handleCategoryChange}>
+                                            <option value="">-- Pilih Kategori --</option>
+                                            {Object.keys(COMPETITOR_DB).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Nama Artikel / SKU</label>
+                                        <input type="text" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Dress Raya Series 1" value={pricingForm.articleName} onChange={(e) => setPricingForm({...pricingForm, articleName: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">RSP Web (Harga Jual Website)</label>
+                                        <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0" value={pricingForm.rspWeb} onChange={(e) => setPricingForm({...pricingForm, rspWeb: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">HPP (Harga Pokok Produksi)</label>
+                                        <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0" value={pricingForm.hpp} onChange={(e) => setPricingForm({...pricingForm, hpp: e.target.value})} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Platform Fee (%)</label>
+                                            <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={pricingForm.platformFee} onChange={(e) => setPricingForm({...pricingForm, platformFee: e.target.value})} />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Marketing Fee (%)</label>
+                                            <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={pricingForm.marketingFee} onChange={(e) => setPricingForm({...pricingForm, marketingFee: e.target.value})} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col justify-between bg-slate-50 p-6 rounded-xl border border-slate-100">
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Pricing Breakdown</h4>
+                                        <div className="space-y-3 text-sm">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-slate-500">Web GM% (Target: {pricingResult.brandTarget}%)</span>
+                                                <span className={`font-bold px-2 py-0.5 rounded text-xs ${pricingResult.isBelowTarget ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                                    {pricingResult.webGmPct.toFixed(2)}% {pricingResult.isBelowTarget && "⚠️ Low"}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between"><span className="text-slate-500">Web GM Absolute</span><span className="font-medium text-slate-800">{formatRupiah(pricingResult.webGmAbs)}</span></div>
+                                            <div className="h-px bg-slate-200 my-2"></div>
+                                            
+                                            <div className="flex flex-col gap-2 bg-white p-3 rounded border border-slate-200 shadow-sm mb-4">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-slate-600 font-bold text-xs">CALCULATED RSP</span>
+                                                    <span className="text-sm font-mono text-slate-400">{formatRupiah(pricingResult.rspMpRaw)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-indigo-600 font-bold text-lg">SUGGESTED RSP</span>
+                                                    <span className="text-2xl font-bold text-indigo-600">{formatRupiah(pricingResult.rspMpSuggested)}</span>
+                                                </div>
+                                                <div className="text-[10px] text-slate-400 text-right italic">*Rounded for psychology pricing</div>
+                                            </div>
+
+                                            <div className="mb-4">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase">Cek Harga Kompetitor (Auto)</label>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <input type="number" className="w-full p-2 text-sm border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50" placeholder="Pilih kategori..." value={pricingForm.competitorPrice} onChange={(e) => setPricingForm({...pricingForm, competitorPrice: e.target.value})} />
+                                                </div>
+                                                
+                                                {pricingResult.competitiveAnalysis.status !== 'neutral' && (
+                                                    <div className={`mt-2 p-2 rounded border text-xs ${pricingResult.competitiveAnalysis.status === 'danger' ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                                                        <div className="font-bold flex items-center gap-1">
+                                                            {pricingResult.competitiveAnalysis.status === 'danger' ? <Icons.AlertTriangle size={12}/> : <Icons.CheckCircle size={12}/>}
+                                                            Insight:
+                                                        </div>
+                                                        <div>{pricingResult.competitiveAnalysis.message}</div>
+                                                        {pricingResult.competitiveAnalysis.suggestedAction && (
+                                                            <div className="mt-1 pt-1 border-t border-black/10">
+                                                                <div className="font-semibold">Rekomendasi: {pricingResult.competitiveAnalysis.suggestedAction.label} ({formatRupiah(pricingResult.competitiveAnalysis.suggestedAction.price)})</div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="mb-4">
+                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Harga Final (Adjusted)</label>
+                                                <input type="number" className="w-full p-2 border border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-indigo-700" placeholder={pricingResult.rspMpSuggested} value={pricingForm.manualPrice} onChange={(e) => setPricingForm({...pricingForm, manualPrice: e.target.value})} />
+                                                <div className="text-[10px] text-slate-400 mt-1 text-right">Edit jika ingin menyesuaikan harga manual</div>
+                                            </div>
+                                            
+                                            <div className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Estimasi Potongan & Profit MP (Final)</div>
+                                            <div className="flex justify-between"><span className="text-slate-500">Biaya Admin MP</span><span className="font-medium text-rose-500">-{formatRupiah(pricingResult.mpFeeNominal)}</span></div>
+                                            <div className="flex justify-between"><span className="text-slate-500">Sisa Bersih (Net)</span><span className="font-bold text-slate-800">{formatRupiah(pricingResult.finalPrice - pricingResult.mpFeeNominal)}</span></div>
+                                            <div className="flex justify-between"><span className="text-slate-500">MP GM Absolute</span><span className="font-bold text-emerald-600">{formatRupiah(pricingResult.mpGmAbs)}</span></div>
+                                            <div className="flex justify-between"><span className="text-slate-500">MP GM %</span><span className="font-medium text-blue-600">{pricingResult.mpGmPct.toFixed(2)}%</span></div>
+                                            <div className="flex justify-between mt-2 pt-2 border-t border-slate-200"><span className="text-slate-500 font-bold">Growth (MP - Web)</span><span className="font-bold text-indigo-600">+{formatRupiah(pricingResult.growth)}</span></div>
+                                        </div>
+                                    </div>
+                                    <button onClick={handleSavePricing} disabled={!pricingForm.articleName || !pricingForm.rspWeb || !pricingForm.hpp} className="mt-6 w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center gap-2"><Icons.Save size={18}/> Save to List</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
+                            <Icons.List className="text-slate-600" size={20}/>
+                            <h3 className="font-bold text-slate-800">Saved Pricing Strategy</h3>
+                        </div>
+                        {pricingList.length === 0 ? <div className="p-12 text-center text-slate-400">No records saved yet.</div> : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                                        <tr>
+                                            <th className="px-4 py-3">Article Name</th>
+                                            <th className="px-4 py-3 text-center">Brand</th>
+                                            <th className="px-4 py-3 text-right">RSP Web</th>
+                                            <th className="px-4 py-3 text-right">HPP</th>
+                                            <th className="px-4 py-3 text-right font-bold text-indigo-600">RSP MP Final</th>
+                                            <th className="px-4 py-3 text-right text-emerald-600">MP GM</th>
+                                            <th className="px-4 py-3">Notes</th>
+                                            <th className="px-4 py-3 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {pricingList.map((item) => (
+                                            <tr key={item.id} className="hover:bg-slate-50">
+                                                <td className="px-4 py-3 font-medium text-slate-800">{item.articleName}</td>
+                                                <td className="px-4 py-3 text-center text-xs font-bold text-slate-500 bg-slate-100 rounded">{item.brand}</td>
+                                                <td className="px-4 py-3 text-right text-slate-600">{formatRupiah(item.rspWeb)}</td>
+                                                <td className="px-4 py-3 text-right text-slate-600">{formatRupiah(item.hpp)}</td>
+                                                <td className="px-4 py-3 text-right font-bold text-indigo-600">{formatRupiah(item.finalPrice)}</td>
+                                                <td className="px-4 py-3 text-right font-bold text-emerald-600">{item.mpGmPct.toFixed(1)}%</td>
+                                                <td className="px-4 py-3 text-slate-500 italic max-w-xs truncate text-xs">{item.notes}</td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <button onClick={() => handleDeletePricing(item.id)} className="text-rose-500 hover:text-rose-700"><Icons.Trash2 size={16}/></button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+
             if (!isClient) return null;
 
             return (
@@ -1013,6 +1373,7 @@
                                     <button onClick={() => setActiveTab('gantt')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'gantt' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Gantt Chart</button>
                                     <button onClick={() => setActiveTab('activities')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'activities' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Activities</button>
                                     <button onClick={() => setActiveTab('budgeting')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${activeTab === 'budgeting' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Icons.Wallet size={14}/> Budgeting</button>
+                                    <button onClick={() => setActiveTab('pricing')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${activeTab === 'pricing' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Icons.Tag size={14}/> Pricing</button>
                                 </nav>
                                 <button onClick={handleResetData} className="ml-4 px-3 py-1.5 text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-md hover:bg-rose-100 transition-colors flex items-center gap-1">
                                     <Icons.RefreshCw size={12}/> Reset Data
@@ -1025,6 +1386,7 @@
                         {activeTab === 'gantt' && renderGantt()}
                         {activeTab === 'activities' && renderActivities()}
                         {activeTab === 'budgeting' && renderBudgeting()}
+                        {activeTab === 'pricing' && renderPricing()}
                     </main>
                 </div>
             );
