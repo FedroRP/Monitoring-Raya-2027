@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MONITORING RAYA 2027</title>
+    <title>HEYMALE x HEYLOCAL Planner Raya 2027</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -96,39 +96,39 @@
 
         const COMPETITOR_DB = {
             "Dress/Gamis Basic": { 
-                price: 215000, 
+                price: 229000, 
                 note: "Avg. Market: HeyLocal (229k), Shuwa (199k), Boonaboo (215k)" 
             },
             "Dress/Gamis Premium": { 
-                price: 425000, 
+                price: 459000, 
                 note: "Avg. Market: HeyLocal (459k), Shuwa (389k), Boonaboo (425k)" 
             },
             "Scarf Printing": { 
-                price: 205000, 
+                price: 225000, 
                 note: "Avg. Market: HeyLocal (225k), Shuwa (189k), Boonaboo (195k)" 
             },
             "Scarf Polos": { 
-                price: 89000, 
+                price: 99000, 
                 note: "Avg. Market: HeyLocal (99k), Shuwa (79k), Boonaboo (89k)" 
             },
             "Blouse/Tunic": { 
-                price: 159000, 
+                price: 169000, 
                 note: "Avg. Market: HeyLocal (169k), Shuwa (149k), Boonaboo (159k)" 
             },
             "Prayer Set/Mukena": { 
-                price: 459000, 
+                price: 499000, 
                 note: "Avg. Market: HeyLocal (499k), Shuwa (429k), Boonaboo (459k)" 
             },
             "Pants/Bawahan": { 
-                price: 129000, 
+                price: 139000, 
                 note: "Avg. Market: HeyLocal (139k), Shuwa (119k), Boonaboo (129k)" 
             },
             "Bag/Accessories": { 
-                price: 299000, 
+                price: 329000, 
                 note: "Avg. Market: HeyLocal (329k), Shuwa (279k), Boonaboo (299k)" 
             },
             "Outer/Jacket": { 
-                price: 199000, 
+                price: 219000, 
                 note: "Avg. Market: HeyLocal (219k), Shuwa (189k), Boonaboo (199k)" 
             }
         };
@@ -488,6 +488,7 @@
                 let outstandingAmount = 0; 
                 const today = new Date();
 
+                // USE FILTERED LIST for stats calculation as requested
                 filteredBudgetList.forEach(item => {
                     if (item.paymentStatus === 'fully_paid') {
                         budgetPlanning += 0;
@@ -570,7 +571,6 @@
                 }
             };
 
-            // STATS LOGIC
             const stats = useMemo(() => {
                 let totalTasks = 0;
                 let completed = 0;
@@ -612,7 +612,7 @@
                     if (currentSeriesDelayed > 0) delayedSeriesSummary.push(`${series.name} (${currentSeriesDelayed} item)`);
                 });
 
-                return { totalTasks, completed, delayed, onTrack, inProgress, delayedSeriesSummary, allRecommendations };
+                return { totalTasks, completed, delayed, onTrack, inProgress, delayedSeriesString: delayedSeriesSummary, allRecommendations };
             }, [data]);
 
             const completionRate = stats.totalTasks ? Math.round(((stats.completed + (stats.inProgress * 0.5)) / stats.totalTasks) * 100) : 0;
@@ -638,7 +638,7 @@
                             </div>
                             <div className="w-full">
                                 <h3 className={`text-lg font-bold mb-1 ${stats.delayed > 0 ? 'text-rose-800' : 'text-emerald-800'}`}>{stats.delayed > 0 ? "Risiko Keterlambatan Terdeteksi" : "Produksi On Track"}</h3>
-                                <p className={`text-sm mb-4 ${stats.delayed > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{stats.delayed > 0 ? `Terdapat total ${stats.delayed} aktivitas terlambat yang tersebar di: ${stats.delayedSeriesSummary.join(', ')}.` : "Seluruh aktivitas berjalan sesuai timeline. Tidak ada isu kritis saat ini."}</p>
+                                <p className={`text-sm mb-4 ${stats.delayed > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{stats.delayed > 0 ? `Terdapat total ${stats.delayed} aktivitas terlambat yang tersebar di: ${stats.delayedSeriesString.join(', ')}.` : "Seluruh aktivitas berjalan sesuai timeline. Tidak ada isu kritis saat ini."}</p>
                                 {stats.delayed > 0 && stats.allRecommendations.length > 0 && (
                                     <div className="bg-white/60 rounded-lg p-4 border border-rose-200/50">
                                         <div className="flex items-center gap-2 mb-2 text-rose-800 font-semibold text-sm"><Icons.Lightbulb size={16} className="text-amber-500 fill-amber-500"/><span>Saran Tindakan Perbaikan:</span></div>
@@ -679,16 +679,16 @@
                                     series.activities.forEach(act => {
                                         const planEndObj = new Date(act.planEnd);
                                         const startObj = act.actualStart ? parseDateLocal(act.actualStart) : null;
-                                        const isDoneLate = act.actualEnd && new Date(act.actualEnd) > planEndObj;
-                                        const isPendingLate = !act.actualEnd && today > planEndObj;
-                                        const isDoneOnTime = act.actualEnd && !isDoneLate;
-                                        const isInProgress = act.actualStart && !act.actualEnd && !isPendingLate;
+                                        const isDone = !!act.actualEnd;
+                                        const isStarted = !!act.actualStart;
+                                        const isDoneLate = isDone && new Date(act.actualEnd) > planEndObj;
+                                        const isPendingLate = !isDone && today > planEndObj;
 
                                         if (isDoneLate || isPendingLate) {
                                             lateCount++;
-                                        } else if (isDoneOnTime) {
+                                        } else if (isDone) {
                                             onTimeCount++;
-                                        } else if (isInProgress) {
+                                        } else if (isStarted) {
                                             inProgressCount++;
                                             if (startObj) {
                                                 const endObj = new Date(act.planEnd);
@@ -722,7 +722,7 @@
                                                     <span className="text-emerald-600">{onTimeCount} Done</span>
                                                     <span className="text-rose-600">{lateCount} Late</span>
                                                     <span className="text-blue-600">{inProgressCount} In Progress ({avgProgress}%)</span>
-                                                    <span className="text-slate-400">{Math.max(0, pendingCount)} Pending</span>
+                                                    <span className="text-slate-400">{pendingCount} Pending</span>
                                                 </div>
                                             </div>
                                             <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden flex bar-transition">
@@ -1364,8 +1364,8 @@
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">H</div>
                                     <div>
-                                        <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">WORLDWHITE ENTERPRISE</h1>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">RAYA 2027 PLANNER</p>
+                                        <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">HEYMALE x HEYLOCAL</h1>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Raya 2027 Planner</p>
                                     </div>
                                 </div>
                                 <nav className="flex space-x-1 bg-slate-100 p-1 rounded-lg">
