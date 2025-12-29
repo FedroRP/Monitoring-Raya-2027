@@ -30,6 +30,12 @@
         /* Tooltip Animation */
         .tooltip-anim { animation: tooltipFade 0.2s ease-out; }
         @keyframes tooltipFade { from { opacity: 0; transform: translate(-50%, 5px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+        /* Modal Animation */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 300ms, transform 300ms; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 300ms, transform 300ms; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans">
@@ -220,6 +226,9 @@
             const [isDataLoaded, setIsDataLoaded] = useState(false);
             const [currentTime, setCurrentTime] = useState(new Date());
 
+            // Modal State
+            const [modalConfig, setModalConfig] = useState({ isOpen: false, message: '', onConfirm: null });
+
             // Budgeting State
             const [budgetList, setBudgetList] = useState([]);
             const [budgetForm, setBudgetForm] = useState({
@@ -279,19 +288,8 @@
                 }
 
                 if (savedBudget) {
-                    const parsedBudget = JSON.parse(savedBudget);
-                    const sanitizedBudget = parsedBudget.map(item => ({
-                        ...item,
-                        dpDate: item.dpDate || '-',
-                        repaymentDate: item.repaymentDate || '-',
-                        paymentStatus: item.paymentStatus || 'unpaid',
-                        dpNominal: item.dpNominal || 0,
-                        settlementNominal: item.settlementNominal || 0,
-                        top: item.top || 0
-                    }));
-                    setBudgetList(sanitizedBudget);
+                    setBudgetList(JSON.parse(savedBudget));
                 }
-
                 if (savedPricing) {
                     setPricingList(JSON.parse(savedPricing));
                 }
@@ -312,14 +310,60 @@
                 if (isDataLoaded) localStorage.setItem('planner_pricing_v1', JSON.stringify(pricingList));
             }, [pricingList, isDataLoaded]);
 
-            const handleResetData = () => {
-                if (confirm("Apakah Anda yakin ingin mereset semua data? Data yang sudah diinput akan hilang.")) {
-                    localStorage.removeItem('planner_data_v1');
-                    localStorage.removeItem('planner_budget_v1');
-                    localStorage.removeItem('planner_pricing_v1');
-                    window.location.reload();
-                }
+            // --- CUSTOM MODAL HANDLER ---
+            const showConfirm = (message, action) => {
+                setModalConfig({ isOpen: true, message, onConfirm: action });
             };
+
+            const handleConfirm = () => {
+                if (modalConfig.onConfirm) modalConfig.onConfirm();
+                setModalConfig({ isOpen: false, message: '', onConfirm: null });
+            };
+
+            const handleCancel = () => {
+                setModalConfig({ isOpen: false, message: '', onConfirm: null });
+            };
+
+
+            // --- RESET LOGIC FUNCTIONS ---
+            const resetGanttData = () => {
+                const initialData = SERIES_CONFIG.map((config) => {
+                    const tasks = config.schedule.map((sch, index) => {
+                        return {
+                            id: index + 1,
+                            name: TASK_NAMES[index],
+                            leadTime: sch.leadTime,
+                            planStart: sch.start,
+                            planEnd: sch.end,
+                            actualStart: "",
+                            actualEnd: "",
+                            status: "pending"
+                        };
+                    });
+                    return { id: config.id, name: config.name, launchDate: config.launchDate, activities: tasks };
+                });
+                setData(initialData);
+                localStorage.setItem('planner_data_v1', JSON.stringify(initialData));
+            };
+
+            const resetBudgetingData = () => {
+                setBudgetList([]);
+                setBudgetForm({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
+                localStorage.removeItem('planner_budget_v1');
+            };
+
+            const resetPricingData = () => {
+                setPricingList([]);
+                setPricingForm({ seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: '' });
+                localStorage.removeItem('planner_pricing_v1');
+            };
+
+            // Wrapper functions to trigger modal
+            const confirmResetGantt = () => showConfirm("Reset Gantt Chart? Semua tanggal aktual akan dihapus.", resetGanttData);
+            const confirmResetActivities = () => showConfirm("Reset All Activities data?", resetGanttData); // Activities shares data with Gantt
+            const confirmResetBudget = () => showConfirm("Reset Budgeting data? Semua data budget akan dihapus.", resetBudgetingData);
+            const confirmResetPricing = () => showConfirm("Reset Pricing data? Semua strategi harga tersimpan akan dihapus.", resetPricingData);
+
 
             const handleUpdateActual = (seriesIndex, actIndex, field, value) => {
                 const newData = [...data];
@@ -359,7 +403,6 @@
                      rspMpRaw = rspWeb / (1 - (totalFeePct/100));
                 }
 
-                // Smart Rounding to x9000 (Psychology)
                 let rspMpSuggested = Math.ceil(rspMpRaw / 1000) * 1000;
                 const remainder = rspMpSuggested % 10000;
                 if (remainder !== 9000) {
@@ -367,19 +410,15 @@
                     if (rspMpSuggested < rspMpRaw) rspMpSuggested += 10000;
                 }
                 
-                // Final Price = Manual Override OR Suggested
                 const finalPrice = parseFloat(pricingForm.manualPrice) || rspMpSuggested;
 
-                // Breakdown based on FINAL price
                 const mpFeeNominal = finalPrice * (totalFeePct/100);
                 const mpNetReceived = finalPrice - mpFeeNominal;
                 const mpGmAbs = mpNetReceived - hpp - fixedCost;
                 const mpGmPct = finalPrice > 0 ? (mpGmAbs / finalPrice) * 100 : 0;
                 const growth = finalPrice - rspWeb;
 
-                // --- PSYCHOLOGICAL ROUNDING HELPER ---
                 const makePsychological = (val) => {
-                    // Round to nearest 10k then subtract 1k to end in 9000
                     return Math.ceil(val / 10000) * 10000 - 1000;
                 };
 
@@ -391,13 +430,11 @@
                 };
 
                 if (competitorPrice > 0) {
-                    const gap = rspMpSuggested - competitorPrice; // Gap based on SUGGESTED (Ideal) vs Competitor
+                    const gap = rspMpSuggested - competitorPrice; 
                     
                     if (gap > 0) {
-                        // Ideal price is higher than competitor
-                        // Check if competitor price is BELOW RSP WEB
                         if (competitorPrice < rspWeb) {
-                             const safeFloor = makePsychological(rspWeb * 1.05); // Min 5% above web
+                             const safeFloor = makePsychological(rspWeb * 1.05); 
                              competitiveAnalysis = {
                                 status: 'danger',
                                 message: `Harga kompetitor (Rp${competitorPrice.toLocaleString()}) lebih rendah dari RSP Web Anda (Rp${rspWeb.toLocaleString()}). Tidak aman untuk diikuti!`,
@@ -421,7 +458,6 @@
                         }
 
                     } else if (gap < 0) {
-                        // Ideal price is lower than competitor
                         const prettyCompetitorMinus = makePsychological(competitorPrice - 1000);
                         competitiveAnalysis = {
                             status: 'good',
@@ -469,7 +505,7 @@
                      finalPrice: pricingResult.finalPrice,
                      mpGmPct: pricingResult.mpGmPct,
                      mpGmAbs: pricingResult.mpGmAbs,
-                     webGmPct: pricingResult.webGmPct, // Added webGmPct to save
+                     webGmPct: pricingResult.webGmPct,
                      date: new Date().toISOString().split('T')[0] 
                  };
                  setPricingList([newItem, ...pricingList]);
@@ -510,7 +546,6 @@
                 let outstandingAmount = 0; 
                 const today = new Date();
 
-                // USE FILTERED LIST for stats calculation as requested
                 filteredBudgetList.forEach(item => {
                     if (item.paymentStatus === 'fully_paid') {
                         budgetPlanning += 0;
@@ -634,7 +669,7 @@
                     if (currentSeriesDelayed > 0) delayedSeriesSummary.push(`${series.name} (${currentSeriesDelayed} item)`);
                 });
 
-                return { totalTasks, completed, delayed, onTrack, inProgress, delayedSeriesSummary, allRecommendations };
+                return { totalTasks, completed, delayed, onTrack, inProgress, delayedSeriesString: delayedSeriesSummary, allRecommendations };
             }, [data]);
 
             const completionRate = stats.totalTasks ? Math.round(((stats.completed + (stats.inProgress * 0.5)) / stats.totalTasks) * 100) : 0;
@@ -776,6 +811,7 @@
                             </div>
                         </div>
                         <div className="flex items-center gap-6 text-xs font-medium bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                            <button onClick={confirmResetGantt} className="px-3 py-1 bg-rose-50 text-rose-600 rounded-md hover:bg-rose-100 transition-colors flex items-center gap-1"><Icons.RefreshCw size={12}/> Reset Schedule</button>
                             <div className="flex items-center gap-2"><span className="w-3 h-3 bg-slate-300 rounded-sm"></span> Plan</div>
                             <div className="flex items-center gap-2"><span className="w-3 h-3 bg-emerald-500 rounded-sm"></span> Actual (On Time)</div>
                             <div className="flex items-center gap-2"><span className="w-3 h-3 bg-rose-500 rounded-sm"></span> Actual (Late)</div>
@@ -942,6 +978,127 @@
                 </div>
             );
 
+            const renderActivities = () => {
+                const allActivities = [];
+                data.forEach(s => {
+                    s.activities.forEach(a => {
+                        allActivities.push({ ...a, seriesName: s.name });
+                    });
+                });
+
+                const overdue = allActivities.filter(a => {
+                    const planEnd = new Date(a.planEnd);
+                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
+                    const today = new Date();
+                    const isDoneLate = actualEnd && actualEnd > planEnd;
+                    const isPendingLate = !actualEnd && today > planEnd;
+                    return isDoneLate || isPendingLate;
+                });
+
+                const completed = allActivities.filter(a => {
+                    const planEnd = new Date(a.planEnd);
+                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
+                    return actualEnd && actualEnd <= planEnd;
+                });
+
+                const upcoming = allActivities.filter(a => !a.actualEnd && new Date() <= new Date(a.planEnd)).sort((a,b) => new Date(a.planStart) - new Date(b.planStart));
+
+                return (
+                    <div className="space-y-8 pb-10">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-slate-800">Activities Overview</h2>
+                            <button onClick={confirmResetActivities} className="px-3 py-1.5 text-xs font-medium bg-rose-50 text-rose-600 rounded-md hover:bg-rose-100 transition-colors flex items-center gap-1">
+                                <Icons.RefreshCw size={12}/> Reset Activities
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
+                                <div className="px-6 py-4 border-b border-rose-100 bg-rose-50 flex items-center gap-3">
+                                    <Icons.AlertTriangle size={20} className="text-rose-600"/>
+                                    <h3 className="font-bold text-rose-800">Attention Needed</h3>
+                                </div>
+                                <div className="divide-y divide-rose-50 max-h-[400px] overflow-auto">
+                                    {overdue.length === 0 ? (
+                                        <div className="p-12 text-center text-slate-400"><p>No overdue items.</p></div>
+                                    ) : (
+                                        overdue.map((item, idx) => {
+                                            const isDone = !!item.actualEnd;
+                                            return (
+                                                <div key={idx} className="p-4 hover:bg-rose-50/50 transition-colors flex justify-between items-center">
+                                                    <div>
+                                                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 mb-1">{item.seriesName}</span>
+                                                        <h4 className="font-medium text-slate-800">{item.name}</h4>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-xs text-rose-500 font-medium">Plan: {formatDate(item.planEnd)}</span>
+                                                            {isDone ? <span className="text-[10px] text-white bg-rose-500 px-1.5 rounded font-bold">Done Late</span> : <span className="text-[10px] text-rose-600 bg-rose-100 px-1.5 rounded font-bold">Pending Overdue</span>}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
+                                    <Icons.List size={20} className="text-slate-600"/>
+                                    <h3 className="font-bold text-slate-800">Operational Queue</h3>
+                                </div>
+                                <div className="divide-y divide-slate-100 max-h-[400px] overflow-auto">
+                                    {upcoming.map((item, idx) => (
+                                        <div key={idx} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center">
+                                            <div>
+                                                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 mb-1">{item.seriesName}</span>
+                                                <h4 className="font-medium text-slate-800">{item.name}</h4>
+                                                <p className="text-xs text-slate-500 mt-1">Start: {formatDate(item.planStart)}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Completed History Section */}
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
+                                <Icons.History size={20} className="text-emerald-600"/>
+                                <h3 className="font-bold text-slate-800">Completed History</h3>
+                            </div>
+                            <div className="p-0 overflow-auto max-h-[300px]">
+                                {completed.length === 0 ? (
+                                    <div className="p-8 text-center text-slate-400">No completed tasks yet.</div>
+                                ) : (
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 sticky top-0">
+                                            <tr>
+                                                <th className="px-6 py-3">Series</th>
+                                                <th className="px-6 py-3">Activity</th>
+                                                <th className="px-6 py-3">Plan End</th>
+                                                <th className="px-6 py-3">Actual End</th>
+                                                <th className="px-6 py-3">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {completed.map((item, idx) => (
+                                                <tr key={idx} className="hover:bg-slate-50">
+                                                    <td className="px-6 py-3 font-medium text-slate-600">{item.seriesName}</td>
+                                                    <td className="px-6 py-3 text-slate-800">{item.name}</td>
+                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.planEnd)}</td>
+                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.actualEnd)}</td>
+                                                    <td className="px-6 py-3">
+                                                        <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">On Time</span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
             // --- RENDER BUDGETING ---
             const renderBudgeting = () => (
                 <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
@@ -976,6 +1133,7 @@
                         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
                             <Icons.Wallet className="text-slate-600" size={20}/>
                             <h3 className="font-bold text-slate-800">Budgeting & Payment Calculator</h3>
+                            <button onClick={confirmResetBudget} className="ml-auto px-3 py-1 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 transition-colors text-xs font-medium">Reset Budget</button>
                         </div>
                         <div className="p-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1107,6 +1265,7 @@
                         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
                             <Icons.Tag className="text-slate-600" size={20}/>
                             <h3 className="font-bold text-slate-800">RSP Marketplace Calculator</h3>
+                            <button onClick={confirmResetPricing} className="ml-auto px-3 py-1 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 transition-colors text-xs font-medium">Reset Pricing</button>
                         </div>
                         <div className="p-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1261,11 +1420,33 @@
                     </div>
                 </div>
             );
+            
+            // --- Custom Modal ---
+            const ConfirmationModal = () => {
+                if (!modalConfig.isOpen) return null;
+                return (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
+                        <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 bg-rose-100 text-rose-600 rounded-full">
+                                    <Icons.AlertTriangle size={24} />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-800">Konfirmasi Reset</h3>
+                            </div>
+                            <p className="text-slate-600 mb-6">{modalConfig.message}</p>
+                            <div className="flex justify-end gap-3">
+                                <button onClick={handleCancel} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                                <button onClick={handleConfirm} className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm transition-colors">Ya, Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
 
             if (!isClient) return null;
 
             return (
-                <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20">
+                <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20 relative">
                     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
                         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between items-center h-16">
@@ -1283,9 +1464,6 @@
                                     <button onClick={() => setActiveTab('budgeting')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${activeTab === 'budgeting' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Icons.Wallet size={14}/> Budgeting</button>
                                     <button onClick={() => setActiveTab('pricing')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${activeTab === 'pricing' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Icons.Tag size={14}/> Pricing</button>
                                 </nav>
-                                <button onClick={handleResetData} className="ml-4 px-3 py-1.5 text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-md hover:bg-rose-100 transition-colors flex items-center gap-1">
-                                    <Icons.RefreshCw size={12}/> Reset Data
-                                </button>
                             </div>
                         </div>
                     </header>
@@ -1296,6 +1474,7 @@
                         {activeTab === 'budgeting' && renderBudgeting()}
                         {activeTab === 'pricing' && renderPricing()}
                     </main>
+                    <ConfirmationModal />
                 </div>
             );
         }
