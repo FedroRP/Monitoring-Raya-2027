@@ -127,6 +127,10 @@
                 price: 329000, 
                 note: "Avg. Market: HeyLocal (329k), Shuwa (279k), Boonaboo (299k)" 
             },
+             "Sunglasses/Eyewear": {
+                price: 375000, 
+                note: "Button Scarves (~Rp1.275.000+), Klamby (~Rp350.000 - Est.), Heaven Lights (~Rp150.000)"
+            },
             "Outer/Jacket": { 
                 price: 219000, 
                 note: "Avg. Market: HeyLocal (219k), Shuwa (189k), Boonaboo (199k)" 
@@ -355,6 +359,7 @@
                      rspMpRaw = rspWeb / (1 - (totalFeePct/100));
                 }
 
+                // Smart Rounding to x9000 (Psychology)
                 let rspMpSuggested = Math.ceil(rspMpRaw / 1000) * 1000;
                 const remainder = rspMpSuggested % 10000;
                 if (remainder !== 9000) {
@@ -362,13 +367,21 @@
                     if (rspMpSuggested < rspMpRaw) rspMpSuggested += 10000;
                 }
                 
+                // Final Price = Manual Override OR Suggested
                 const finalPrice = parseFloat(pricingForm.manualPrice) || rspMpSuggested;
 
+                // Breakdown based on FINAL price
                 const mpFeeNominal = finalPrice * (totalFeePct/100);
                 const mpNetReceived = finalPrice - mpFeeNominal;
                 const mpGmAbs = mpNetReceived - hpp - fixedCost;
                 const mpGmPct = finalPrice > 0 ? (mpGmAbs / finalPrice) * 100 : 0;
                 const growth = finalPrice - rspWeb;
+
+                // --- PSYCHOLOGICAL ROUNDING HELPER ---
+                const makePsychological = (val) => {
+                    // Round to nearest 10k then subtract 1k to end in 9000
+                    return Math.ceil(val / 10000) * 10000 - 1000;
+                };
 
                 let competitiveAnalysis = {
                     status: 'neutral',
@@ -378,43 +391,51 @@
                 };
 
                 if (competitorPrice > 0) {
-                    const gap = finalPrice - competitorPrice;
+                    const gap = rspMpSuggested - competitorPrice; // Gap based on SUGGESTED (Ideal) vs Competitor
+                    
                     if (gap > 0) {
-                        competitiveAnalysis = {
-                            status: 'danger',
-                            message: `Harga Final (Rp${finalPrice.toLocaleString()}) lebih mahal Rp${gap.toLocaleString()} dari kompetitor.`,
-                            gap: gap,
-                            suggestedAction: {
-                                label: "Samakan dengan Kompetitor",
-                                price: competitorPrice
-                            }
-                        };
-                    } else if (gap < 0) {
-                         if (finalPrice < rspWeb) {
+                        // Ideal price is higher than competitor
+                        // Check if competitor price is BELOW RSP WEB
+                        if (competitorPrice < rspWeb) {
+                             const safeFloor = makePsychological(rspWeb * 1.05); // Min 5% above web
                              competitiveAnalysis = {
-                                status: 'warning',
-                                message: `Harga Final lebih murah dari kompetitor, TAPI di bawah RSP Web! Ini tidak disarankan.`,
+                                status: 'danger',
+                                message: `Harga kompetitor (Rp${competitorPrice.toLocaleString()}) lebih rendah dari RSP Web Anda (Rp${rspWeb.toLocaleString()}). Tidak aman untuk diikuti!`,
                                 gap: gap,
                                 suggestedAction: {
-                                    label: "Naikkan ke minimal RSP Web + Fee",
-                                    price: rspWeb * 1.1 
+                                    label: "Gunakan Harga Tengah (RSP Web + Fee)",
+                                    price: safeFloor
                                 }
                             };
                         } else {
+                            const prettyCompetitor = makePsychological(competitorPrice);
                             competitiveAnalysis = {
-                                status: 'good',
-                                message: `Harga Final lebih murah Rp${Math.abs(gap).toLocaleString()} dari kompetitor.`,
+                                status: 'warning',
+                                message: `Harga Ideal (Rp${rspMpSuggested.toLocaleString()}) lebih mahal dari kompetitor. Bisa turunkan sedikit, tapi jangan di bawah RSP Web.`,
                                 gap: gap,
                                 suggestedAction: {
-                                    label: "Naikkan Sedikit (Profit Boost)",
-                                    price: competitorPrice - 1000 
+                                    label: "Samakan dengan Kompetitor",
+                                    price: prettyCompetitor
                                 }
                             };
                         }
+
+                    } else if (gap < 0) {
+                        // Ideal price is lower than competitor
+                        const prettyCompetitorMinus = makePsychological(competitorPrice - 1000);
+                        competitiveAnalysis = {
+                            status: 'good',
+                            message: `Harga Ideal lebih murah Rp${Math.abs(gap).toLocaleString()} dari kompetitor. Peluang profit lebih tinggi!`,
+                            gap: gap,
+                            suggestedAction: {
+                                label: "Naikkan Sedikit (Profit Boost)",
+                                price: prettyCompetitorMinus 
+                            }
+                        };
                     } else {
                         competitiveAnalysis = {
                             status: 'neutral',
-                            message: `Harga Final sama dengan kompetitor.`,
+                            message: `Harga Ideal sama dengan kompetitor.`,
                             gap: 0,
                             suggestedAction: null
                         };
@@ -600,10 +621,10 @@
                                 seriesName: series.name,
                                 message: getRecommendation(act.name)
                             });
-                        } else if (isDone) {
+                        } else if (act.actualEnd) {
                             completed++;
                         } else {
-                            if (isStarted) {
+                            if (act.actualStart && !act.actualEnd) {
                                 inProgress++;
                             }
                             onTrack++; 
@@ -679,16 +700,16 @@
                                     series.activities.forEach(act => {
                                         const planEndObj = new Date(act.planEnd);
                                         const startObj = act.actualStart ? parseDateLocal(act.actualStart) : null;
-                                        const isDone = !!act.actualEnd;
-                                        const isStarted = !!act.actualStart;
-                                        const isDoneLate = isDone && new Date(act.actualEnd) > planEndObj;
-                                        const isPendingLate = !isDone && today > planEndObj;
+                                        const isDoneLate = act.actualEnd && new Date(act.actualEnd) > planEndObj;
+                                        const isPendingLate = !act.actualEnd && today > planEndObj;
+                                        const isDoneOnTime = act.actualEnd && !isDoneLate;
+                                        const isInProgress = act.actualStart && !act.actualEnd && !isPendingLate;
 
                                         if (isDoneLate || isPendingLate) {
                                             lateCount++;
-                                        } else if (isDone) {
+                                        } else if (isDoneOnTime) {
                                             onTimeCount++;
-                                        } else if (isStarted) {
+                                        } else if (isInProgress) {
                                             inProgressCount++;
                                             if (startObj) {
                                                 const endObj = new Date(act.planEnd);
@@ -705,7 +726,6 @@
                                         }
                                     });
 
-                                    // Logic correction for Pending
                                     pendingCount = seriesTotal - onTimeCount - lateCount - inProgressCount;
                                     
                                     const pOnTime = (onTimeCount / seriesTotal) * 100;
@@ -722,13 +742,13 @@
                                                     <span className="text-emerald-600">{onTimeCount} Done</span>
                                                     <span className="text-rose-600">{lateCount} Late</span>
                                                     <span className="text-blue-600">{inProgressCount} In Progress ({avgProgress}%)</span>
-                                                    <span className="text-slate-400">{pendingCount} Pending</span>
+                                                    <span className="text-slate-400">{Math.max(0, pendingCount)} Pending</span>
                                                 </div>
                                             </div>
                                             <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden flex bar-transition">
-                                                <div className="bg-emerald-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pOnTime}%` }} title={`On Time`}>{onTimeCount > 0 && onTimeCount}</div>
-                                                <div className="bg-rose-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pLate}%` }} title={`Late`}>{lateCount > 0 && lateCount}</div>
-                                                <div className="bg-blue-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pInProgressWidth}%` }} title={`In Progress`}>{inProgressCount > 0 && `${avgProgress}%`}</div>
+                                                <div className="bg-emerald-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pOnTime}%` }} title={`On Time`}>{pOnTime > 5 && onTimeCount}</div>
+                                                <div className="bg-rose-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pLate}%` }} title={`Late`}>{pLate > 5 && lateCount}</div>
+                                                <div className="bg-blue-500 h-full flex items-center justify-center text-[9px] text-white font-bold" style={{ width: `${pInProgressWidth}%` }} title={`In Progress`}>{pInProgressWidth > 5 && `${avgProgress}%`}</div>
                                                 <div className="bg-slate-200 h-full flex items-center justify-center text-[9px] text-slate-500 font-bold" style={{ width: `${pPending}%` }} title={`Pending`}>{pendingCount > 0 && pendingCount}</div>
                                             </div>
                                         </div>
@@ -1276,9 +1296,9 @@
                                                 </div>
                                                 
                                                 {pricingResult.competitiveAnalysis.status !== 'neutral' && (
-                                                    <div className={`mt-2 p-2 rounded border text-xs ${pricingResult.competitiveAnalysis.status === 'danger' ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                                                    <div className={`mt-2 p-2 rounded border text-xs ${pricingResult.competitiveAnalysis.status === 'danger' ? 'bg-rose-50 border-rose-200 text-rose-700' : (pricingResult.competitiveAnalysis.status === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700')}`}>
                                                         <div className="font-bold flex items-center gap-1">
-                                                            {pricingResult.competitiveAnalysis.status === 'danger' ? <Icons.AlertTriangle size={12}/> : <Icons.CheckCircle size={12}/>}
+                                                            {pricingResult.competitiveAnalysis.status === 'danger' ? <Icons.AlertTriangle size={12}/> : (pricingResult.competitiveAnalysis.status === 'warning' ? <Icons.Info size={12}/> : <Icons.CheckCircle size={12}/>)}
                                                             Insight:
                                                         </div>
                                                         <div>{pricingResult.competitiveAnalysis.message}</div>
@@ -1397,4 +1417,3 @@
     </script>
 </body>
 </html>
-
