@@ -21,6 +21,7 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
         .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -30,13 +31,17 @@
         /* Tooltip Animation */
         .tooltip-anim { animation: tooltipFade 0.2s ease-out; }
         @keyframes tooltipFade { from { opacity: 0; transform: translate(-50%, 5px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+        /* Modal Animation */
+        .modal-enter-active { animation: modalFadeIn 0.2s ease-out forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useCallback } = React;
 
         // --- ICON COMPONENTS ---
         const IconWrapper = ({ children, size = 24, className = "" }) => (
@@ -69,21 +74,123 @@
             Tag: (props) => <IconWrapper {...props}><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></IconWrapper>,
             Calculator: (props) => <IconWrapper {...props}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></IconWrapper>,
             Search: (props) => <IconWrapper {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></IconWrapper>,
-            Info: (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconWrapper>
+            Info: (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconWrapper>,
+            Edit: (props) => <IconWrapper {...props}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></IconWrapper>,
+            Plus: (props) => <IconWrapper {...props}><path d="M5 12h14"/><path d="M12 5v14"/></IconWrapper>
         };
 
         // --- CONFIGURATION ---
         const SERIES_CONFIG = [
-            { id: 1, name: "Series 1", launchDate: "2027-01-04", schedule: [ { id: 1, start: "2026-06-01", end: "2026-06-14", leadTime: 14 }, { id: 2, start: "2026-06-15", end: "2026-06-19", leadTime: 5 }, { id: 3, start: "2026-06-20", end: "2026-06-24", leadTime: 5 }, { id: 4, start: "2026-06-25", end: "2026-06-29", leadTime: 5 }, { id: 5, start: "2026-06-30", end: "2026-07-06", leadTime: 7 }, { id: 6, start: "2026-07-07", end: "2026-09-11", leadTime: 67 }, { id: 7, start: "2026-07-07", end: "2026-08-20", leadTime: 45 }, { id: 8, start: "2026-09-12", end: "2026-11-17", leadTime: 67 }, { id: 9, start: "2026-11-18", end: "2026-11-22", leadTime: 5 }, { id: 10, start: "2026-11-18", end: "2026-11-27", leadTime: 10 }, { id: 11, start: "2026-11-23", end: "2026-12-07", leadTime: 15 } ] },
-            { id: 2, name: "Series 2", launchDate: "2027-01-11", schedule: [ { id: 1, start: "2026-06-15", end: "2026-06-29", leadTime: 15 }, { id: 2, start: "2026-06-30", end: "2026-07-04", leadTime: 5 }, { id: 3, start: "2026-07-05", end: "2026-07-09", leadTime: 5 }, { id: 4, start: "2026-07-10", end: "2026-07-14", leadTime: 5 }, { id: 5, start: "2026-07-15", end: "2026-07-21", leadTime: 7 }, { id: 6, start: "2026-07-22", end: "2026-09-26", leadTime: 67 }, { id: 7, start: "2026-07-22", end: "2026-09-04", leadTime: 45 }, { id: 8, start: "2026-09-27", end: "2026-12-02", leadTime: 67 }, { id: 9, start: "2026-12-03", end: "2026-12-07", leadTime: 5 }, { id: 10, start: "2026-12-03", end: "2026-12-12", leadTime: 10 }, { id: 11, start: "2026-12-12", end: "2026-12-26", leadTime: 15 } ] },
-            { id: 3, name: "Series 3", launchDate: "2027-01-18", schedule: [ { id: 1, start: "2026-07-01", end: "2026-07-14", leadTime: 14 }, { id: 2, start: "2026-07-15", end: "2026-07-19", leadTime: 5 }, { id: 3, start: "2026-07-20", end: "2026-07-24", leadTime: 5 }, { id: 4, start: "2026-07-25", end: "2026-07-29", leadTime: 5 }, { id: 5, start: "2026-07-30", end: "2026-08-05", leadTime: 7 }, { id: 6, start: "2026-08-06", end: "2026-09-11", leadTime: 37 }, { id: 7, start: "2026-08-06", end: "2026-09-19", leadTime: 45 }, { id: 8, start: "2026-10-12", end: "2026-12-17", leadTime: 67 }, { id: 9, start: "2026-12-18", end: "2026-12-22", leadTime: 5 }, { id: 10, start: "2026-12-18", end: "2026-12-27", leadTime: 10 }, { id: 11, start: "2026-12-27", end: "2027-01-08", leadTime: 13 } ] },
-            { id: 4, name: "Series 4", launchDate: "2027-01-25", schedule: [ { id: 1, start: "2026-07-15", end: "2026-07-29", leadTime: 15 }, { id: 2, start: "2026-07-30", end: "2026-08-03", leadTime: 5 }, { id: 3, start: "2026-08-04", end: "2026-08-08", leadTime: 5 }, { id: 4, start: "2026-08-09", end: "2026-08-13", leadTime: 5 }, { id: 5, start: "2026-08-14", end: "2026-08-20", leadTime: 7 }, { id: 6, start: "2026-08-21", end: "2026-10-26", leadTime: 67 }, { id: 7, start: "2026-08-21", end: "2026-10-04", leadTime: 45 }, { id: 8, start: "2026-10-27", end: "2027-01-01", leadTime: 67 }, { id: 9, start: "2027-01-02", end: "2027-01-06", leadTime: 5 }, { id: 10, start: "2027-01-02", end: "2027-01-11", leadTime: 10 }, { id: 11, start: "2027-01-06", end: "2027-01-15", leadTime: 10 } ] },
-            { id: 5, name: "Series 5", launchDate: "2027-02-01", schedule: [ { id: 1, start: "2026-08-01", end: "2026-08-14", leadTime: 14 }, { id: 2, start: "2026-08-15", end: "2026-08-19", leadTime: 5 }, { id: 3, start: "2026-08-20", end: "2026-08-24", leadTime: 5 }, { id: 4, start: "2026-08-25", end: "2026-08-29", leadTime: 5 }, { id: 5, start: "2026-08-30", end: "2026-09-05", leadTime: 7 }, { id: 6, start: "2026-09-06", end: "2026-11-11", leadTime: 67 }, { id: 7, start: "2026-09-06", end: "2026-10-20", leadTime: 45 }, { id: 8, start: "2026-11-12", end: "2027-01-17", leadTime: 67 }, { id: 9, start: "2027-01-18", end: "2027-01-22", leadTime: 5 }, { id: 10, start: "2027-01-18", end: "2027-01-22", leadTime: 5 }, { id: 11, start: "2027-01-23", end: "2027-01-24", leadTime: 2 } ] }
+            { 
+                id: 1, 
+                name: "Series 1", 
+                launchDate: "2027-01-04", 
+                schedule: [ 
+                    { id: 1, start: "2026-06-01", end: "2026-06-14", leadTime: 14 },
+                    { id: 2, start: "2026-06-15", end: "2026-06-19", leadTime: 5 },
+                    { id: 3, start: "2026-06-15", end: "2026-06-19", leadTime: 5 },
+                    { id: 4, start: "2026-06-20", end: "2026-06-24", leadTime: 5 },
+                    { id: 5, start: "2026-06-25", end: "2026-06-29", leadTime: 5 },
+                    { id: 6, start: "2026-06-30", end: "2026-07-06", leadTime: 7 },
+                    { id: 7, start: "2026-07-07", end: "2026-09-11", leadTime: 67 },
+                    { id: 8, start: "2026-07-07", end: "2026-08-20", leadTime: 45 },
+                    { id: 9, start: "2026-08-14", end: "2026-08-27", leadTime: 14 },
+                    { id: 10, start: "2026-08-28", end: "2026-09-11", leadTime: 15 },
+                    { id: 11, start: "2026-09-12", end: "2026-11-17", leadTime: 67 },
+                    { id: 12, start: "2026-11-18", end: "2026-11-22", leadTime: 5 },
+                    { id: 13, start: "2026-11-18", end: "2026-11-27", leadTime: 10 },
+                    { id: 14, start: "2026-11-23", end: "2026-12-07", leadTime: 15 }
+                ] 
+            },
+            { 
+                id: 2, 
+                name: "Series 2", 
+                launchDate: "2027-01-11", 
+                schedule: [ 
+                    { id: 1, start: "2026-06-15", end: "2026-06-29", leadTime: 15 },
+                    { id: 2, start: "2026-06-30", end: "2026-07-04", leadTime: 5 },
+                    { id: 3, start: "2026-06-30", end: "2026-07-04", leadTime: 5 },
+                    { id: 4, start: "2026-07-05", end: "2026-07-09", leadTime: 5 },
+                    { id: 5, start: "2026-07-10", end: "2026-07-14", leadTime: 5 },
+                    { id: 6, start: "2026-07-15", end: "2026-07-21", leadTime: 7 },
+                    { id: 7, start: "2026-07-22", end: "2026-09-26", leadTime: 67 },
+                    { id: 8, start: "2026-07-22", end: "2026-09-04", leadTime: 45 },
+                    { id: 9, start: "2026-08-29", end: "2026-09-11", leadTime: 14 },
+                    { id: 10, start: "2026-09-12", end: "2026-09-26", leadTime: 15 },
+                    { id: 11, start: "2026-09-27", end: "2026-12-02", leadTime: 67 },
+                    { id: 12, start: "2026-12-03", end: "2026-12-07", leadTime: 5 },
+                    { id: 13, start: "2026-12-03", end: "2026-12-12", leadTime: 10 },
+                    { id: 14, start: "2026-12-12", end: "2026-12-26", leadTime: 15 } 
+                ] 
+            },
+            { 
+                id: 3, 
+                name: "Series 3", 
+                launchDate: "2027-01-18", 
+                schedule: [ 
+                    { id: 1, start: "2026-07-01", end: "2026-07-14", leadTime: 14 },
+                    { id: 2, start: "2026-07-15", end: "2026-07-19", leadTime: 5 },
+                    { id: 3, start: "2026-07-15", end: "2026-07-19", leadTime: 5 },
+                    { id: 4, start: "2026-07-20", end: "2026-07-24", leadTime: 5 },
+                    { id: 5, start: "2026-07-25", end: "2026-07-29", leadTime: 5 },
+                    { id: 6, start: "2026-07-30", end: "2026-08-05", leadTime: 7 },
+                    { id: 7, start: "2026-08-06", end: "2026-09-11", leadTime: 37 },
+                    { id: 8, start: "2026-08-06", end: "2026-09-19", leadTime: 45 },
+                    { id: 9, start: "2026-09-13", end: "2026-09-26", leadTime: 14 },
+                    { id: 10, start: "2026-09-27", end: "2026-10-11", leadTime: 15 },
+                    { id: 11, start: "2026-10-12", end: "2026-12-17", leadTime: 67 },
+                    { id: 12, start: "2026-12-18", end: "2026-12-22", leadTime: 5 },
+                    { id: 13, start: "2026-12-18", end: "2026-12-27", leadTime: 10 },
+                    { id: 14, start: "2026-12-27", end: "2027-01-08", leadTime: 13 } 
+                ] 
+            },
+            { 
+                id: 4, 
+                name: "Series 4", 
+                launchDate: "2027-01-25", 
+                schedule: [ 
+                    { id: 1, start: "2026-07-15", end: "2026-07-29", leadTime: 15 },
+                    { id: 2, start: "2026-07-30", end: "2026-08-03", leadTime: 5 },
+                    { id: 3, start: "2026-07-30", end: "2026-08-03", leadTime: 5 },
+                    { id: 4, start: "2026-08-04", end: "2026-08-08", leadTime: 5 },
+                    { id: 5, start: "2026-08-09", end: "2026-08-13", leadTime: 5 },
+                    { id: 6, start: "2026-08-14", end: "2026-08-20", leadTime: 7 },
+                    { id: 7, start: "2026-08-21", end: "2026-10-26", leadTime: 67 },
+                    { id: 8, start: "2026-08-21", end: "2026-10-04", leadTime: 45 },
+                    { id: 9, start: "2026-09-28", end: "2026-10-11", leadTime: 14 },
+                    { id: 10, start: "2026-10-12", end: "2026-10-26", leadTime: 15 },
+                    { id: 11, start: "2026-10-27", end: "2027-01-01", leadTime: 67 },
+                    { id: 12, start: "2027-01-02", end: "2027-01-06", leadTime: 5 },
+                    { id: 13, start: "2027-01-02", end: "2027-01-11", leadTime: 10 },
+                    { id: 14, start: "2027-01-06", end: "2027-01-15", leadTime: 10 } 
+                ] 
+            },
+            { 
+                id: 5, 
+                name: "Series 5", 
+                launchDate: "2027-02-01", 
+                schedule: [ 
+                    { id: 1, start: "2026-08-01", end: "2026-08-14", leadTime: 14 },
+                    { id: 2, start: "2026-08-15", end: "2026-08-19", leadTime: 5 },
+                    { id: 3, start: "2026-08-15", end: "2026-08-19", leadTime: 5 },
+                    { id: 4, start: "2026-08-20", end: "2026-08-24", leadTime: 5 },
+                    { id: 5, start: "2026-08-25", end: "2026-08-29", leadTime: 5 },
+                    { id: 6, start: "2026-08-30", end: "2026-09-05", leadTime: 7 },
+                    { id: 7, start: "2026-09-06", end: "2026-11-11", leadTime: 67 },
+                    { id: 8, start: "2026-09-06", end: "2026-10-20", leadTime: 45 },
+                    { id: 9, start: "2026-10-14", end: "2026-10-27", leadTime: 14 },
+                    { id: 10, start: "2026-10-28", end: "2026-11-11", leadTime: 15 },
+                    { id: 11, start: "2026-11-12", end: "2027-01-17", leadTime: 67 },
+                    { id: 12, start: "2027-01-18", end: "2027-01-22", leadTime: 5 },
+                    { id: 13, start: "2027-01-18", end: "2027-01-22", leadTime: 5 },
+                    { id: 14, start: "2027-01-23", end: "2027-01-24", leadTime: 2 } 
+                ] 
+            }
         ];
 
         const TASK_NAMES = [
-            "Approval Design", "Approval Bahan", "Approval Motif", "Approval Color", "Payment Paperworks",
-            "Material Production - Fabric", "Material Procurement - Brocade", "Mass Production",
+            "Approval Design", "Approval Accessories", "Approval Bahan", "Approval Motif", "Approval Color", "Payment Paperworks",
+            "Material Production - Fabric", "Material Procurement - Brocade", "Pre Production Sample", "Size Set", "Mass Production",
             "Inbound", "Photoshoot & Catalog", "Offline Distribution"
         ];
 
@@ -178,6 +285,7 @@
 
         const getRecommendation = (taskName) => {
             if (taskName.includes("Approval")) return `Solusi ${taskName}: Eskalasi ke Manajemen/Owner, minta prioritas review, atau jadwalkan meeting darurat.`;
+            if (taskName.includes("Pre Production") || taskName.includes("Size Set")) return `Solusi ${taskName}: Pastikan sample dikirim tepat waktu, gunakan kurir express jika antar kota/negara.`;
             if (taskName.includes("Payment")) return `Solusi ${taskName}: Follow up Finance segera, cek kelengkapan dokumen invoice/PO.`;
             if (taskName.includes("Fabric") || taskName.includes("Brocade") || taskName.includes("Material")) return `Solusi ${taskName}: Cek stok supplier lain, minta pengiriman parsial (split shipment), atau gunakan ekspedisi udara.`;
             if (taskName.includes("Mass Production")) return `Solusi ${taskName}: Tambah shift lembur (overtime), tambah manpower, atau sub-kon ke vendor jahit rekanan.`;
@@ -211,6 +319,121 @@
             return { left: `${Math.max(0, left)}%`, width: `${width}%` };
         };
 
+        // --- DEFINISI MODAL DI LUAR APP UNTUK MENCEGAH RE-RENDER/KEDAP-KEDIP ---
+
+        const ConfirmationModal = React.memo(({ config, onConfirm, onCancel }) => {
+            if (!config.isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
+                    <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-rose-100 text-rose-600 rounded-full">
+                                <Icons.AlertTriangle size={24} />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-800">Konfirmasi</h3>
+                        </div>
+                        <p className="text-slate-600 mb-6">{config.message}</p>
+                        <div className="flex justify-end gap-3">
+                            <button onClick={onCancel} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                            <button onClick={onConfirm} className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm transition-colors">Ya, Lanjutkan</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        });
+
+        const AddTaskModal = React.memo(({ isOpen, onClose, onSave }) => {
+            if (!isOpen) return null;
+            
+            const [form, setForm] = useState({
+                name: '',
+                planStart: '',
+                planEnd: '',
+                leadTime: 0
+            });
+
+            const handleChange = (e) => {
+                const { name, value } = e.target;
+                setForm(prev => ({ ...prev, [name]: value }));
+            };
+
+            const handleSubmit = () => {
+                onSave(form);
+                setForm({ name: '', planStart: '', planEnd: '', leadTime: 0 }); // Reset form
+            };
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
+                    <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-slate-800">Tambah Aktivitas Baru</h3>
+                            <button onClick={onClose}><Icons.X size={20} className="text-slate-400 hover:text-slate-600"/></button>
+                        </div>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Nama Aktivitas</label>
+                                <input type="text" name="name" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.name} onChange={handleChange} placeholder="Contoh: Packing" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Plan Start</label>
+                                <input type="date" name="planStart" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.planStart} onChange={handleChange} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Plan End</label>
+                                <input type="date" name="planEnd" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.planEnd} onChange={handleChange} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Hari)</label>
+                                <input type="number" name="leadTime" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.leadTime} onChange={handleChange} placeholder="0" />
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                            <button onClick={handleSubmit} disabled={!form.name} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors disabled:opacity-50">Tambah</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        });
+
+        const EditTaskModal = React.memo(({ config, onClose, onSave, onChange }) => {
+            if (!config.isOpen) return null;
+            const { data: taskData } = config;
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
+                    <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-slate-800">Edit Aktivitas</h3>
+                            <button onClick={onClose}><Icons.X size={20} className="text-slate-400 hover:text-slate-600"/></button>
+                        </div>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Nama Aktivitas</label>
+                                <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.name} onChange={(e) => onChange('name', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Plan Start</label>
+                                <input type="date" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.planStart} onChange={(e) => onChange('planStart', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Plan End</label>
+                                <input type="date" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.planEnd} onChange={(e) => onChange('planEnd', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Hari)</label>
+                                <input type="number" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.leadTime} onChange={(e) => onChange('leadTime', parseInt(e.target.value) || 0)} />
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                            <button onClick={onSave} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">Simpan</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        });
+
         // --- MAIN APP COMPONENT ---
         function App() {
             const [activeTab, setActiveTab] = useState('dashboard');
@@ -222,6 +445,12 @@
 
             // Modal State
             const [modalConfig, setModalConfig] = useState({ isOpen: false, message: '', onConfirm: null });
+            
+            // Edit Modal State
+            const [editModalConfig, setEditModalConfig] = useState({ isOpen: false, seriesIndex: null, activityIndex: null, data: null });
+
+            // Add Activity Modal State
+            const [addModalConfig, setAddModalConfig] = useState({ isOpen: false, seriesIndex: null });
 
             // Budgeting State
             const [budgetList, setBudgetList] = useState([]);
@@ -256,9 +485,9 @@
                 setProjectStart(earliestStart);
 
                 // Load Data
-                const savedData = localStorage.getItem('planner_data_v1');
-                const savedBudget = localStorage.getItem('planner_budget_v1');
-                const savedPricing = localStorage.getItem('planner_pricing_v1');
+                const savedData = localStorage.getItem('planner_data_v2'); 
+                const savedBudget = localStorage.getItem('planner_budget_v2'); 
+                const savedPricing = localStorage.getItem('planner_pricing_v2'); 
 
                 if (savedData) {
                     setData(JSON.parse(savedData));
@@ -293,30 +522,107 @@
             }, []);
 
             useEffect(() => {
-                if (isDataLoaded) localStorage.setItem('planner_data_v1', JSON.stringify(data));
+                if (isDataLoaded) localStorage.setItem('planner_data_v2', JSON.stringify(data));
             }, [data, isDataLoaded]);
 
             useEffect(() => {
-                if (isDataLoaded) localStorage.setItem('planner_budget_v1', JSON.stringify(budgetList));
+                if (isDataLoaded) localStorage.setItem('planner_budget_v2', JSON.stringify(budgetList));
             }, [budgetList, isDataLoaded]);
 
              useEffect(() => {
-                if (isDataLoaded) localStorage.setItem('planner_pricing_v1', JSON.stringify(pricingList));
+                if (isDataLoaded) localStorage.setItem('planner_pricing_v2', JSON.stringify(pricingList));
             }, [pricingList, isDataLoaded]);
 
             // --- CUSTOM MODAL HANDLER ---
-            const showConfirm = (message, action) => {
+            const showConfirm = useCallback((message, action) => {
                 setModalConfig({ isOpen: true, message, onConfirm: action });
-            };
+            }, []);
 
-            const handleConfirm = () => {
+            const handleConfirm = useCallback(() => {
                 if (modalConfig.onConfirm) modalConfig.onConfirm();
                 setModalConfig({ isOpen: false, message: '', onConfirm: null });
-            };
+            }, [modalConfig]);
 
-            const handleCancel = () => {
+            const handleCancel = useCallback(() => {
                 setModalConfig({ isOpen: false, message: '', onConfirm: null });
-            };
+            }, []);
+
+            // --- ADD MODAL HANDLERS ---
+            const openAddActivity = useCallback((sIdx) => {
+                setAddModalConfig({ isOpen: true, seriesIndex: sIdx });
+            }, []);
+
+            const closeAddActivity = useCallback(() => {
+                setAddModalConfig({ isOpen: false, seriesIndex: null });
+            }, []);
+
+            const handleSaveNewActivity = useCallback((newActivityData) => {
+                const { seriesIndex } = addModalConfig;
+                if (seriesIndex === null) return;
+
+                const newData = [...data];
+                const seriesActivities = newData[seriesIndex].activities;
+                
+                // Generate ID
+                const maxId = seriesActivities.reduce((max, act) => Math.max(max, act.id), 0);
+                
+                const newActivity = {
+                    id: maxId + 1,
+                    name: newActivityData.name,
+                    planStart: newActivityData.planStart,
+                    planEnd: newActivityData.planEnd,
+                    leadTime: parseInt(newActivityData.leadTime) || 0,
+                    actualStart: "",
+                    actualEnd: "",
+                    status: "pending"
+                };
+
+                newData[seriesIndex].activities.push(newActivity);
+                setData(newData);
+                closeAddActivity();
+            }, [data, addModalConfig, closeAddActivity]);
+
+            // --- EDIT MODAL HANDLERS ---
+            const openEditActivity = useCallback((sIdx, aIdx) => {
+                const activity = data[sIdx].activities[aIdx];
+                setEditModalConfig({
+                    isOpen: true,
+                    seriesIndex: sIdx,
+                    activityIndex: aIdx,
+                    data: { ...activity }
+                });
+            }, [data]);
+
+            const closeEditActivity = useCallback(() => {
+                setEditModalConfig({ isOpen: false, seriesIndex: null, activityIndex: null, data: null });
+            }, []);
+
+            const saveEditActivity = useCallback(() => {
+                const { seriesIndex, activityIndex, data: newData } = editModalConfig;
+                if (seriesIndex !== null && activityIndex !== null && newData) {
+                    const newSeriesData = [...data];
+                    newSeriesData[seriesIndex].activities[activityIndex] = newData;
+                    setData(newSeriesData);
+                    closeEditActivity();
+                }
+            }, [data, editModalConfig, closeEditActivity]);
+
+            const handleEditFormChange = useCallback((field, value) => {
+                setEditModalConfig(prev => ({
+                    ...prev,
+                    data: { ...prev.data, [field]: value }
+                }));
+            }, []);
+
+            const deleteActivity = useCallback((sIdx, aIdx) => {
+                const newSeriesData = [...data];
+                newSeriesData[sIdx].activities.splice(aIdx, 1);
+                setData(newSeriesData);
+            }, [data]);
+
+            const confirmDeleteActivity = useCallback((sIdx, aIdx) => {
+                showConfirm("Apakah Anda yakin ingin menghapus aktivitas ini?", () => deleteActivity(sIdx, aIdx));
+            }, [showConfirm, deleteActivity]);
 
 
             // --- RESET LOGIC FUNCTIONS ---
@@ -337,19 +643,19 @@
                     return { id: config.id, name: config.name, launchDate: config.launchDate, activities: tasks };
                 });
                 setData(initialData);
-                localStorage.setItem('planner_data_v1', JSON.stringify(initialData));
+                localStorage.setItem('planner_data_v2', JSON.stringify(initialData));
             };
 
             const resetBudgetingData = () => {
                 setBudgetList([]);
                 setBudgetForm({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
-                localStorage.removeItem('planner_budget_v1');
+                localStorage.removeItem('planner_budget_v2');
             };
 
             const resetPricingData = () => {
                 setPricingList([]);
                 setPricingForm({ seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: '' });
-                localStorage.removeItem('planner_pricing_v1');
+                localStorage.removeItem('planner_pricing_v2');
             };
 
             // Wrapper functions to trigger modal
@@ -394,7 +700,7 @@
                 const totalFeePct = platformFeePct + marketingFeePct;
                 let rspMpRaw = 0;
                 if ((1 - (totalFeePct/100)) > 0) {
-                     rspMpRaw = rspWeb / (1 - (totalFeePct/100));
+                      rspMpRaw = rspWeb / (1 - (totalFeePct/100));
                 }
 
                 let rspMpSuggested = Math.ceil(rspMpRaw / 1000) * 1000;
@@ -536,7 +842,7 @@
 
             const budgetStats = useMemo(() => {
                 let budgetPlanning = 0; 
-                let paidAmount = 0;     
+                let paidAmount = 0;      
                 let outstandingAmount = 0; 
                 const today = new Date();
 
@@ -959,6 +1265,9 @@
                                         <tr className="bg-slate-800 text-white shadow-sm z-20 relative">
                                             <td className="px-4 py-2 sticky left-0 z-20 bg-slate-800 border-r border-slate-700 font-bold text-xs uppercase tracking-wider flex items-center h-10">
                                                 {series.name}
+                                                <button onClick={() => openAddActivity(sIdx)} className="ml-2 p-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300" title="Add Activity">
+                                                    <Icons.Plus size={12}/>
+                                                </button>
                                             </td>
                                             <td colSpan="5" className="px-2 text-xs text-right text-slate-300 h-10 align-middle border-r border-slate-700 bg-slate-800">
                                                 Launch: {formatDate(series.launchDate)}
@@ -971,19 +1280,15 @@
                                             const planEndObj = new Date(act.planEnd);
                                             let effectiveActualEnd = act.actualEnd;
                                             
-                                            // Auto-progress logic: if started but not finished
                                             if (act.actualStart && !act.actualEnd) {
                                                 const startObj = parseDateLocal(act.actualStart);
-                                                // Clamp effective end to today, but not earlier than actual start
                                                 if (today >= startObj) {
                                                     effectiveActualEnd = today.toISOString().split('T')[0];
                                                 } else {
-                                                    // Future start date entered
                                                     effectiveActualEnd = act.actualStart; 
                                                 }
                                             }
 
-                                            // Delay calculation for visualization
                                             let delay = 0;
                                             if (act.actualEnd) {
                                                 const diff = getDiffDays(act.planEnd, act.actualEnd);
@@ -996,7 +1301,6 @@
                                             const isDone = !!act.actualEnd;
                                             const isInProgress = act.actualStart && !act.actualEnd;
 
-                                            // PROGRESS PERCENTAGE CALCULATION
                                             let progressPercent = 0;
                                             if (isInProgress) {
                                                 const start = parseDateLocal(act.actualStart);
@@ -1027,12 +1331,18 @@
                                             );
 
                                             return (
-                                                <tr key={act.id} className="hover:bg-slate-50 transition-colors h-11 group border-b border-slate-50">
-                                                    <td className="px-4 py-1 font-medium text-slate-700 border-r border-slate-200 sticky left-0 bg-white group-hover:bg-slate-50 z-10 text-xs">
-                                                        <div className="flex items-center gap-2 truncate w-full">
-                                                            <span className="text-slate-400 text-[10px] min-w-[15px]">{act.id}.</span>
-                                                            <span title={act.name} className="truncate">{act.name}</span>
-                                                            {isInProgress && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse ml-auto" title="In Progress"></span>}
+                                                <tr key={act.id} className="hover:bg-slate-50 transition-colors h-11 group/item border-b border-slate-50">
+                                                    <td className="px-4 py-1 font-medium text-slate-700 border-r border-slate-200 sticky left-0 bg-white group-hover/item:bg-slate-50 z-10 text-xs">
+                                                        <div className="flex justify-between items-center w-full">
+                                                            <div className="flex items-center gap-2 truncate flex-1">
+                                                                <span className="text-slate-400 text-[10px] min-w-[15px]">{act.id}.</span>
+                                                                <span title={act.name} className="truncate">{act.name}</span>
+                                                                {isInProgress && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse ml-1" title="In Progress"></span>}
+                                                            </div>
+                                                            <div className="hidden group-hover/item:flex gap-1 bg-white/80 pl-1">
+                                                                <button onClick={() => openEditActivity(sIdx, aIdx)} className="p-1 text-slate-400 hover:text-blue-600 transition-colors rounded"><Icons.Edit size={12} /></button>
+                                                                <button onClick={() => confirmDeleteActivity(sIdx, aIdx)} className="p-1 text-slate-400 hover:text-rose-600 transition-colors rounded"><Icons.Trash2 size={12} /></button>
+                                                            </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-1 text-slate-500 text-[10px] text-center border-r border-slate-100 bg-slate-50/30">{formatDate(act.planStart)}</td>
@@ -1418,8 +1728,8 @@
             );
             
             // --- Custom Modal ---
-            const ConfirmationModal = () => {
-                if (!modalConfig.isOpen) return null;
+            const ConfirmationModal = ({ config, onConfirm, onCancel }) => {
+                if (!config.isOpen) return null;
                 return (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
                         <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
@@ -1427,12 +1737,106 @@
                                 <div className="p-2 bg-rose-100 text-rose-600 rounded-full">
                                     <Icons.AlertTriangle size={24} />
                                 </div>
-                                <h3 className="text-lg font-bold text-slate-800">Konfirmasi Reset</h3>
+                                <h3 className="text-lg font-bold text-slate-800">Konfirmasi</h3>
                             </div>
-                            <p className="text-slate-600 mb-6">{modalConfig.message}</p>
+                            <p className="text-slate-600 mb-6">{config.message}</p>
                             <div className="flex justify-end gap-3">
-                                <button onClick={handleCancel} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
-                                <button onClick={handleConfirm} className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm transition-colors">Ya, Reset</button>
+                                <button onClick={onCancel} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                                <button onClick={onConfirm} className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm transition-colors">Ya, Lanjutkan</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // --- Add Task Modal ---
+            const AddTaskModal = ({ isOpen, onClose, onSave }) => {
+                if (!isOpen) return null;
+                
+                const [form, setForm] = useState({
+                    name: '',
+                    planStart: '',
+                    planEnd: '',
+                    leadTime: 0
+                });
+
+                const handleChange = (e) => {
+                    const { name, value } = e.target;
+                    setForm(prev => ({ ...prev, [name]: value }));
+                };
+
+                const handleSubmit = () => {
+                    onSave(form);
+                    setForm({ name: '', planStart: '', planEnd: '', leadTime: 0 }); // Reset form
+                };
+
+                return (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
+                        <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-slate-800">Tambah Aktivitas Baru</h3>
+                                <button onClick={onClose}><Icons.X size={20} className="text-slate-400 hover:text-slate-600"/></button>
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">Nama Aktivitas</label>
+                                    <input type="text" name="name" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.name} onChange={handleChange} placeholder="Contoh: Packing" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">Plan Start</label>
+                                    <input type="date" name="planStart" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.planStart} onChange={handleChange} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">Plan End</label>
+                                    <input type="date" name="planEnd" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.planEnd} onChange={handleChange} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Hari)</label>
+                                    <input type="number" name="leadTime" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.leadTime} onChange={handleChange} placeholder="0" />
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                                <button onClick={handleSubmit} disabled={!form.name} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors disabled:opacity-50">Tambah</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // --- Edit Task Modal ---
+            const EditTaskModal = ({ config, onClose, onSave, onChange }) => {
+                if (!config.isOpen) return null;
+                const { data: taskData } = config;
+
+                return (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
+                        <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-slate-800">Edit Aktivitas</h3>
+                                <button onClick={onClose}><Icons.X size={20} className="text-slate-400 hover:text-slate-600"/></button>
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">Nama Aktivitas</label>
+                                    <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.name} onChange={(e) => onChange('name', e.target.value)} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">Plan Start</label>
+                                    <input type="date" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.planStart} onChange={(e) => onChange('planStart', e.target.value)} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">Plan End</label>
+                                    <input type="date" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.planEnd} onChange={(e) => onChange('planEnd', e.target.value)} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Hari)</label>
+                                    <input type="number" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.leadTime} onChange={(e) => onChange('leadTime', parseInt(e.target.value) || 0)} />
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                                <button onClick={onSave} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">Simpan</button>
                             </div>
                         </div>
                     </div>
@@ -1470,7 +1874,9 @@
                         {activeTab === 'budgeting' && renderBudgeting()}
                         {activeTab === 'pricing' && renderPricing()}
                     </main>
-                    <ConfirmationModal />
+                    <ConfirmationModal config={modalConfig} onConfirm={handleConfirm} onCancel={handleCancel} />
+                    <EditTaskModal config={editModalConfig} onClose={closeEditActivity} onSave={saveEditActivity} onChange={handleEditFormChange} />
+                    <AddTaskModal isOpen={addModalConfig.isOpen} onClose={closeAddActivity} onSave={handleSaveNewActivity} />
                 </div>
             );
         }
