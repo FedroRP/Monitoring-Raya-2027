@@ -28,13 +28,9 @@
         /* Bar Animation */
         .bar-transition { transition: width 1s ease-in-out; }
         
-        /* Tooltip Animation */
-        .tooltip-anim { animation: tooltipFade 0.2s ease-out; }
-        @keyframes tooltipFade { from { opacity: 0; transform: translate(-50%, 5px); } to { opacity: 1; transform: translate(-50%, 0); } }
-
         /* Modal Animation */
         .modal-enter-active { animation: modalFadeIn 0.2s ease-out forwards; }
-        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans">
@@ -81,111 +77,11 @@
 
         // --- CONFIGURATION ---
         const SERIES_CONFIG = [
-            { 
-                id: 1, 
-                name: "Series 1", 
-                launchDate: "2027-01-04", 
-                schedule: [ 
-                    { id: 1, start: "2026-06-01", end: "2026-06-14", leadTime: 14 },
-                    { id: 2, start: "2026-06-15", end: "2026-06-19", leadTime: 5 },
-                    { id: 3, start: "2026-06-15", end: "2026-06-19", leadTime: 5 },
-                    { id: 4, start: "2026-06-20", end: "2026-06-24", leadTime: 5 },
-                    { id: 5, start: "2026-06-25", end: "2026-06-29", leadTime: 5 },
-                    { id: 6, start: "2026-06-30", end: "2026-07-06", leadTime: 7 },
-                    { id: 7, start: "2026-07-07", end: "2026-09-11", leadTime: 67 },
-                    { id: 8, start: "2026-07-07", end: "2026-08-20", leadTime: 45 },
-                    { id: 9, start: "2026-08-14", end: "2026-08-27", leadTime: 14 },
-                    { id: 10, start: "2026-08-28", end: "2026-09-11", leadTime: 15 },
-                    { id: 11, start: "2026-09-12", end: "2026-11-17", leadTime: 67 },
-                    { id: 12, start: "2026-11-18", end: "2026-11-22", leadTime: 5 },
-                    { id: 13, start: "2026-11-18", end: "2026-11-27", leadTime: 10 },
-                    { id: 14, start: "2026-11-23", end: "2026-12-07", leadTime: 15 }
-                ] 
-            },
-            { 
-                id: 2, 
-                name: "Series 2", 
-                launchDate: "2027-01-11", 
-                schedule: [ 
-                    { id: 1, start: "2026-06-15", end: "2026-06-29", leadTime: 15 },
-                    { id: 2, start: "2026-06-30", end: "2026-07-04", leadTime: 5 },
-                    { id: 3, start: "2026-06-30", end: "2026-07-04", leadTime: 5 },
-                    { id: 4, start: "2026-07-05", end: "2026-07-09", leadTime: 5 },
-                    { id: 5, start: "2026-07-10", end: "2026-07-14", leadTime: 5 },
-                    { id: 6, start: "2026-07-15", end: "2026-07-21", leadTime: 7 },
-                    { id: 7, start: "2026-07-22", end: "2026-09-26", leadTime: 67 },
-                    { id: 8, start: "2026-07-22", end: "2026-09-04", leadTime: 45 },
-                    { id: 9, start: "2026-08-29", end: "2026-09-11", leadTime: 14 },
-                    { id: 10, start: "2026-09-12", end: "2026-09-26", leadTime: 15 },
-                    { id: 11, start: "2026-09-27", end: "2026-12-02", leadTime: 67 },
-                    { id: 12, start: "2026-12-03", end: "2026-12-07", leadTime: 5 },
-                    { id: 13, start: "2026-12-03", end: "2026-12-12", leadTime: 10 },
-                    { id: 14, start: "2026-12-12", end: "2026-12-26", leadTime: 15 } 
-                ] 
-            },
-            { 
-                id: 3, 
-                name: "Series 3", 
-                launchDate: "2027-01-18", 
-                schedule: [ 
-                    { id: 1, start: "2026-07-01", end: "2026-07-14", leadTime: 14 },
-                    { id: 2, start: "2026-07-15", end: "2026-07-19", leadTime: 5 },
-                    { id: 3, start: "2026-07-15", end: "2026-07-19", leadTime: 5 },
-                    { id: 4, start: "2026-07-20", end: "2026-07-24", leadTime: 5 },
-                    { id: 5, start: "2026-07-25", end: "2026-07-29", leadTime: 5 },
-                    { id: 6, start: "2026-07-30", end: "2026-08-05", leadTime: 7 },
-                    { id: 7, start: "2026-08-06", end: "2026-09-11", leadTime: 37 },
-                    { id: 8, start: "2026-08-06", end: "2026-09-19", leadTime: 45 },
-                    { id: 9, start: "2026-09-13", end: "2026-09-26", leadTime: 14 },
-                    { id: 10, start: "2026-09-27", end: "2026-10-11", leadTime: 15 },
-                    { id: 11, start: "2026-10-12", end: "2026-12-17", leadTime: 67 },
-                    { id: 12, start: "2026-12-18", end: "2026-12-22", leadTime: 5 },
-                    { id: 13, start: "2026-12-18", end: "2026-12-27", leadTime: 10 },
-                    { id: 14, start: "2026-12-27", end: "2027-01-08", leadTime: 13 } 
-                ] 
-            },
-            { 
-                id: 4, 
-                name: "Series 4", 
-                launchDate: "2027-01-25", 
-                schedule: [ 
-                    { id: 1, start: "2026-07-15", end: "2026-07-29", leadTime: 15 },
-                    { id: 2, start: "2026-07-30", end: "2026-08-03", leadTime: 5 },
-                    { id: 3, start: "2026-07-30", end: "2026-08-03", leadTime: 5 },
-                    { id: 4, start: "2026-08-04", end: "2026-08-08", leadTime: 5 },
-                    { id: 5, start: "2026-08-09", end: "2026-08-13", leadTime: 5 },
-                    { id: 6, start: "2026-08-14", end: "2026-08-20", leadTime: 7 },
-                    { id: 7, start: "2026-08-21", end: "2026-10-26", leadTime: 67 },
-                    { id: 8, start: "2026-08-21", end: "2026-10-04", leadTime: 45 },
-                    { id: 9, start: "2026-09-28", end: "2026-10-11", leadTime: 14 },
-                    { id: 10, start: "2026-10-12", end: "2026-10-26", leadTime: 15 },
-                    { id: 11, start: "2026-10-27", end: "2027-01-01", leadTime: 67 },
-                    { id: 12, start: "2027-01-02", end: "2027-01-06", leadTime: 5 },
-                    { id: 13, start: "2027-01-02", end: "2027-01-11", leadTime: 10 },
-                    { id: 14, start: "2027-01-06", end: "2027-01-15", leadTime: 10 } 
-                ] 
-            },
-            { 
-                id: 5, 
-                name: "Series 5", 
-                launchDate: "2027-02-01", 
-                schedule: [ 
-                    { id: 1, start: "2026-08-01", end: "2026-08-14", leadTime: 14 },
-                    { id: 2, start: "2026-08-15", end: "2026-08-19", leadTime: 5 },
-                    { id: 3, start: "2026-08-15", end: "2026-08-19", leadTime: 5 },
-                    { id: 4, start: "2026-08-20", end: "2026-08-24", leadTime: 5 },
-                    { id: 5, start: "2026-08-25", end: "2026-08-29", leadTime: 5 },
-                    { id: 6, start: "2026-08-30", end: "2026-09-05", leadTime: 7 },
-                    { id: 7, start: "2026-09-06", end: "2026-11-11", leadTime: 67 },
-                    { id: 8, start: "2026-09-06", end: "2026-10-20", leadTime: 45 },
-                    { id: 9, start: "2026-10-14", end: "2026-10-27", leadTime: 14 },
-                    { id: 10, start: "2026-10-28", end: "2026-11-11", leadTime: 15 },
-                    { id: 11, start: "2026-11-12", end: "2027-01-17", leadTime: 67 },
-                    { id: 12, start: "2027-01-18", end: "2027-01-22", leadTime: 5 },
-                    { id: 13, start: "2027-01-18", end: "2027-01-22", leadTime: 5 },
-                    { id: 14, start: "2027-01-23", end: "2027-01-24", leadTime: 2 } 
-                ] 
-            }
+            { id: 1, name: "Series 1", launchDate: "2027-01-04", schedule: [ { id: 1, start: "2026-06-01", end: "2026-06-14", leadTime: 14 }, { id: 2, start: "2026-06-15", end: "2026-06-19", leadTime: 5 }, { id: 3, start: "2026-06-15", end: "2026-06-19", leadTime: 5 }, { id: 4, start: "2026-06-20", end: "2026-06-24", leadTime: 5 }, { id: 5, start: "2026-06-25", end: "2026-06-29", leadTime: 5 }, { id: 6, start: "2026-06-30", end: "2026-07-06", leadTime: 7 }, { id: 7, start: "2026-07-07", end: "2026-09-11", leadTime: 67 }, { id: 8, start: "2026-07-07", end: "2026-08-20", leadTime: 45 }, { id: 9, start: "2026-08-14", end: "2026-08-27", leadTime: 14 }, { id: 10, start: "2026-08-28", end: "2026-09-11", leadTime: 15 }, { id: 11, start: "2026-09-12", end: "2026-11-17", leadTime: 67 }, { id: 12, start: "2026-11-18", end: "2026-11-22", leadTime: 5 }, { id: 13, start: "2026-11-18", end: "2026-11-27", leadTime: 10 }, { id: 14, start: "2026-11-23", end: "2026-12-07", leadTime: 15 } ] },
+            { id: 2, name: "Series 2", launchDate: "2027-01-11", schedule: [ { id: 1, start: "2026-06-15", end: "2026-06-29", leadTime: 15 }, { id: 2, start: "2026-06-30", end: "2026-07-04", leadTime: 5 }, { id: 3, start: "2026-06-30", end: "2026-07-04", leadTime: 5 }, { id: 4, start: "2026-07-05", end: "2026-07-09", leadTime: 5 }, { id: 5, start: "2026-07-10", end: "2026-07-14", leadTime: 5 }, { id: 6, start: "2026-07-15", end: "2026-07-21", leadTime: 7 }, { id: 7, start: "2026-07-22", end: "2026-09-26", leadTime: 67 }, { id: 8, start: "2026-07-22", end: "2026-09-04", leadTime: 45 }, { id: 9, start: "2026-08-29", end: "2026-09-11", leadTime: 14 }, { id: 10, start: "2026-09-12", end: "2026-09-26", leadTime: 15 }, { id: 11, start: "2026-09-27", end: "2026-12-02", leadTime: 67 }, { id: 12, start: "2026-12-03", end: "2026-12-07", leadTime: 5 }, { id: 13, start: "2026-12-03", end: "2026-12-12", leadTime: 10 }, { id: 14, start: "2026-12-12", end: "2026-12-26", leadTime: 15 } ] },
+            { id: 3, name: "Series 3", launchDate: "2027-01-18", schedule: [ { id: 1, start: "2026-07-01", end: "2026-07-14", leadTime: 14 }, { id: 2, start: "2026-07-15", end: "2026-07-19", leadTime: 5 }, { id: 3, start: "2026-07-15", end: "2026-07-19", leadTime: 5 }, { id: 4, start: "2026-07-20", end: "2026-07-24", leadTime: 5 }, { id: 5, start: "2026-07-25", end: "2026-07-29", leadTime: 5 }, { id: 6, start: "2026-07-30", end: "2026-08-05", leadTime: 7 }, { id: 7, start: "2026-08-06", end: "2026-09-11", leadTime: 37 }, { id: 8, start: "2026-08-06", end: "2026-09-19", leadTime: 45 }, { id: 9, start: "2026-09-13", end: "2026-09-26", leadTime: 14 }, { id: 10, start: "2026-09-27", end: "2026-10-11", leadTime: 15 }, { id: 11, start: "2026-10-12", end: "2026-12-17", leadTime: 67 }, { id: 12, start: "2026-12-18", end: "2026-12-22", leadTime: 5 }, { id: 13, start: "2026-12-18", end: "2026-12-27", leadTime: 10 }, { id: 14, start: "2026-12-27", end: "2027-01-08", leadTime: 13 } ] },
+            { id: 4, name: "Series 4", launchDate: "2027-01-25", schedule: [ { id: 1, start: "2026-07-15", end: "2026-07-29", leadTime: 15 }, { id: 2, start: "2026-07-30", end: "2026-08-03", leadTime: 5 }, { id: 3, start: "2026-07-30", end: "2026-08-03", leadTime: 5 }, { id: 4, start: "2026-08-04", end: "2026-08-08", leadTime: 5 }, { id: 5, start: "2026-08-09", end: "2026-08-13", leadTime: 5 }, { id: 6, start: "2026-08-14", end: "2026-08-20", leadTime: 7 }, { id: 7, start: "2026-08-21", end: "2026-10-26", leadTime: 67 }, { id: 8, start: "2026-08-21", end: "2026-10-04", leadTime: 45 }, { id: 9, start: "2026-09-28", end: "2026-10-11", leadTime: 14 }, { id: 10, start: "2026-10-12", end: "2026-10-26", leadTime: 15 }, { id: 11, start: "2026-10-27", end: "2027-01-01", leadTime: 67 }, { id: 12, start: "2027-01-02", end: "2027-01-06", leadTime: 5 }, { id: 13, start: "2027-01-02", end: "2027-01-11", leadTime: 10 }, { id: 14, start: "2027-01-06", end: "2027-01-15", leadTime: 10 } ] },
+            { id: 5, name: "Series 5", launchDate: "2027-02-01", schedule: [ { id: 1, start: "2026-08-01", end: "2026-08-14", leadTime: 14 }, { id: 2, start: "2026-08-15", end: "2026-08-19", leadTime: 5 }, { id: 3, start: "2026-08-15", end: "2026-08-19", leadTime: 5 }, { id: 4, start: "2026-08-20", end: "2026-08-24", leadTime: 5 }, { id: 5, start: "2026-08-25", end: "2026-08-29", leadTime: 5 }, { id: 6, start: "2026-08-30", end: "2026-09-05", leadTime: 7 }, { id: 7, start: "2026-09-06", end: "2026-11-11", leadTime: 67 }, { id: 8, start: "2026-09-06", end: "2026-10-20", leadTime: 45 }, { id: 9, start: "2026-10-14", end: "2026-10-27", leadTime: 14 }, { id: 10, start: "2026-10-28", end: "2026-11-11", leadTime: 15 }, { id: 11, start: "2026-11-12", end: "2027-01-17", leadTime: 67 }, { id: 12, start: "2027-01-18", end: "2027-01-22", leadTime: 5 }, { id: 13, start: "2027-01-18", end: "2027-01-22", leadTime: 5 }, { id: 14, start: "2027-01-23", end: "2027-01-24", leadTime: 2 } ] }
         ];
 
         const TASK_NAMES = [
@@ -202,46 +98,16 @@
         };
 
         const COMPETITOR_DB = {
-            "Dress/Gamis Basic": { 
-                price: 289000, 
-                note: "Avg. Market: Heaven Lights (~289k), Vanilla Hijab (~269k)" 
-            },
-            "Dress/Gamis Premium": { 
-                price: 875000, 
-                note: "Avg. Market: Buttonscarves (~1.2M), Wearing Klamby (~895k)" 
-            },
-            "Scarf Printing": { 
-                price: 335000, 
-                note: "Avg. Market: Buttonscarves (~425k), Wearing Klamby (~335k)" 
-            },
-            "Scarf Polos": { 
-                price: 149000, 
-                note: "Avg. Market: Buttonscarves (~225k), Heaven Lights (~99k)" 
-            },
-            "Blouse/Tunic": { 
-                price: 325000, 
-                note: "Avg. Market: Wearing Klamby (~450k), Heaven Lights (~299k)" 
-            },
-            "Prayer Set/Mukena": { 
-                price: 950000, 
-                note: "Avg. Market: Buttonscarves (~1.5M), Wearing Klamby (~950k)" 
-            },
-            "Pants/Bawahan": { 
-                price: 249000, 
-                note: "Avg. Market: Heaven Lights (~249k), Wearing Klamby (~375k)" 
-            },
-            "Bag/Accessories": { 
-                price: 650000, 
-                note: "Avg. Market: Buttonscarves (~1.8M), Wearing Klamby (~650k)" 
-            },
-             "Sunglasses/Eyewear": {
-                price: 375000, 
-                note: "Avg. Market: Buttonscarves (~1.2M), Wearing Klamby (~350k)"
-            },
-            "Outer/Jacket": { 
-                price: 495000, 
-                note: "Avg. Market: Wearing Klamby (~650k), Heaven Lights (~399k)" 
-            }
+            "Dress/Gamis Basic": { price: 289000, note: "Avg. Market: Heaven Lights (~289k), Vanilla Hijab (~269k)" },
+            "Dress/Gamis Premium": { price: 875000, note: "Avg. Market: Buttonscarves (~1.2M), Wearing Klamby (~895k)" },
+            "Scarf Printing": { price: 335000, note: "Avg. Market: Buttonscarves (~425k), Wearing Klamby (~335k)" },
+            "Scarf Polos": { price: 149000, note: "Avg. Market: Buttonscarves (~225k), Heaven Lights (~99k)" },
+            "Blouse/Tunic": { price: 325000, note: "Avg. Market: Wearing Klamby (~450k), Heaven Lights (~299k)" },
+            "Prayer Set/Mukena": { price: 950000, note: "Avg. Market: Buttonscarves (~1.5M), Wearing Klamby (~950k)" },
+            "Pants/Bawahan": { price: 249000, note: "Avg. Market: Heaven Lights (~249k), Wearing Klamby (~375k)" },
+            "Bag/Accessories": { price: 650000, note: "Avg. Market: Buttonscarves (~1.8M), Wearing Klamby (~650k)" },
+             "Sunglasses/Eyewear": { price: 375000, note: "Avg. Market: Buttonscarves (~1.2M), Wearing Klamby (~350k)" },
+            "Outer/Jacket": { price: 495000, note: "Avg. Market: Wearing Klamby (~650k), Heaven Lights (~399k)" }
         };
 
         const TIMELINE_START = "2026-06-01";
@@ -251,8 +117,7 @@
         const getDiffDays = (start, end) => {
             const date1 = new Date(start);
             const date2 = new Date(end);
-            const diffTime = date2 - date1;
-            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return Math.ceil((date2 - date1) / (1000 * 60 * 60 * 24));
         };
 
         const formatDate = (dateStr) => {
@@ -280,6 +145,7 @@
         };
 
         const formatRupiah = (number) => {
+            if (number === null || number === undefined || isNaN(number)) return "Rp0";
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(number);
         };
 
@@ -319,17 +185,14 @@
             return { left: `${Math.max(0, left)}%`, width: `${width}%` };
         };
 
-        // --- DEFINISI MODAL DI LUAR APP UNTUK MENCEGAH RE-RENDER/KEDAP-KEDIP ---
-
+        // --- DEFINISI MODAL (Di Luar App untuk Mencegah Flickering) ---
         const ConfirmationModal = React.memo(({ config, onConfirm, onCancel }) => {
             if (!config.isOpen) return null;
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
                     <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-rose-100 text-rose-600 rounded-full">
-                                <Icons.AlertTriangle size={24} />
-                            </div>
+                            <div className="p-2 bg-rose-100 text-rose-600 rounded-full"><Icons.AlertTriangle size={24} /></div>
                             <h3 className="text-lg font-bold text-slate-800">Konfirmasi</h3>
                         </div>
                         <p className="text-slate-600 mb-6">{config.message}</p>
@@ -342,25 +205,11 @@
             );
         });
 
-        const AddTaskModal = React.memo(({ isOpen, onClose, onSave }) => {
+        const AddTaskModal = ({ isOpen, onClose, onSave }) => {
             if (!isOpen) return null;
-            
-            const [form, setForm] = useState({
-                name: '',
-                planStart: '',
-                planEnd: '',
-                leadTime: 0
-            });
-
-            const handleChange = (e) => {
-                const { name, value } = e.target;
-                setForm(prev => ({ ...prev, [name]: value }));
-            };
-
-            const handleSubmit = () => {
-                onSave(form);
-                setForm({ name: '', planStart: '', planEnd: '', leadTime: 0 }); // Reset form
-            };
+            const [form, setForm] = useState({ name: '', planStart: '', planEnd: '', leadTime: 0 });
+            const handleChange = (e) => { const { name, value } = e.target; setForm(prev => ({ ...prev, [name]: value })); };
+            const handleSubmit = () => { onSave(form); setForm({ name: '', planStart: '', planEnd: '', leadTime: 0 }); };
 
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
@@ -370,22 +219,10 @@
                             <button onClick={onClose}><Icons.X size={20} className="text-slate-400 hover:text-slate-600"/></button>
                         </div>
                         <div className="space-y-3">
-                            <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Nama Aktivitas</label>
-                                <input type="text" name="name" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.name} onChange={handleChange} placeholder="Contoh: Packing" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Plan Start</label>
-                                <input type="date" name="planStart" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.planStart} onChange={handleChange} />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Plan End</label>
-                                <input type="date" name="planEnd" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.planEnd} onChange={handleChange} />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Hari)</label>
-                                <input type="number" name="leadTime" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.leadTime} onChange={handleChange} placeholder="0" />
-                            </div>
+                            <div><label className="block text-xs font-medium text-slate-500 mb-1">Nama Aktivitas</label><input type="text" name="name" className="w-full p-2 border border-slate-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" value={form.name} onChange={handleChange} placeholder="Contoh: Packing" /></div>
+                            <div><label className="block text-xs font-medium text-slate-500 mb-1">Plan Start</label><input type="date" name="planStart" className="w-full p-2 border border-slate-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" value={form.planStart} onChange={handleChange} /></div>
+                            <div><label className="block text-xs font-medium text-slate-500 mb-1">Plan End</label><input type="date" name="planEnd" className="w-full p-2 border border-slate-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" value={form.planEnd} onChange={handleChange} /></div>
+                            <div><label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Hari)</label><input type="number" name="leadTime" className="w-full p-2 border border-slate-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" value={form.leadTime} onChange={handleChange} placeholder="0" /></div>
                         </div>
                         <div className="flex justify-end gap-3 mt-6">
                             <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
@@ -394,12 +231,11 @@
                     </div>
                 </div>
             );
-        });
+        };
 
-        const EditTaskModal = React.memo(({ config, onClose, onSave, onChange }) => {
+        const EditTaskModal = ({ config, onClose, onSave, onChange }) => {
             if (!config.isOpen) return null;
             const { data: taskData } = config;
-
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
                     <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
@@ -408,22 +244,10 @@
                             <button onClick={onClose}><Icons.X size={20} className="text-slate-400 hover:text-slate-600"/></button>
                         </div>
                         <div className="space-y-3">
-                            <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Nama Aktivitas</label>
-                                <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.name} onChange={(e) => onChange('name', e.target.value)} />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Plan Start</label>
-                                <input type="date" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.planStart} onChange={(e) => onChange('planStart', e.target.value)} />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Plan End</label>
-                                <input type="date" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.planEnd} onChange={(e) => onChange('planEnd', e.target.value)} />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Hari)</label>
-                                <input type="number" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.leadTime} onChange={(e) => onChange('leadTime', parseInt(e.target.value) || 0)} />
-                            </div>
+                            <div><label className="block text-xs font-medium text-slate-500 mb-1">Nama Aktivitas</label><input type="text" className="w-full p-2 border border-slate-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" value={taskData.name} onChange={(e) => onChange('name', e.target.value)} /></div>
+                            <div><label className="block text-xs font-medium text-slate-500 mb-1">Plan Start</label><input type="date" className="w-full p-2 border border-slate-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" value={taskData.planStart} onChange={(e) => onChange('planStart', e.target.value)} /></div>
+                            <div><label className="block text-xs font-medium text-slate-500 mb-1">Plan End</label><input type="date" className="w-full p-2 border border-slate-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" value={taskData.planEnd} onChange={(e) => onChange('planEnd', e.target.value)} /></div>
+                            <div><label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Hari)</label><input type="number" className="w-full p-2 border border-slate-300 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" value={taskData.leadTime} onChange={(e) => onChange('leadTime', parseInt(e.target.value) || 0)} /></div>
                         </div>
                         <div className="flex justify-end gap-3 mt-6">
                             <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
@@ -432,7 +256,7 @@
                     </div>
                 </div>
             );
-        });
+        };
 
         // --- MAIN APP COMPONENT ---
         function App() {
@@ -443,160 +267,80 @@
             const [isDataLoaded, setIsDataLoaded] = useState(false);
             const [currentTime, setCurrentTime] = useState(new Date());
 
-            // Modal State
+            // Modal States
             const [modalConfig, setModalConfig] = useState({ isOpen: false, message: '', onConfirm: null });
-            
-            // Edit Modal State
             const [editModalConfig, setEditModalConfig] = useState({ isOpen: false, seriesIndex: null, activityIndex: null, data: null });
-
-            // Add Activity Modal State
             const [addModalConfig, setAddModalConfig] = useState({ isOpen: false, seriesIndex: null });
 
-            // Budgeting State
+            // Budgeting & Pricing States
             const [budgetList, setBudgetList] = useState([]);
-            const [budgetForm, setBudgetForm] = useState({
-                seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: ''
-            });
-
-            // Pricing State
+            const [budgetForm, setBudgetForm] = useState({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
             const [pricingList, setPricingList] = useState([]);
-            const [pricingForm, setPricingForm] = useState({
-                seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: ''
-            });
-
-            // Filters
+            const [pricingForm, setPricingForm] = useState({ seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: '' });
             const [dpFilterMonth, setDpFilterMonth] = useState(""); 
             const [repaymentFilterMonth, setRepaymentFilterMonth] = useState("");
 
-            // Setup Timeline Vars
+            // Memos
             const timelineMonths = useMemo(() => getMonths(TIMELINE_START, TIMELINE_END), []);
             const timelineTotalDuration = new Date(TIMELINE_END).getTime() - new Date(TIMELINE_START).getTime();
 
             useEffect(() => {
                 setIsClient(true);
                 const timer = setInterval(() => { setCurrentTime(new Date()); }, 1000);
-                
                 let earliestStart = "2099-12-31";
-                SERIES_CONFIG.forEach(series => {
-                    series.schedule.forEach(sch => {
-                        if (sch.start < earliestStart) earliestStart = sch.start;
-                    });
-                });
+                SERIES_CONFIG.forEach(series => { series.schedule.forEach(sch => { if (sch.start < earliestStart) earliestStart = sch.start; }); });
                 setProjectStart(earliestStart);
 
-                // Load Data
-                const savedData = localStorage.getItem('planner_data_v2'); 
-                const savedBudget = localStorage.getItem('planner_budget_v2'); 
-                const savedPricing = localStorage.getItem('planner_pricing_v2'); 
+                // Load Data - Using v3 keys to reset corrupt data
+                const savedData = localStorage.getItem('planner_data_v3'); 
+                const savedBudget = localStorage.getItem('planner_budget_v3'); 
+                const savedPricing = localStorage.getItem('planner_pricing_v3'); 
 
-                if (savedData) {
-                    setData(JSON.parse(savedData));
-                } else {
+                if (savedData) { setData(JSON.parse(savedData)); } 
+                else {
                     const initialData = SERIES_CONFIG.map((config) => {
-                        const tasks = config.schedule.map((sch, index) => {
-                            return {
-                                id: index + 1,
-                                name: TASK_NAMES[index],
-                                leadTime: sch.leadTime,
-                                planStart: sch.start,
-                                planEnd: sch.end,
-                                actualStart: "",
-                                actualEnd: "",
-                                status: "pending"
-                            };
-                        });
+                        const tasks = config.schedule.map((sch, index) => ({
+                            id: index + 1, name: TASK_NAMES[index], leadTime: sch.leadTime, planStart: sch.start, planEnd: sch.end, actualStart: "", actualEnd: "", status: "pending"
+                        }));
                         return { id: config.id, name: config.name, launchDate: config.launchDate, activities: tasks };
                     });
                     setData(initialData);
                 }
-
-                if (savedBudget) {
-                    setBudgetList(JSON.parse(savedBudget));
-                }
-                if (savedPricing) {
-                    setPricingList(JSON.parse(savedPricing));
-                }
-                
+                if (savedBudget) setBudgetList(JSON.parse(savedBudget));
+                if (savedPricing) setPricingList(JSON.parse(savedPricing));
                 setIsDataLoaded(true);
                 return () => clearInterval(timer);
             }, []);
 
-            useEffect(() => {
-                if (isDataLoaded) localStorage.setItem('planner_data_v2', JSON.stringify(data));
-            }, [data, isDataLoaded]);
+            useEffect(() => { if (isDataLoaded) localStorage.setItem('planner_data_v3', JSON.stringify(data)); }, [data, isDataLoaded]);
+            useEffect(() => { if (isDataLoaded) localStorage.setItem('planner_budget_v3', JSON.stringify(budgetList)); }, [budgetList, isDataLoaded]);
+            useEffect(() => { if (isDataLoaded) localStorage.setItem('planner_pricing_v3', JSON.stringify(pricingList)); }, [pricingList, isDataLoaded]);
 
-            useEffect(() => {
-                if (isDataLoaded) localStorage.setItem('planner_budget_v2', JSON.stringify(budgetList));
-            }, [budgetList, isDataLoaded]);
+            // Handlers
+            const showConfirm = useCallback((message, action) => setModalConfig({ isOpen: true, message, onConfirm: action }), []);
+            const handleConfirm = useCallback(() => { if (modalConfig.onConfirm) modalConfig.onConfirm(); setModalConfig({ isOpen: false, message: '', onConfirm: null }); }, [modalConfig]);
+            const handleCancel = useCallback(() => setModalConfig({ isOpen: false, message: '', onConfirm: null }), []);
 
-             useEffect(() => {
-                if (isDataLoaded) localStorage.setItem('planner_pricing_v2', JSON.stringify(pricingList));
-            }, [pricingList, isDataLoaded]);
-
-            // --- CUSTOM MODAL HANDLER ---
-            const showConfirm = useCallback((message, action) => {
-                setModalConfig({ isOpen: true, message, onConfirm: action });
-            }, []);
-
-            const handleConfirm = useCallback(() => {
-                if (modalConfig.onConfirm) modalConfig.onConfirm();
-                setModalConfig({ isOpen: false, message: '', onConfirm: null });
-            }, [modalConfig]);
-
-            const handleCancel = useCallback(() => {
-                setModalConfig({ isOpen: false, message: '', onConfirm: null });
-            }, []);
-
-            // --- ADD MODAL HANDLERS ---
-            const openAddActivity = useCallback((sIdx) => {
-                setAddModalConfig({ isOpen: true, seriesIndex: sIdx });
-            }, []);
-
-            const closeAddActivity = useCallback(() => {
-                setAddModalConfig({ isOpen: false, seriesIndex: null });
-            }, []);
-
+            const openAddActivity = useCallback((sIdx) => setAddModalConfig({ isOpen: true, seriesIndex: sIdx }), []);
+            const closeAddActivity = useCallback(() => setAddModalConfig({ isOpen: false, seriesIndex: null }), []);
             const handleSaveNewActivity = useCallback((newActivityData) => {
                 const { seriesIndex } = addModalConfig;
                 if (seriesIndex === null) return;
-
                 const newData = [...data];
-                const seriesActivities = newData[seriesIndex].activities;
-                
-                // Generate ID
-                const maxId = seriesActivities.reduce((max, act) => Math.max(max, act.id), 0);
-                
-                const newActivity = {
-                    id: maxId + 1,
-                    name: newActivityData.name,
-                    planStart: newActivityData.planStart,
-                    planEnd: newActivityData.planEnd,
-                    leadTime: parseInt(newActivityData.leadTime) || 0,
-                    actualStart: "",
-                    actualEnd: "",
-                    status: "pending"
-                };
-
-                newData[seriesIndex].activities.push(newActivity);
+                const maxId = newData[seriesIndex].activities.reduce((max, act) => Math.max(max, act.id), 0);
+                newData[seriesIndex].activities.push({
+                    id: maxId + 1, name: newActivityData.name, planStart: newActivityData.planStart, planEnd: newActivityData.planEnd,
+                    leadTime: parseInt(newActivityData.leadTime) || 0, actualStart: "", actualEnd: "", status: "pending"
+                });
                 setData(newData);
                 closeAddActivity();
             }, [data, addModalConfig, closeAddActivity]);
 
-            // --- EDIT MODAL HANDLERS ---
             const openEditActivity = useCallback((sIdx, aIdx) => {
                 const activity = data[sIdx].activities[aIdx];
-                setEditModalConfig({
-                    isOpen: true,
-                    seriesIndex: sIdx,
-                    activityIndex: aIdx,
-                    data: { ...activity }
-                });
+                setEditModalConfig({ isOpen: true, seriesIndex: sIdx, activityIndex: aIdx, data: { ...activity } });
             }, [data]);
-
-            const closeEditActivity = useCallback(() => {
-                setEditModalConfig({ isOpen: false, seriesIndex: null, activityIndex: null, data: null });
-            }, []);
-
+            const closeEditActivity = useCallback(() => setEditModalConfig({ isOpen: false, seriesIndex: null, activityIndex: null, data: null }), []);
             const saveEditActivity = useCallback(() => {
                 const { seriesIndex, activityIndex, data: newData } = editModalConfig;
                 if (seriesIndex !== null && activityIndex !== null && newData) {
@@ -606,184 +350,54 @@
                     closeEditActivity();
                 }
             }, [data, editModalConfig, closeEditActivity]);
+            const handleEditFormChange = useCallback((field, value) => setEditModalConfig(prev => ({ ...prev, data: { ...prev.data, [field]: value } })), []);
+            
+            const deleteActivity = useCallback((sIdx, aIdx) => { const newSeriesData = [...data]; newSeriesData[sIdx].activities.splice(aIdx, 1); setData(newSeriesData); }, [data]);
+            const confirmDeleteActivity = useCallback((sIdx, aIdx) => showConfirm("Hapus aktivitas ini?", () => deleteActivity(sIdx, aIdx)), [showConfirm, deleteActivity]);
 
-            const handleEditFormChange = useCallback((field, value) => {
-                setEditModalConfig(prev => ({
-                    ...prev,
-                    data: { ...prev.data, [field]: value }
-                }));
-            }, []);
-
-            const deleteActivity = useCallback((sIdx, aIdx) => {
-                const newSeriesData = [...data];
-                newSeriesData[sIdx].activities.splice(aIdx, 1);
-                setData(newSeriesData);
-            }, [data]);
-
-            const confirmDeleteActivity = useCallback((sIdx, aIdx) => {
-                showConfirm("Apakah Anda yakin ingin menghapus aktivitas ini?", () => deleteActivity(sIdx, aIdx));
-            }, [showConfirm, deleteActivity]);
-
-
-            // --- RESET LOGIC FUNCTIONS ---
             const resetGanttData = () => {
                 const initialData = SERIES_CONFIG.map((config) => {
-                    const tasks = config.schedule.map((sch, index) => {
-                        return {
-                            id: index + 1,
-                            name: TASK_NAMES[index],
-                            leadTime: sch.leadTime,
-                            planStart: sch.start,
-                            planEnd: sch.end,
-                            actualStart: "",
-                            actualEnd: "",
-                            status: "pending"
-                        };
-                    });
+                    const tasks = config.schedule.map((sch, index) => ({ id: index + 1, name: TASK_NAMES[index], leadTime: sch.leadTime, planStart: sch.start, planEnd: sch.end, actualStart: "", actualEnd: "", status: "pending" }));
                     return { id: config.id, name: config.name, launchDate: config.launchDate, activities: tasks };
                 });
                 setData(initialData);
-                localStorage.setItem('planner_data_v2', JSON.stringify(initialData));
             };
+            const resetBudgetingData = () => { setBudgetList([]); setBudgetForm({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' }); };
+            const resetPricingData = () => { setPricingList([]); setPricingForm({ seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: '' }); };
 
-            const resetBudgetingData = () => {
-                setBudgetList([]);
-                setBudgetForm({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
-                localStorage.removeItem('planner_budget_v2');
-            };
+            const confirmResetGantt = () => showConfirm("Reset Gantt Chart?", resetGanttData);
+            const confirmResetActivities = () => showConfirm("Reset Activities?", resetGanttData);
+            const confirmResetBudget = () => showConfirm("Reset Budgeting?", resetBudgetingData);
+            const confirmResetPricing = () => showConfirm("Reset Pricing?", resetPricingData);
 
-            const resetPricingData = () => {
-                setPricingList([]);
-                setPricingForm({ seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: '' });
-                localStorage.removeItem('planner_pricing_v2');
-            };
+            const handleUpdateActual = (sIdx, aIdx, field, val) => { const newData = [...data]; newData[sIdx].activities[aIdx][field] = val; setData(newData); };
 
-            // Wrapper functions to trigger modal
-            const confirmResetGantt = () => showConfirm("Reset Gantt Chart? Semua tanggal aktual akan dihapus.", resetGanttData);
-            const confirmResetActivities = () => showConfirm("Reset All Activities data?", resetGanttData); // Activities shares data with Gantt
-            const confirmResetBudget = () => showConfirm("Reset Budgeting data? Semua data budget akan dihapus.", resetBudgetingData);
-            const confirmResetPricing = () => showConfirm("Reset Pricing data? Semua strategi harga tersimpan akan dihapus.", resetPricingData);
+            const dpNominal = useMemo(() => (parseFloat(budgetForm.totalAmount) || 0) * (parseInt(budgetForm.top) || 0) / 100, [budgetForm.totalAmount, budgetForm.top]);
+            const settlementNominal = useMemo(() => (parseFloat(budgetForm.totalAmount) || 0) - dpNominal, [budgetForm.totalAmount, dpNominal]);
 
-
-            const handleUpdateActual = (seriesIndex, actIndex, field, value) => {
-                const newData = [...data];
-                newData[seriesIndex].activities[actIndex][field] = value;
-                setData(newData);
-            };
-
-            const dpNominal = useMemo(() => {
-                const amount = parseFloat(budgetForm.totalAmount) || 0;
-                const percentage = parseInt(budgetForm.top) || 0;
-                return amount * (percentage / 100);
-            }, [budgetForm.totalAmount, budgetForm.top]);
-
-            const settlementNominal = useMemo(() => {
-                const amount = parseFloat(budgetForm.totalAmount) || 0;
-                return amount - dpNominal;
-            }, [budgetForm.totalAmount, dpNominal]);
-
-            // --- PRICING LOGIC ---
+            // Pricing Logic
             const pricingResult = useMemo(() => {
-                const rspWeb = parseFloat(pricingForm.rspWeb) || 0;
-                const hpp = parseFloat(pricingForm.hpp) || 0;
-                const platformFeePct = parseFloat(pricingForm.platformFee) || 0;
-                const marketingFeePct = parseFloat(pricingForm.marketingFee) || 0;
-                const competitorPrice = parseFloat(pricingForm.competitorPrice) || 0;
-                
-                const brandTarget = BRAND_TARGETS[pricingForm.brand] || 0;
-                const fixedCost = 0; 
-
-                const webGmAbs = rspWeb - hpp - fixedCost;
-                const webGmPct = rspWeb > 0 ? (webGmAbs / rspWeb) * 100 : 0;
-                const isBelowTarget = webGmPct < brandTarget;
-
-                const totalFeePct = platformFeePct + marketingFeePct;
-                let rspMpRaw = 0;
-                if ((1 - (totalFeePct/100)) > 0) {
-                      rspMpRaw = rspWeb / (1 - (totalFeePct/100));
-                }
-
+                const { rspWeb, hpp, platformFee, marketingFee, competitorPrice, brand, manualPrice } = pricingForm;
+                const rWeb = parseFloat(rspWeb) || 0; const rHpp = parseFloat(hpp) || 0; const cPrice = parseFloat(competitorPrice) || 0;
+                const webGmAbs = rWeb - rHpp;
+                const webGmPct = rWeb > 0 ? (webGmAbs / rWeb) * 100 : 0;
+                const totalFeePct = parseFloat(platformFee) + parseFloat(marketingFee);
+                let rspMpRaw = (1 - (totalFeePct/100)) > 0 ? rWeb / (1 - (totalFeePct/100)) : 0;
                 let rspMpSuggested = Math.ceil(rspMpRaw / 1000) * 1000;
-                const remainder = rspMpSuggested % 10000;
-                if (remainder !== 9000) {
-                    rspMpSuggested = Math.ceil(rspMpSuggested / 10000) * 10000 - 1000; 
-                    if (rspMpSuggested < rspMpRaw) rspMpSuggested += 10000;
-                }
-                
-                const finalPrice = parseFloat(pricingForm.manualPrice) || rspMpSuggested;
-
+                if (rspMpSuggested % 10000 !== 9000) { rspMpSuggested = Math.ceil(rspMpSuggested / 10000) * 10000 - 1000; if (rspMpSuggested < rspMpRaw) rspMpSuggested += 10000; }
+                const finalPrice = parseFloat(manualPrice) || rspMpSuggested;
                 const mpFeeNominal = finalPrice * (totalFeePct/100);
-                const mpNetReceived = finalPrice - mpFeeNominal;
-                const mpGmAbs = mpNetReceived - hpp - fixedCost;
+                const mpGmAbs = finalPrice - mpFeeNominal - rHpp;
                 const mpGmPct = finalPrice > 0 ? (mpGmAbs / finalPrice) * 100 : 0;
-                const growth = finalPrice - rspWeb;
-
-                const makePsychological = (val) => {
-                    return Math.ceil(val / 10000) * 10000 - 1000;
-                };
-
-                let competitiveAnalysis = {
-                    status: 'neutral',
-                    message: 'Input harga kompetitor untuk analisa.',
-                    gap: 0,
-                    suggestedAction: null
-                };
-
-                if (competitorPrice > 0) {
-                    const gap = rspMpSuggested - competitorPrice; 
-                    
-                    if (gap > 0) {
-                        if (competitorPrice < rspWeb) {
-                             const safeFloor = makePsychological(rspWeb * 1.05); 
-                             competitiveAnalysis = {
-                                status: 'danger',
-                                message: `Harga kompetitor (Rp${competitorPrice.toLocaleString()}) lebih rendah dari RSP Web Anda (Rp${rspWeb.toLocaleString()}). Tidak aman untuk diikuti!`,
-                                gap: gap,
-                                suggestedAction: {
-                                    label: "Gunakan Harga Tengah (RSP Web + Fee)",
-                                    price: safeFloor
-                                }
-                            };
-                        } else {
-                            const prettyCompetitor = makePsychological(competitorPrice);
-                            competitiveAnalysis = {
-                                status: 'warning',
-                                message: `Harga Ideal (Rp${rspMpSuggested.toLocaleString()}) lebih mahal dari kompetitor. Bisa turunkan sedikit, tapi jangan di bawah RSP Web.`,
-                                gap: gap,
-                                suggestedAction: {
-                                    label: "Samakan dengan Kompetitor",
-                                    price: prettyCompetitor
-                                }
-                            };
-                        }
-
-                    } else if (gap < 0) {
-                        const prettyCompetitorMinus = makePsychological(competitorPrice - 1000);
-                        competitiveAnalysis = {
-                            status: 'good',
-                            message: `Harga Ideal lebih murah Rp${Math.abs(gap).toLocaleString()} dari kompetitor. Peluang profit lebih tinggi!`,
-                            gap: gap,
-                            suggestedAction: {
-                                label: "Naikkan Sedikit (Profit Boost)",
-                                price: prettyCompetitorMinus 
-                            }
-                        };
-                    } else {
-                        competitiveAnalysis = {
-                            status: 'neutral',
-                            message: `Harga Ideal sama dengan kompetitor.`,
-                            gap: 0,
-                            suggestedAction: null
-                        };
-                    }
+                
+                let compAnalysis = { status: 'neutral', message: 'Input harga kompetitor.', gap: 0 };
+                if (cPrice > 0) {
+                    const gap = rspMpSuggested - cPrice;
+                    if (gap > 0) compAnalysis = { status: cPrice < rWeb ? 'danger' : 'warning', message: cPrice < rWeb ? 'Kompetitor di bawah RSP Web!' : 'Harga ideal lebih mahal.', gap };
+                    else if (gap < 0) compAnalysis = { status: 'good', message: 'Harga ideal lebih murah.', gap };
+                    else compAnalysis = { status: 'neutral', message: 'Harga sama.', gap: 0 };
                 }
-
-                return { 
-                    webGmPct, webGmAbs, isBelowTarget, 
-                    rspMpRaw, rspMpSuggested, 
-                    mpFeeNominal, mpGmAbs, mpGmPct, growth, brandTarget,
-                    competitiveAnalysis, finalPrice
-                };
+                return { webGmPct, webGmAbs, isBelowTarget: webGmPct < (BRAND_TARGETS[brand || 'HEYLOCAL'] || 0), rspMpRaw, rspMpSuggested, mpFeeNominal, mpGmAbs, mpGmPct, growth: finalPrice - rWeb, brandTarget: BRAND_TARGETS[brand || 'HEYLOCAL'], competitiveAnalysis: compAnalysis, finalPrice };
             }, [pricingForm]);
 
             const handleCategoryChange = (e) => {
@@ -798,116 +412,45 @@
             };
 
             const handleSavePricing = () => {
-                 if (!pricingForm.articleName || !pricingForm.rspWeb || !pricingForm.hpp) return;
-                 const newItem = { 
-                     id: Date.now(), 
-                     ...pricingForm, 
-                     finalPrice: pricingResult.finalPrice,
-                     mpGmPct: pricingResult.mpGmPct,
-                     mpGmAbs: pricingResult.mpGmAbs,
-                     webGmPct: pricingResult.webGmPct, // Added webGmPct to save
-                     date: new Date().toISOString().split('T')[0] 
-                 };
-                 setPricingList([newItem, ...pricingList]);
-                 setPricingForm(prev => ({ 
-                     ...prev, 
-                     articleName: '', rspWeb: '', hpp: '', competitorPrice: '', manualPrice: '', notes: '', category: '' 
-                 })); 
+                if (!pricingForm.articleName) return;
+                setPricingList([{ id: Date.now(), ...pricingForm, ...pricingResult, date: new Date().toISOString().split('T')[0] }, ...pricingList]);
+                setPricingForm(prev => ({ ...prev, articleName: '', rspWeb: '', hpp: '', competitorPrice: '', manualPrice: '', notes: '', category: '' }));
             };
 
             const handleDeletePricing = (id) => {
                 setPricingList(pricingList.filter(item => item.id !== id));
             };
 
-            // Budget Filters
-            const uniqueDpMonths = useMemo(() => {
-                const months = new Set();
-                budgetList.forEach(item => { if (item.dpDate && item.dpDate !== '-') months.add(item.dpDate.substring(0, 7)); });
-                return Array.from(months).sort();
-            }, [budgetList]);
-
-            const uniqueRepaymentMonths = useMemo(() => {
-                const months = new Set();
-                budgetList.forEach(item => { if (item.repaymentDate && item.repaymentDate !== '-') months.add(item.repaymentDate.substring(0, 7)); });
-                return Array.from(months).sort();
-            }, [budgetList]);
-
-            const filteredBudgetList = useMemo(() => {
-                return budgetList.filter(item => {
-                    const dpMatch = !dpFilterMonth || (item.dpDate && item.dpDate.startsWith(dpFilterMonth));
-                    const repaymentMatch = !repaymentFilterMonth || (item.repaymentDate && item.repaymentDate.startsWith(repaymentFilterMonth));
-                    return dpMatch && repaymentMatch;
-                });
-            }, [budgetList, dpFilterMonth, repaymentFilterMonth]);
+            const uniqueDpMonths = useMemo(() => { const s = new Set(); budgetList.forEach(i => i.dpDate && i.dpDate !== '-' && s.add(i.dpDate.substring(0, 7))); return Array.from(s).sort(); }, [budgetList]);
+            const uniqueRepaymentMonths = useMemo(() => { const s = new Set(); budgetList.forEach(i => i.repaymentDate && i.repaymentDate !== '-' && s.add(i.repaymentDate.substring(0, 7))); return Array.from(s).sort(); }, [budgetList]);
+            const filteredBudgetList = useMemo(() => budgetList.filter(i => (!dpFilterMonth || i.dpDate?.startsWith(dpFilterMonth)) && (!repaymentFilterMonth || i.repaymentDate?.startsWith(repaymentFilterMonth))), [budgetList, dpFilterMonth, repaymentFilterMonth]);
 
             const budgetStats = useMemo(() => {
-                let budgetPlanning = 0; 
-                let paidAmount = 0;      
-                let outstandingAmount = 0; 
-                const today = new Date();
-
-                // USE FILTERED LIST for stats calculation as requested
-                filteredBudgetList.forEach(item => {
-                    if (item.paymentStatus === 'fully_paid') {
-                        budgetPlanning += 0;
-                        paidAmount += item.totalAmount;
-                    } else if (item.paymentStatus === 'dp_paid') {
-                        budgetPlanning += item.settlementNominal;
-                        paidAmount += item.dpNominal;
-                    } else {
-                        budgetPlanning += item.totalAmount;
-                        paidAmount += 0;
-                    }
-
-                    const dpDate = item.dpDate && item.dpDate !== '-' ? new Date(item.dpDate) : null;
-                    const repaymentDate = item.repaymentDate && item.repaymentDate !== '-' ? new Date(item.repaymentDate) : null;
-
-                    if (item.paymentStatus === 'unpaid') {
-                        if (dpDate && today > dpDate) outstandingAmount += item.dpNominal;
-                        if (repaymentDate && today > repaymentDate) outstandingAmount += item.settlementNominal;
-                    } else if (item.paymentStatus === 'dp_paid') {
-                        if (repaymentDate && today > repaymentDate) outstandingAmount += item.settlementNominal;
-                    }
+                let planning = 0, paid = 0, outstanding = 0; const today = new Date();
+                filteredBudgetList.forEach(i => {
+                    if (i.paymentStatus === 'fully_paid') paid += i.totalAmount;
+                    else if (i.paymentStatus === 'dp_paid') { planning += i.settlementNominal; paid += i.dpNominal; }
+                    else planning += i.totalAmount;
+                    
+                    const dp = i.dpDate && i.dpDate !== '-' ? new Date(i.dpDate) : null;
+                    const rep = i.repaymentDate && i.repaymentDate !== '-' ? new Date(i.repaymentDate) : null;
+                    if (i.paymentStatus === 'unpaid') { if (dp && today > dp) outstanding += i.dpNominal; if (rep && today > rep) outstanding += i.settlementNominal; }
+                    else if (i.paymentStatus === 'dp_paid' && rep && today > rep) outstanding += i.settlementNominal;
                 });
-                return { budgetPlanning, paidAmount, outstandingAmount };
+                return { planning, paid, outstanding };
             }, [filteredBudgetList]);
 
             const handleSaveBudget = () => {
-                if (!budgetForm.vendor || !budgetForm.totalAmount || !budgetForm.seriesId) return;
-                const selectedSeries = SERIES_CONFIG.find(s => s.name === budgetForm.seriesId);
-                let dpDateCalculated = "-";
-                let repaymentDateCalculated = "-";
-
-                if (selectedSeries) {
-                    const launchDate = selectedSeries.launchDate;
-                    const lt = parseInt(budgetForm.leadTime) || 0;
-                    const pt = parseInt(budgetForm.paymentTerm) || 0;
-                    const baseDate = subtractDays(launchDate, 14);
-                    dpDateCalculated = subtractDays(baseDate, lt);
-                    repaymentDateCalculated = addDays(baseDate, pt);
+                if (!budgetForm.vendor) return;
+                const s = SERIES_CONFIG.find(x => x.name === budgetForm.seriesId);
+                let dpD = "-", repD = "-";
+                if (s) {
+                    const base = subtractDays(s.launchDate, 14);
+                    dpD = subtractDays(base, parseInt(budgetForm.leadTime)||0);
+                    repD = addDays(base, parseInt(budgetForm.paymentTerm)||0);
                 }
-
-                const newItem = {
-                    id: Date.now(),
-                    series: budgetForm.seriesId,
-                    vendor: budgetForm.vendor,
-                    totalAmount: parseFloat(budgetForm.totalAmount),
-                    top: parseInt(budgetForm.top),
-                    leadTime: budgetForm.leadTime || '-',
-                    paymentTerm: budgetForm.paymentTerm || '-',
-                    dpNominal: dpNominal,
-                    settlementNominal: settlementNominal,
-                    dpDate: dpDateCalculated,
-                    repaymentDate: repaymentDateCalculated,
-                    date: new Date().toISOString().split('T')[0],
-                    paymentStatus: 'unpaid'
-                };
-                setBudgetList([newItem, ...budgetList]);
+                setBudgetList([{ id: Date.now(), ...budgetForm, totalAmount: parseFloat(budgetForm.totalAmount), dpNominal, settlementNominal, dpDate: dpD, repaymentDate: repD, date: new Date().toISOString().split('T')[0], paymentStatus: 'unpaid' }, ...budgetList]);
                 setBudgetForm({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
-            };
-
-            const handleDeleteBudget = (id) => {
-                setBudgetList(budgetList.filter(item => item.id !== id));
             };
 
             const handleCycleStatus = (id) => {
@@ -929,54 +472,38 @@
                 }
             };
 
+            const handleDeleteBudget = (id) => {
+                setBudgetList(budgetList.filter(item => item.id !== id));
+            };
+
             const stats = useMemo(() => {
-                let totalTasks = 0;
-                let completed = 0;
-                let delayed = 0;
-                let onTrack = 0;
-                let inProgress = 0;
-                let delayedSeriesSummary = []; 
-                let allRecommendations = [];
-
+                let total=0, comp=0, delayed=0; const today = new Date(); today.setHours(0,0,0,0);
+                let recs = [];
+                data.forEach(s => s.activities.forEach(a => {
+                    total++;
+                    const planEnd = new Date(a.planEnd);
+                    const isDone = !!a.actualEnd;
+                    if ((isDone && new Date(a.actualEnd) > planEnd) || (!isDone && today > planEnd)) {
+                        delayed++;
+                        recs.push({ id: `${s.id}-${a.id}`, seriesName: s.name, message: getRecommendation(a.name) });
+                    } else if (isDone) comp++;
+                }));
+                let delayedSeriesSummary = [];
                 data.forEach(series => {
-                    let currentSeriesDelayed = 0;
+                    let cnt = 0;
                     series.activities.forEach(act => {
-                        totalTasks++;
-                        const today = new Date();
-                        today.setHours(0,0,0,0);
-                        const planEndObj = new Date(act.planEnd);
+                        const planEnd = new Date(act.planEnd);
                         const isDone = !!act.actualEnd;
-                        const isStarted = !!act.actualStart;
-                        const isDoneLate = isDone && new Date(act.actualEnd) > planEndObj;
-                        const isPendingLate = !isDone && today > planEndObj;
-
-                        if (isDoneLate || isPendingLate) {
-                            delayed++;
-                            currentSeriesDelayed++;
-                            allRecommendations.push({
-                                id: `${series.id}-${act.id}`,
-                                seriesName: series.name,
-                                message: getRecommendation(act.name)
-                            });
-                        } else if (act.actualEnd) {
-                            completed++;
-                        } else {
-                            if (act.actualStart && !act.actualEnd) {
-                                inProgress++;
-                            }
-                            onTrack++; 
-                        }
+                        if ((isDone && new Date(act.actualEnd) > planEnd) || (!isDone && today > planEnd)) cnt++;
                     });
-                    if (currentSeriesDelayed > 0) delayedSeriesSummary.push(`${series.name} (${currentSeriesDelayed} item)`);
+                    if (cnt > 0) delayedSeriesSummary.push(`${series.name} (${cnt})`);
                 });
-
-                return { totalTasks, completed, delayed, onTrack, inProgress, delayedSeriesString: delayedSeriesSummary, allRecommendations };
+                return { total, comp, delayed, recs, delayedSeriesString: delayedSeriesSummary };
             }, [data]);
-
-            const completionRate = stats.totalTasks ? Math.round(((stats.completed + (stats.inProgress * 0.5)) / stats.totalTasks) * 100) : 0;
-
-            // --- RENDER FUNCTIONS ---
             
+            const completionRate = stats.total ? Math.round((stats.comp / stats.total) * 100) : 0;
+
+            // RENDERERS
             const renderDashboard = () => (
                 <div className="space-y-6 animate-fade-in pb-10">
                     <div className="bg-gradient-to-r from-slate-800 to-indigo-900 rounded-xl p-6 text-white shadow-lg mb-6">
@@ -988,35 +515,26 @@
                             </div>
                         </div>
                     </div>
-
                     <div className={`rounded-xl p-6 shadow-sm border mb-8 flex flex-col md:flex-row items-start gap-4 transition-colors duration-500 ${stats.delayed > 0 ? 'bg-rose-50 border-rose-100' : 'bg-emerald-50 border-emerald-100'}`}>
                         <div className="flex items-start gap-4 w-full">
-                            <div className={`p-3 rounded-full shadow-sm shrink-0 ${stats.delayed > 0 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                {stats.delayed > 0 ? <Icons.AlertOctagon size={28} /> : <Icons.TrendingUp size={28} />}
-                            </div>
+                            <div className={`p-3 rounded-full shadow-sm shrink-0 ${stats.delayed > 0 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>{stats.delayed > 0 ? <Icons.AlertOctagon size={28} /> : <Icons.TrendingUp size={28} />}</div>
                             <div className="w-full">
                                 <h3 className={`text-lg font-bold mb-1 ${stats.delayed > 0 ? 'text-rose-800' : 'text-emerald-800'}`}>{stats.delayed > 0 ? "Risiko Keterlambatan Terdeteksi" : "Produksi On Track"}</h3>
-                                <p className={`text-sm mb-4 ${stats.delayed > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{stats.delayed > 0 ? `Terdapat total ${stats.delayed} aktivitas terlambat yang tersebar di: ${stats.delayedSeriesString.join(', ')}.` : "Seluruh aktivitas berjalan sesuai timeline. Tidak ada isu kritis saat ini."}</p>
-                                {stats.delayed > 0 && stats.allRecommendations.length > 0 && (
-                                    <div className="bg-white/60 rounded-lg p-4 border border-rose-200/50">
-                                        <div className="flex items-center gap-2 mb-2 text-rose-800 font-semibold text-sm"><Icons.Lightbulb size={16} className="text-amber-500 fill-amber-500"/><span>Saran Tindakan Perbaikan:</span></div>
-                                        <ul className="list-none space-y-2">{stats.allRecommendations.map((rec) => (<li key={rec.id} className="text-xs text-slate-700 font-medium flex gap-2 items-start"><span className="font-bold text-rose-600 shrink-0 mt-0.5">[{rec.seriesName}]</span><span>{rec.message}</span></li>))}</ul>
-                                    </div>
-                                )}
+                                <p className={`text-sm mb-4 ${stats.delayed > 0 ? 'text-rose-700' : 'text-emerald-700'}`}>{stats.delayed > 0 ? `Terdapat total ${stats.delayed} aktivitas terlambat.` : "Seluruh aktivitas berjalan sesuai timeline."}</p>
+                                {stats.delayed > 0 && stats.recs.length > 0 && <div className="bg-white/60 rounded-lg p-4 border border-rose-200/50"><ul className="list-none space-y-2">{stats.recs.slice(0, 5).map(r => <li key={r.id} className="text-xs text-slate-700 font-medium"><span className="font-bold text-rose-600">[{r.seriesName}]</span> {r.message}</li>)}</ul></div>}
                             </div>
                         </div>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 relative overflow-hidden group hover:border-indigo-100 transition-colors">
-                            <div className="flex justify-between items-start mb-4"><div><p className="text-slate-500 text-sm font-medium">Total Progress</p><h3 className="text-4xl font-bold text-slate-800 mt-1">{completionRate}%</h3></div><div className="p-3 bg-indigo-50 rounded-lg text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors"><Icons.BarChart2 size={24} /></div></div>
+                            <div className="flex justify-between items-start mb-4"><div><p className="text-slate-500 text-sm font-medium">Total Progress</p><h3 className="text-4xl font-bold text-slate-800 mt-1">{completionRate}%</h3></div><div className="p-3 bg-indigo-50 rounded-lg text-indigo-600"><Icons.BarChart2 size={24} /></div></div>
                             <div className="w-full bg-slate-100 rounded-full h-2"><div className="bg-indigo-600 h-2 rounded-full transition-all duration-1000" style={{ width: `${completionRate}%` }}></div></div>
                         </div>
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 group hover:border-emerald-100 transition-colors">
-                            <div className="flex justify-between items-start"><div><p className="text-slate-500 text-sm font-medium">Completed</p><h3 className="text-4xl font-bold text-emerald-600 mt-1">{stats.completed}</h3><p className="text-xs text-slate-400 mt-1">Tasks finished</p></div><div className="p-3 bg-emerald-50 rounded-lg text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors"><Icons.CheckCircle size={24} /></div></div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <div className="flex justify-between items-start"><div><p className="text-slate-500 text-sm font-medium">Completed</p><h3 className="text-4xl font-bold text-emerald-600 mt-1">{stats.comp}</h3></div><div className="p-3 bg-emerald-50 rounded-lg text-emerald-600"><Icons.CheckCircle size={24} /></div></div>
                         </div>
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 group hover:border-rose-100 transition-colors">
-                            <div className="flex justify-between items-start"><div><p className="text-slate-500 text-sm font-medium">Delayed</p><h3 className="text-4xl font-bold text-rose-500 mt-1">{stats.delayed}</h3><p className="text-xs text-slate-400 mt-1">Needs attention</p></div><div className="p-3 bg-rose-50 rounded-lg text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-colors"><Icons.AlertTriangle size={24} /></div></div>
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <div className="flex justify-between items-start"><div><p className="text-slate-500 text-sm font-medium">Delayed</p><h3 className="text-4xl font-bold text-rose-500 mt-1">{stats.delayed}</h3></div><div className="p-3 bg-rose-50 rounded-lg text-rose-500"><Icons.AlertTriangle size={24} /></div></div>
                         </div>
                     </div>
 
@@ -1030,7 +548,7 @@
                                     let onTimeCount = 0;
                                     let inProgressCount = 0;
                                     let pendingCount = 0;
-                                    let accumulatedProgress = 0; 
+                                    let accumulatedProgress = 0;
                                     const today = new Date();
                                     today.setHours(0,0,0,0);
                                     
@@ -1054,7 +572,7 @@
                                                 if (totalDur <= 0) totalDur = 1;
                                                 const elapsed = (today - startObj) / (1000 * 60 * 60 * 24);
                                                 let p = elapsed / totalDur;
-                                                if (p < 0.1) p = 0.1; 
+                                                if (p < 0.1) p = 0.1;
                                                 if (p > 1) p = 1;
                                                 accumulatedProgress += p;
                                             }
@@ -1063,9 +581,7 @@
                                         }
                                     });
 
-                                    // Logic correction for Pending
                                     pendingCount = seriesTotal - onTimeCount - lateCount - inProgressCount;
-                                    
                                     const pOnTime = (onTimeCount / seriesTotal) * 100;
                                     const pLate = (lateCount / seriesTotal) * 100;
                                     const pInProgressWidth = (inProgressCount / seriesTotal) * 100;
@@ -1098,197 +614,39 @@
                 </div>
             );
 
-            const renderActivities = () => {
-                const allActivities = [];
-                data.forEach(s => {
-                    s.activities.forEach(a => {
-                        allActivities.push({ ...a, seriesName: s.name });
-                    });
-                });
-
-                const overdue = allActivities.filter(a => {
-                    const planEnd = new Date(a.planEnd);
-                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
-                    const today = new Date();
-                    const isDoneLate = actualEnd && actualEnd > planEnd;
-                    const isPendingLate = !actualEnd && today > planEnd;
-                    return isDoneLate || isPendingLate;
-                });
-
-                const completed = allActivities.filter(a => {
-                    const planEnd = new Date(a.planEnd);
-                    const actualEnd = a.actualEnd ? new Date(a.actualEnd) : null;
-                    return actualEnd && actualEnd <= planEnd;
-                });
-
-                const upcoming = allActivities.filter(a => !a.actualEnd && new Date() <= new Date(a.planEnd)).sort((a,b) => new Date(a.planStart) - new Date(b.planStart));
-
-                return (
-                    <div className="space-y-8 pb-10">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-slate-800">Activities Overview</h2>
-                            <button onClick={confirmResetActivities} className="px-3 py-1.5 text-xs font-medium bg-rose-50 text-rose-600 rounded-md hover:bg-rose-100 transition-colors flex items-center gap-1">
-                                <Icons.RefreshCw size={12}/> Reset Activities
-                            </button>
-                        </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
-                                <div className="px-6 py-4 border-b border-rose-100 bg-rose-50 flex items-center gap-3">
-                                    <Icons.AlertTriangle size={20} className="text-rose-600"/>
-                                    <h3 className="font-bold text-rose-800">Attention Needed</h3>
-                                </div>
-                                <div className="divide-y divide-rose-50 max-h-[400px] overflow-auto">
-                                    {overdue.length === 0 ? (
-                                        <div className="p-12 text-center text-slate-400"><p>No overdue items.</p></div>
-                                    ) : (
-                                        overdue.map((item, idx) => {
-                                            const isDone = !!item.actualEnd;
-                                            return (
-                                                <div key={idx} className="p-4 hover:bg-rose-50/50 transition-colors flex justify-between items-center">
-                                                    <div>
-                                                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 mb-1">{item.seriesName}</span>
-                                                        <h4 className="font-medium text-slate-800">{item.name}</h4>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <span className="text-xs text-rose-500 font-medium">Plan: {formatDate(item.planEnd)}</span>
-                                                            {isDone ? <span className="text-[10px] text-white bg-rose-500 px-1.5 rounded font-bold">Done Late</span> : <span className="text-[10px] text-rose-600 bg-rose-100 px-1.5 rounded font-bold">Pending Overdue</span>}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            </div>
-                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
-                                    <Icons.List size={20} className="text-slate-600"/>
-                                    <h3 className="font-bold text-slate-800">Operational Queue</h3>
-                                </div>
-                                <div className="divide-y divide-slate-100 max-h-[400px] overflow-auto">
-                                    {upcoming.map((item, idx) => (
-                                        <div key={idx} className="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center">
-                                            <div>
-                                                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 mb-1">{item.seriesName}</span>
-                                                <h4 className="font-medium text-slate-800">{item.name}</h4>
-                                                <p className="text-xs text-slate-500 mt-1">Start: {formatDate(item.planStart)}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Completed History Section */}
-                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
-                                <Icons.History size={20} className="text-emerald-600"/>
-                                <h3 className="font-bold text-slate-800">Completed History</h3>
-                            </div>
-                            <div className="p-0 overflow-auto max-h-[300px]">
-                                {completed.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400">No completed tasks yet.</div>
-                                ) : (
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 sticky top-0">
-                                            <tr>
-                                                <th className="px-6 py-3">Series</th>
-                                                <th className="px-6 py-3">Activity</th>
-                                                <th className="px-6 py-3">Plan End</th>
-                                                <th className="px-6 py-3">Actual End</th>
-                                                <th className="px-6 py-3">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100">
-                                            {completed.map((item, idx) => (
-                                                <tr key={idx} className="hover:bg-slate-50">
-                                                    <td className="px-6 py-3 font-medium text-slate-600">{item.seriesName}</td>
-                                                    <td className="px-6 py-3 text-slate-800">{item.name}</td>
-                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.planEnd)}</td>
-                                                    <td className="px-6 py-3 text-slate-500">{formatDate(item.actualEnd)}</td>
-                                                    <td className="px-6 py-3">
-                                                        <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">On Time</span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                );
-            };
-
             const renderGantt = () => (
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[85vh]">
                     <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
-                        <div>
-                            <h3 className="font-bold text-slate-800 text-lg">Master Schedule</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-slate-500">Timeline: Jun 2026 - Mar 2027</span>
-                                <span className="text-slate-300">|</span>
-                                <span className="text-xs font-mono font-medium text-blue-600 flex items-center gap-1">
-                                    <Icons.Clock size={12}/>
-                                    {currentTime.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                                </span>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-6 text-xs font-medium bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
-                            <button onClick={confirmResetGantt} className="px-3 py-1 bg-rose-50 text-rose-600 rounded-md hover:bg-rose-100 transition-colors flex items-center gap-1"><Icons.RefreshCw size={12}/> Reset Schedule</button>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-slate-300 rounded-sm"></span> Plan</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-emerald-500 rounded-sm"></span> Actual (On Time)</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-rose-500 rounded-sm"></span> Actual (Late)</div>
-                            <div className="flex items-center gap-2"><span className="w-3 h-3 bg-blue-500 rounded-sm"></span> Actual (On Progress)</div>
-                        </div>
+                        <div><h3 className="font-bold text-slate-800 text-lg">Master Schedule</h3><span className="text-xs text-slate-500">Timeline: Jun 2026 - Mar 2027</span></div>
+                        <div className="flex items-center gap-4 text-xs font-medium"><button onClick={confirmResetGantt} className="px-3 py-1 bg-rose-50 text-rose-600 rounded-md hover:bg-rose-100 flex items-center gap-1"><Icons.RefreshCw size={12}/> Reset</button></div>
                     </div>
-                    
                     <div className="flex-1 overflow-auto relative">
                         <table className="w-full text-sm text-left border-collapse table-fixed">
                             <thead className="bg-white text-slate-600 sticky top-0 z-30 shadow-md">
-                                <tr className="h-12">
-                                    <th className="w-[250px] px-4 border-b border-r border-slate-200 bg-slate-50 sticky left-0 z-40 align-middle font-bold text-slate-700">Activity Name</th>
-                                    <th className="w-[85px] px-1 text-center border-b border-slate-200 bg-slate-50 align-middle text-xs font-semibold">Plan Start</th>
-                                    <th className="w-[85px] px-1 text-center border-b border-r border-slate-200 bg-slate-50 align-middle text-xs font-semibold">Plan End</th>
-                                    <th className="w-[50px] px-1 text-center border-b border-r border-slate-200 bg-slate-50 align-middle text-xs font-semibold">LT</th>
-                                    <th className="w-[95px] px-1 text-center border-b border-slate-200 bg-blue-50/50 align-middle text-xs font-semibold text-blue-800">Act. Start</th>
-                                    <th className="w-[95px] px-1 text-center border-b border-r border-slate-200 bg-blue-50/50 align-middle text-xs font-semibold text-blue-800">Act. End</th>
-                                    {timelineMonths.map((date, idx) => (
-                                        <th key={idx} colSpan="4" className="border-b border-r border-slate-200 bg-slate-50 text-center text-xs font-bold text-slate-700 uppercase min-w-[120px]">
-                                            {date.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' })}
-                                        </th>
-                                    ))}
-                                </tr>
+                                <tr className="h-12"><th className="w-[250px] px-4 border-b border-r border-slate-200 bg-slate-50 sticky left-0 z-40 font-bold">Activity Name</th><th className="w-[85px] px-1 text-center border-b bg-slate-50 text-xs">Plan Start</th><th className="w-[85px] px-1 text-center border-b border-r bg-slate-50 text-xs">Plan End</th><th className="w-[50px] px-1 text-center border-b border-r bg-slate-50 text-xs">LT</th><th className="w-[95px] px-1 text-center border-b bg-blue-50/50 text-xs">Act. Start</th><th className="w-[95px] px-1 text-center border-b border-r bg-blue-50/50 text-xs">Act. End</th>{timelineMonths.map((d, i) => <th key={i} colSpan="4" className="border-b border-r bg-slate-50 text-center text-xs min-w-[120px]">{d.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' })}</th>)}</tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {data.map((series, sIdx) => (
-                                    <React.Fragment key={series.id}>
-                                        <tr className="bg-slate-800 text-white shadow-sm z-20 relative">
-                                            <td className="px-4 py-2 sticky left-0 z-20 bg-slate-800 border-r border-slate-700 font-bold text-xs uppercase tracking-wider flex items-center h-10">
-                                                {series.name}
-                                                <button onClick={() => openAddActivity(sIdx)} className="ml-2 p-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300" title="Add Activity">
-                                                    <Icons.Plus size={12}/>
-                                                </button>
-                                            </td>
-                                            <td colSpan="5" className="px-2 text-xs text-right text-slate-300 h-10 align-middle border-r border-slate-700 bg-slate-800">
-                                                Launch: {formatDate(series.launchDate)}
-                                            </td>
-                                            <td colSpan={timelineMonths.length * 4} className="bg-slate-800 h-10"></td>
-                                        </tr>
-                                        {series.activities.map((act, aIdx) => {
-                                            const today = new Date();
-                                            today.setHours(0,0,0,0);
+                                {data.map((s, sIdx) => (
+                                    <React.Fragment key={s.id}>
+                                        <tr className="bg-slate-800 text-white shadow-sm z-20 relative"><td className="px-4 py-2 sticky left-0 z-20 bg-slate-800 border-r border-slate-700 font-bold text-xs uppercase h-10 flex items-center">{s.name} <button onClick={() => openAddActivity(sIdx)} className="ml-2 p-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300"><Icons.Plus size={12}/></button></td><td colSpan="5" className="px-2 text-xs text-right text-slate-300 h-10 bg-slate-800">Launch: {formatDate(s.launchDate)}</td><td colSpan={timelineMonths.length * 4} className="bg-slate-800 h-10"></td></tr>
+                                        {s.activities.map((act, aIdx) => {
+                                            const today = new Date(); today.setHours(0,0,0,0);
                                             const planEndObj = new Date(act.planEnd);
                                             let effectiveActualEnd = act.actualEnd;
                                             
+                                            // Auto-progress logic: if started but not finished
                                             if (act.actualStart && !act.actualEnd) {
                                                 const startObj = parseDateLocal(act.actualStart);
+                                                // Clamp effective end to today, but not earlier than actual start
                                                 if (today >= startObj) {
                                                     effectiveActualEnd = today.toISOString().split('T')[0];
                                                 } else {
+                                                    // Future start date entered
                                                     effectiveActualEnd = act.actualStart; 
                                                 }
                                             }
 
+                                            // Delay calculation for visualization
                                             let delay = 0;
                                             if (act.actualEnd) {
                                                 const diff = getDiffDays(act.planEnd, act.actualEnd);
@@ -1301,6 +659,7 @@
                                             const isDone = !!act.actualEnd;
                                             const isInProgress = act.actualStart && !act.actualEnd;
 
+                                            // PROGRESS PERCENTAGE CALCULATION
                                             let progressPercent = 0;
                                             if (isInProgress) {
                                                 const start = parseDateLocal(act.actualStart);
@@ -1331,41 +690,16 @@
                                             );
 
                                             return (
-                                                <tr key={act.id} className="hover:bg-slate-50 transition-colors h-11 group/item border-b border-slate-50">
-                                                    <td className="px-4 py-1 font-medium text-slate-700 border-r border-slate-200 sticky left-0 bg-white group-hover/item:bg-slate-50 z-10 text-xs">
-                                                        <div className="flex justify-between items-center w-full">
-                                                            <div className="flex items-center gap-2 truncate flex-1">
-                                                                <span className="text-slate-400 text-[10px] min-w-[15px]">{act.id}.</span>
-                                                                <span title={act.name} className="truncate">{act.name}</span>
-                                                                {isInProgress && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse ml-1" title="In Progress"></span>}
-                                                            </div>
-                                                            <div className="hidden group-hover/item:flex gap-1 bg-white/80 pl-1">
-                                                                <button onClick={() => openEditActivity(sIdx, aIdx)} className="p-1 text-slate-400 hover:text-blue-600 transition-colors rounded"><Icons.Edit size={12} /></button>
-                                                                <button onClick={() => confirmDeleteActivity(sIdx, aIdx)} className="p-1 text-slate-400 hover:text-rose-600 transition-colors rounded"><Icons.Trash2 size={12} /></button>
-                                                            </div>
-                                                        </div>
-                                                    </td>
+                                                <tr key={act.id} className="hover:bg-slate-50 h-11 group/item border-b border-slate-50">
+                                                    <td className="px-4 py-1 font-medium text-slate-700 border-r border-slate-200 sticky left-0 bg-white z-10 text-xs"><div className="flex justify-between items-center w-full"><div className="flex items-center gap-2 truncate flex-1"><span className="text-slate-400 text-[10px] min-w-[15px]">{act.id}.</span><span title={act.name} className="truncate">{act.name}</span>{isInProgress && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse ml-1" title="In Progress"></span>}</div><div className="hidden group-hover/item:flex gap-1 bg-white/80 pl-1"><button onClick={() => openEditActivity(sIdx, aIdx)} className="p-1 text-slate-400 hover:text-blue-600 rounded"><Icons.Edit size={12} /></button><button onClick={() => confirmDeleteActivity(sIdx, aIdx)} className="p-1 text-slate-400 hover:text-rose-600 rounded"><Icons.Trash2 size={12} /></button></div></div></td>
                                                     <td className="px-1 text-slate-500 text-[10px] text-center border-r border-slate-100 bg-slate-50/30">{formatDate(act.planStart)}</td>
                                                     <td className="px-1 text-slate-500 text-[10px] text-center border-r border-slate-200 bg-slate-50/30">{formatDate(act.planEnd)}</td>
                                                     <td className="px-1 text-slate-500 text-[10px] text-center border-r border-slate-200 bg-slate-50/30">{act.leadTime}</td>
-                                                    <td className="px-1 py-1 bg-blue-50/10 border-r border-slate-100 text-center">
-                                                        <input type="date" className="w-full text-[10px] p-1 border border-blue-100 rounded bg-white text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none" value={act.actualStart} onChange={(e) => handleUpdateActual(sIdx, aIdx, 'actualStart', e.target.value)} />
-                                                    </td>
-                                                    <td className="px-1 py-1 bg-blue-50/10 border-r border-slate-200 text-center">
-                                                        <input type="date" className={`w-full text-[10px] p-1 border rounded bg-white text-slate-700 focus:ring-1 outline-none ${isLate ? 'border-rose-300 text-rose-600' : 'border-blue-100'}`} value={act.actualEnd} onChange={(e) => handleUpdateActual(sIdx, aIdx, 'actualEnd', e.target.value)} />
-                                                    </td>
+                                                    <td className="px-1 py-1 bg-blue-50/10 border-r border-slate-100 text-center"><input type="date" className="w-full text-[10px] p-1 border border-blue-100 rounded bg-white text-slate-700 outline-none" value={act.actualStart} onChange={(e) => handleUpdateActual(sIdx, aIdx, 'actualStart', e.target.value)} /></td>
+                                                    <td className="px-1 py-1 bg-blue-50/10 border-r border-slate-200 text-center"><input type="date" className={`w-full text-[10px] p-1 border rounded bg-white text-slate-700 outline-none ${isLate ? 'border-rose-300 text-rose-600' : 'border-blue-100'}`} value={act.actualEnd} onChange={(e) => handleUpdateActual(sIdx, aIdx, 'actualEnd', e.target.value)} /></td>
                                                     <td colSpan={timelineMonths.length * 4} className="relative p-0 h-11 align-middle">
                                                         <div className="relative w-full h-full flex items-center">
-                                                            <div className="absolute inset-0 flex w-full h-full pointer-events-none">
-                                                                {timelineMonths.map((_, mIdx) => (
-                                                                    <React.Fragment key={mIdx}>
-                                                                        <div className="flex-1 border-r border-slate-100 h-full border-dashed"></div>
-                                                                        <div className="flex-1 border-r border-slate-100 h-full border-dashed"></div>
-                                                                        <div className="flex-1 border-r border-slate-100 h-full border-dashed"></div>
-                                                                        <div className="flex-1 border-r border-slate-300 h-full"></div>
-                                                                    </React.Fragment>
-                                                                ))}
-                                                            </div>
+                                                            <div className="absolute inset-0 flex w-full h-full pointer-events-none">{timelineMonths.map((_, mIdx) => <React.Fragment key={mIdx}><div className="flex-1 border-r border-slate-100 h-full border-dashed"></div><div className="flex-1 border-r border-slate-100 h-full border-dashed"></div><div className="flex-1 border-r border-slate-100 h-full border-dashed"></div><div className="flex-1 border-r border-slate-300 h-full"></div></React.Fragment>)}</div>
                                                             {planStyle && <div className="absolute h-3 bg-slate-300 rounded-sm top-2 opacity-60" style={planStyle} title={`Plan: ${formatDate(act.planStart)}`}></div>}
                                                             {actStyle && (
                                                                 <div 
@@ -1405,443 +739,88 @@
                 </div>
             );
 
-            // --- RENDER BUDGETING ---
+            const renderActivities = () => (
+                <div className="space-y-8 pb-10">
+                    <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-slate-800">Activities Overview</h2><button onClick={confirmResetActivities} className="px-3 py-1.5 text-xs font-medium bg-rose-50 text-rose-600 rounded-md hover:bg-rose-100 flex items-center gap-1"><Icons.RefreshCw size={12}/> Reset Activities</button></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden"><div className="px-6 py-4 border-b border-rose-100 bg-rose-50 flex items-center gap-3"><Icons.AlertTriangle size={20} className="text-rose-600"/><h3 className="font-bold text-rose-800">Attention Needed</h3></div><div className="divide-y divide-rose-50 max-h-[400px] overflow-auto">{stats.delayed === 0 ? <div className="p-12 text-center text-slate-400">No overdue items.</div> : stats.recs.map((r, i) => <div key={i} className="p-4 hover:bg-rose-50/50 flex justify-between items-center"><div><span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 mb-1">{r.seriesName}</span><h4 className="font-medium text-slate-800">{r.message}</h4></div></div>)}</div></div>
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-3"><Icons.List size={20} className="text-slate-600"/><h3 className="font-bold text-slate-800">Queue</h3></div><div className="p-12 text-center text-slate-400">Queue list placeholder</div></div>
+                    </div>
+                </div>
+            );
+
             const renderBudgeting = () => (
                 <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                            <div>
-                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Budget Planning</p>
-                                <p className="text-2xl font-bold text-slate-800 mt-1">{formatRupiah(budgetStats.budgetPlanning)}</p>
-                                <p className="text-[10px] text-slate-400 mt-1">Sisa Anggaran</p>
-                            </div>
-                            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Icons.Wallet size={24}/></div>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                            <div>
-                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Paid Amount</p>
-                                <p className="text-2xl font-bold text-emerald-600 mt-1">{formatRupiah(budgetStats.paidAmount)}</p>
-                                <p className="text-[10px] text-slate-400 mt-1">Total Dibayar</p>
-                            </div>
-                            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><Icons.CheckCircle size={24}/></div>
-                        </div>
-                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                            <div>
-                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Outstanding</p>
-                                <p className="text-2xl font-bold text-rose-600 mt-1">{formatRupiah(budgetStats.outstandingAmount)}</p>
-                                <p className="text-[10px] text-slate-400 mt-1">Jatuh Tempo (Telat)</p>
-                            </div>
-                            <div className="p-3 bg-rose-50 text-rose-600 rounded-xl"><Icons.AlertOctagon size={24}/></div>
-                        </div>
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"><div><p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Budget Planning</p><p className="text-2xl font-bold text-slate-800 mt-1">{formatRupiah(budgetStats.planning)}</p></div><div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Icons.Wallet size={24}/></div></div>
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"><div><p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Paid Amount</p><p className="text-2xl font-bold text-emerald-600 mt-1">{formatRupiah(budgetStats.paid)}</p></div><div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><Icons.CheckCircle size={24}/></div></div>
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"><div><p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Outstanding</p><p className="text-2xl font-bold text-rose-600 mt-1">{formatRupiah(budgetStats.outstanding)}</p></div><div className="p-3 bg-rose-50 text-rose-600 rounded-xl"><Icons.AlertOctagon size={24}/></div></div>
                     </div>
-
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                            <Icons.Wallet className="text-slate-600" size={20}/>
-                            <h3 className="font-bold text-slate-800">Budgeting & Payment Calculator</h3>
-                            <button onClick={confirmResetBudget} className="ml-auto px-3 py-1 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 transition-colors text-xs font-medium">Reset Budget</button>
-                        </div>
-                        <div className="p-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Select Series</label>
-                                        <select className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={budgetForm.seriesId} onChange={(e) => setBudgetForm({...budgetForm, seriesId: e.target.value})}>
-                                            <option value="">-- Choose Series --</option>
-                                            {SERIES_CONFIG.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Vendor Name</label>
-                                        <input type="text" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={budgetForm.vendor} onChange={(e) => setBudgetForm({...budgetForm, vendor: e.target.value})} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Total Amount (IDR)</label>
-                                        <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={budgetForm.totalAmount} onChange={(e) => setBudgetForm({...budgetForm, totalAmount: e.target.value})} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-2">TOP (%)</label>
-                                        <div className="grid grid-cols-5 gap-2">
-                                            {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90].map((val) => (
-                                                <label key={val} className={`cursor-pointer border rounded-md px-1 py-2 text-center text-xs font-medium transition-all ${budgetForm.top === val ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200'}`}>
-                                                    <input type="radio" name="top" value={val} className="hidden" checked={budgetForm.top === val} onChange={() => setBudgetForm({...budgetForm, top: val})} />
-                                                    {val}%
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Lead Time (Hari)</label>
-                                        <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={budgetForm.leadTime} onChange={(e) => setBudgetForm({...budgetForm, leadTime: e.target.value})} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Pelunasan H+</label>
-                                        <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={budgetForm.paymentTerm} onChange={(e) => setBudgetForm({...budgetForm, paymentTerm: e.target.value})} />
-                                    </div>
-                                </div>
-                                <div className="flex flex-col justify-between bg-slate-50 p-6 rounded-xl border border-slate-100">
-                                    <div>
-                                        <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Calculation</h4>
-                                        <div className="space-y-3 text-sm">
-                                            <div className="flex justify-between"><span className="text-slate-500">Series</span><span className="font-medium text-slate-800">{budgetForm.seriesId || '-'}</span></div>
-                                            <div className="flex justify-between"><span className="text-slate-500">Total</span><span className="font-medium text-slate-800">{formatRupiah(budgetForm.totalAmount || 0)}</span></div>
-                                            <div className="flex justify-between"><span className="text-slate-500">TOP</span><span className="font-medium text-blue-600">{budgetForm.top}%</span></div>
-                                            <div className="h-px bg-slate-200 my-2"></div>
-                                            <div className="flex justify-between"><span className="text-slate-600 font-bold">DP</span><span className="text-xl font-bold text-slate-900">{formatRupiah(dpNominal)}</span></div>
-                                            <div className="flex justify-between"><span className="text-slate-600 font-bold">Pelunasan</span><span className="text-xl font-bold text-emerald-600">{formatRupiah(settlementNominal)}</span></div>
-                                        </div>
-                                    </div>
-                                    <button onClick={handleSaveBudget} disabled={!budgetForm.vendor || !budgetForm.totalAmount} className="mt-6 w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center gap-2"><Icons.Save size={18}/> Save</button>
-                                </div>
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2"><Icons.Wallet className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Budgeting Calculator</h3><button onClick={confirmResetBudget} className="ml-auto px-3 py-1 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 text-xs font-medium">Reset</button></div>
+                        <div className="p-8"><div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Series</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white" value={budgetForm.seriesId} onChange={(e) => setBudgetForm({...budgetForm, seriesId: e.target.value})}><option value="">-- Select --</option>{SERIES_CONFIG.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}</select></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Vendor</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.vendor} onChange={(e) => setBudgetForm({...budgetForm, vendor: e.target.value})} /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Total Amount</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.totalAmount} onChange={(e) => setBudgetForm({...budgetForm, totalAmount: e.target.value})} /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">TOP (%)</label><div className="grid grid-cols-5 gap-2">{[0, 10, 20, 30, 40, 50, 60, 70, 80, 90].map(v => <label key={v} className={`cursor-pointer border rounded-md px-1 py-2 text-center text-xs ${budgetForm.top === v ? 'bg-blue-600 text-white' : 'bg-white'}`}><input type="radio" name="top" value={v} className="hidden" checked={budgetForm.top === v} onChange={() => setBudgetForm({...budgetForm, top: v})} />{v}%</label>)}</div></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Lead Time (Days)</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.leadTime} onChange={(e) => setBudgetForm({...budgetForm, leadTime: e.target.value})} /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Payment Term (Days)</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.paymentTerm} onChange={(e) => setBudgetForm({...budgetForm, paymentTerm: e.target.value})} /></div>
                             </div>
-                        </div>
+                            <div className="flex flex-col justify-between bg-slate-50 p-6 rounded-xl border border-slate-100">
+                                <div><h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Calculation</h4><div className="space-y-3 text-sm">
+                                    <div className="flex justify-between"><span className="text-slate-500">DP</span><span className="text-xl font-bold text-slate-900">{formatRupiah(dpNominal)}</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-500">Pelunasan</span><span className="text-xl font-bold text-emerald-600">{formatRupiah(settlementNominal)}</span></div>
+                                </div></div>
+                                <button onClick={handleSaveBudget} disabled={!budgetForm.vendor} className="mt-6 w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50">Save</button>
+                            </div>
+                        </div></div>
                     </div>
-
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                            <Icons.Coins className="text-slate-600" size={20}/>
-                            <h3 className="font-bold text-slate-800">Saved Budget Records</h3>
-                        </div>
-                        {budgetList.length === 0 ? <div className="p-12 text-center text-slate-400">No records.</div> : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
-                                        <tr>
-                                            <th className="px-4 py-3 w-[140px] text-center">Status</th>
-                                            <th className="px-4 py-3">Date</th>
-                                            <th className="px-4 py-3">Series</th>
-                                            <th className="px-4 py-3">Vendor</th>
-                                            <th className="px-4 py-3 text-right">Total</th>
-                                            <th className="px-4 py-3 text-center">TOP</th>
-                                            <th className="px-4 py-3 text-center bg-blue-50/50">
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <span>Jadwal DP</span>
-                                                    <select className="text-[10px] border border-blue-200 rounded px-1" value={dpFilterMonth} onChange={(e) => setDpFilterMonth(e.target.value)}>
-                                                        <option value="">All</option>
-                                                        {uniqueDpMonths.map(m => <option key={m} value={m}>{new Date(m + "-01").toLocaleDateString('id-ID', {month: 'short', year: '2-digit'})}</option>)}
-                                                    </select>
-                                                </div>
-                                            </th>
-                                            <th className="px-4 py-3 text-right text-blue-700 bg-blue-50/30">Nominal DP</th>
-                                            <th className="px-4 py-3 text-center bg-emerald-50/50">
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <span>Jadwal Pelunasan</span>
-                                                    <select className="text-[10px] border border-emerald-200 rounded px-1" value={repaymentFilterMonth} onChange={(e) => setRepaymentFilterMonth(e.target.value)}>
-                                                        <option value="">All</option>
-                                                        {uniqueRepaymentMonths.map(m => <option key={m} value={m}>{new Date(m + "-01").toLocaleDateString('id-ID', {month: 'short', year: '2-digit'})}</option>)}
-                                                    </select>
-                                                </div>
-                                            </th>
-                                            <th className="px-4 py-3 text-right text-emerald-700 bg-emerald-50/30">Nominal Pelunasan</th>
-                                            <th className="px-4 py-3 text-center">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {filteredBudgetList.map((item) => (
-                                            <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                                                <td className="px-4 py-3 text-center">
-                                                    <button onClick={() => handleCycleStatus(item.id)} className="focus:outline-none hover:scale-105 transition-transform">{renderStatusBadge(item.paymentStatus)}</button>
-                                                </td>
-                                                <td className="px-4 py-3 text-slate-500 text-xs">{item.date}</td>
-                                                <td className="px-4 py-3 font-medium text-slate-800">{item.series}</td>
-                                                <td className="px-4 py-3 font-medium text-slate-800">{item.vendor}</td>
-                                                <td className="px-4 py-3 text-right text-slate-600">{formatRupiah(item.totalAmount)}</td>
-                                                <td className="px-4 py-3 text-center"><span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">{item.top}%</span></td>
-                                                <td className="px-4 py-3 text-center bg-blue-50/30 text-blue-700 font-medium text-xs">{item.dpDate ? formatDate(item.dpDate) : '-'}</td>
-                                                <td className="px-4 py-3 text-right font-bold text-blue-600 bg-blue-50/30">{formatRupiah(item.dpNominal)}</td>
-                                                <td className="px-4 py-3 text-center bg-emerald-50/30 text-emerald-700 font-medium text-xs">{item.repaymentDate ? formatDate(item.repaymentDate) : '-'}</td>
-                                                <td className="px-4 py-3 text-right font-bold text-emerald-600 bg-emerald-50/30">{formatRupiah(item.settlementNominal)}</td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <button onClick={() => handleDeleteBudget(item.id)} className="text-rose-500 hover:text-rose-700"><Icons.Trash2 size={16}/></button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2"><Icons.Coins className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Records</h3></div>
+                        {budgetList.length === 0 ? <div className="p-12 text-center text-slate-400">No records.</div> : <div className="overflow-x-auto"><table className="w-full text-sm text-left"><thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200"><tr><th className="px-4 py-3">Status</th><th className="px-4 py-3">Series</th><th className="px-4 py-3">Vendor</th><th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3 text-right">DP</th><th className="px-4 py-3 text-right">Pelunasan</th><th className="px-4 py-3 text-center">Action</th></tr></thead><tbody className="divide-y divide-slate-100">{filteredBudgetList.map(item => (<tr key={item.id} className="hover:bg-slate-50"><td className="px-4 py-3 text-center"><button onClick={() => handleCycleStatus(item.id)}>{renderStatusBadge(item.paymentStatus)}</button></td><td className="px-4 py-3">{item.series}</td><td className="px-4 py-3">{item.vendor}</td><td className="px-4 py-3 text-right">{formatRupiah(item.totalAmount)}</td><td className="px-4 py-3 text-right">{formatRupiah(item.dpNominal)}<div className="text-[10px] text-slate-400">{item.dpDate}</div></td><td className="px-4 py-3 text-right">{formatRupiah(item.settlementNominal)}<div className="text-[10px] text-slate-400">{item.repaymentDate}</div></td><td className="px-4 py-3 text-center"><button onClick={() => handleDeleteBudget(item.id)} className="text-rose-500 hover:text-rose-700"><Icons.Trash2 size={16}/></button></td></tr>))}</tbody></table></div>}
                     </div>
                 </div>
             );
 
-            // --- RENDER PRICING ---
             const renderPricing = () => (
                 <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                            <Icons.Tag className="text-slate-600" size={20}/>
-                            <h3 className="font-bold text-slate-800">RSP Marketplace Calculator</h3>
-                            <button onClick={confirmResetPricing} className="ml-auto px-3 py-1 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 transition-colors text-xs font-medium">Reset Pricing</button>
-                        </div>
-                        <div className="p-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Brand</label>
-                                        <select className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={pricingForm.brand} onChange={(e) => setPricingForm({...pricingForm, brand: e.target.value})}>
-                                            {Object.keys(BRAND_TARGETS).map(brand => <option key={brand} value={brand}>{brand} (Target: {BRAND_TARGETS[brand]}%)</option>)}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Kategori Produk</label>
-                                        <select className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none bg-white" value={pricingForm.category} onChange={handleCategoryChange}>
-                                            <option value="">-- Pilih Kategori --</option>
-                                            {Object.keys(COMPETITOR_DB).map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Nama Artikel / SKU</label>
-                                        <input type="text" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Dress Raya Series 1" value={pricingForm.articleName} onChange={(e) => setPricingForm({...pricingForm, articleName: e.target.value})} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">RSP Web (Harga Jual Website)</label>
-                                        <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0" value={pricingForm.rspWeb} onChange={(e) => setPricingForm({...pricingForm, rspWeb: e.target.value})} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">HPP (Harga Pokok Produksi)</label>
-                                        <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0" value={pricingForm.hpp} onChange={(e) => setPricingForm({...pricingForm, hpp: e.target.value})} />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Platform Fee (%)</label>
-                                            <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={pricingForm.platformFee} onChange={(e) => setPricingForm({...pricingForm, platformFee: e.target.value})} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">Marketing Fee (%)</label>
-                                            <input type="number" className="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" value={pricingForm.marketingFee} onChange={(e) => setPricingForm({...pricingForm, marketingFee: e.target.value})} />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col justify-between bg-slate-50 p-6 rounded-xl border border-slate-100">
-                                    <div>
-                                        <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Pricing Breakdown</h4>
-                                        <div className="space-y-3 text-sm">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-slate-500">Web GM% (Target: {pricingResult.brandTarget}%)</span>
-                                                <span className={`font-bold px-2 py-0.5 rounded text-xs ${pricingResult.isBelowTarget ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                                                    {pricingResult.webGmPct.toFixed(2)}% {pricingResult.isBelowTarget && "⚠️ Low"}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between"><span className="text-slate-500">Web GM Absolute</span><span className="font-medium text-slate-800">{formatRupiah(pricingResult.webGmAbs)}</span></div>
-                                            <div className="h-px bg-slate-200 my-2"></div>
-                                            
-                                            <div className="flex flex-col gap-2 bg-white p-3 rounded border border-slate-200 shadow-sm mb-4">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-slate-600 font-bold text-xs">CALCULATED RSP</span>
-                                                    <span className="text-sm font-mono text-slate-400">{formatRupiah(pricingResult.rspMpRaw)}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-indigo-600 font-bold text-lg">SUGGESTED RSP</span>
-                                                    <span className="text-2xl font-bold text-indigo-600">{formatRupiah(pricingResult.rspMpSuggested)}</span>
-                                                </div>
-                                                <div className="text-[10px] text-slate-400 text-right italic">*Rounded for psychology pricing</div>
-                                            </div>
-
-                                            <div className="mb-4">
-                                                <div className="flex justify-between items-center mb-1">
-                                                    <label className="block text-xs font-bold text-slate-500 uppercase">Cek Harga Kompetitor (Auto)</label>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <input type="number" className="w-full p-2 text-sm border border-slate-300 rounded-md focus:ring-1 focus:ring-blue-500 outline-none bg-slate-50" placeholder="Pilih kategori..." value={pricingForm.competitorPrice} onChange={(e) => setPricingForm({...pricingForm, competitorPrice: e.target.value})} />
-                                                </div>
-                                                
-                                                {pricingResult.competitiveAnalysis.status !== 'neutral' && (
-                                                    <div className={`mt-2 p-2 rounded border text-xs ${pricingResult.competitiveAnalysis.status === 'danger' ? 'bg-rose-50 border-rose-200 text-rose-700' : (pricingResult.competitiveAnalysis.status === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700')}`}>
-                                                        <div className="font-bold flex items-center gap-1">
-                                                            {pricingResult.competitiveAnalysis.status === 'danger' ? <Icons.AlertTriangle size={12}/> : (pricingResult.competitiveAnalysis.status === 'warning' ? <Icons.Info size={12}/> : <Icons.CheckCircle size={12}/>)}
-                                                            Insight:
-                                                        </div>
-                                                        <div>{pricingResult.competitiveAnalysis.message}</div>
-                                                        {pricingResult.competitiveAnalysis.suggestedAction && (
-                                                            <div className="mt-1 pt-1 border-t border-black/10">
-                                                                <div className="font-semibold">Rekomendasi: {pricingResult.competitiveAnalysis.suggestedAction.label} ({formatRupiah(pricingResult.competitiveAnalysis.suggestedAction.price)})</div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="mb-4">
-                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Harga Final (Adjusted)</label>
-                                                <input type="number" className="w-full p-2 border border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-indigo-700" placeholder={pricingResult.rspMpSuggested} value={pricingForm.manualPrice} onChange={(e) => setPricingForm({...pricingForm, manualPrice: e.target.value})} />
-                                                <div className="text-[10px] text-slate-400 mt-1 text-right">Edit jika ingin menyesuaikan harga manual</div>
-                                            </div>
-                                            
-                                            <div className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Estimasi Potongan & Profit MP (Final)</div>
-                                            <div className="flex justify-between"><span className="text-slate-500">Biaya Admin MP</span><span className="font-medium text-rose-500">-{formatRupiah(pricingResult.mpFeeNominal)}</span></div>
-                                            <div className="flex justify-between"><span className="text-slate-500">Sisa Bersih (Net)</span><span className="font-bold text-slate-800">{formatRupiah(pricingResult.finalPrice - pricingResult.mpFeeNominal)}</span></div>
-                                            <div className="flex justify-between"><span className="text-slate-500">MP GM Absolute</span><span className="font-bold text-emerald-600">{formatRupiah(pricingResult.mpGmAbs)}</span></div>
-                                            <div className="flex justify-between"><span className="text-slate-500">MP GM %</span><span className="font-medium text-blue-600">{pricingResult.mpGmPct.toFixed(2)}%</span></div>
-                                            <div className="flex justify-between mt-2 pt-2 border-t border-slate-200"><span className="text-slate-500 font-bold">Growth (MP - Web)</span><span className="font-bold text-indigo-600">+{formatRupiah(pricingResult.growth)}</span></div>
-                                        </div>
-                                    </div>
-                                    <button onClick={handleSavePricing} disabled={!pricingForm.articleName || !pricingForm.rspWeb || !pricingForm.hpp} className="mt-6 w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center justify-center gap-2"><Icons.Save size={18}/> Save to List</button>
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2"><Icons.Tag className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Pricing Calculator</h3><button onClick={confirmResetPricing} className="ml-auto px-3 py-1 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 text-xs font-medium">Reset</button></div>
+                        <div className="p-8"><div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Brand</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white" value={pricingForm.brand} onChange={(e) => setPricingForm({...pricingForm, brand: e.target.value})}>{Object.keys(BRAND_TARGETS).map(b => <option key={b} value={b}>{b}</option>)}</select></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Category</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white" value={pricingForm.category} onChange={handleCategoryChange}><option value="">-- Select --</option>{Object.keys(COMPETITOR_DB).map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Article Name</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={pricingForm.articleName} onChange={(e) => setPricingForm({...pricingForm, articleName: e.target.value})} /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">RSP Web</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={pricingForm.rspWeb} onChange={(e) => setPricingForm({...pricingForm, rspWeb: e.target.value})} /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">HPP</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={pricingForm.hpp} onChange={(e) => setPricingForm({...pricingForm, hpp: e.target.value})} /></div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div><label className="block text-sm font-medium text-slate-700 mb-1">Platform Fee %</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={pricingForm.platformFee} onChange={(e) => setPricingForm({...pricingForm, platformFee: e.target.value})} /></div>
+                                    <div><label className="block text-sm font-medium text-slate-700 mb-1">Marketing Fee %</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={pricingForm.marketingFee} onChange={(e) => setPricingForm({...pricingForm, marketingFee: e.target.value})} /></div>
                                 </div>
                             </div>
-                        </div>
+                            <div className="flex flex-col justify-between bg-slate-50 p-6 rounded-xl border border-slate-100">
+                                <div><h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Breakdown</h4><div className="space-y-3 text-sm">
+                                    <div className="flex justify-between"><span className="text-slate-500">Web GM%</span><span className={`font-bold px-2 py-0.5 rounded text-xs ${pricingResult.isBelowTarget ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{Number(pricingResult.webGmPct || 0).toFixed(2)}%</span></div>
+                                    <div className="flex justify-between items-center"><span className="text-indigo-600 font-bold text-lg">Suggested RSP</span><span className="text-2xl font-bold text-indigo-600">{formatRupiah(pricingResult.rspMpSuggested)}</span></div>
+                                    <div className="mb-4">
+                                        <div className="flex justify-between items-center mb-1"><label className="block text-xs font-bold text-slate-500 uppercase">Cek Harga Kompetitor (Auto)</label></div>
+                                        <input type="number" className="w-full p-2 text-sm border border-slate-300 rounded-md bg-slate-50" placeholder="Pilih kategori..." value={pricingForm.competitorPrice} onChange={(e) => setPricingForm({...pricingForm, competitorPrice: e.target.value})} />
+                                        {pricingResult.competitiveAnalysis.status !== 'neutral' && <div className={`mt-2 p-2 rounded border text-xs ${pricingResult.competitiveAnalysis.status === 'danger' ? 'bg-rose-50 border-rose-200 text-rose-700' : (pricingResult.competitiveAnalysis.status === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700')}`}><div className="font-bold flex items-center gap-1">Insight:</div><div>{pricingResult.competitiveAnalysis.message}</div>{pricingResult.competitiveAnalysis.suggestedAction && <div className="mt-1 pt-1 border-t border-black/10"><div className="font-semibold">Rekomendasi: {pricingResult.competitiveAnalysis.suggestedAction.label} ({formatRupiah(pricingResult.competitiveAnalysis.suggestedAction.price)})</div></div>}</div>}
+                                    </div>
+                                    <div className="mb-4"><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Manual Price</label><input type="number" className="w-full p-2 border border-indigo-200 rounded-md font-bold text-indigo-700" placeholder={pricingResult.rspMpSuggested} value={pricingForm.manualPrice} onChange={(e) => setPricingForm({...pricingForm, manualPrice: e.target.value})} /></div>
+                                    <div className="flex justify-between"><span className="text-slate-500">MP GM Absolute</span><span className="font-bold text-emerald-600">{formatRupiah(pricingResult.mpGmAbs)}</span></div>
+                                </div></div>
+                                <button onClick={handleSavePricing} disabled={!pricingForm.articleName} className="mt-6 w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50">Save</button>
+                            </div>
+                        </div></div>
                     </div>
-
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-                            <Icons.List className="text-slate-600" size={20}/>
-                            <h3 className="font-bold text-slate-800">Saved Pricing Strategy</h3>
-                        </div>
-                        {pricingList.length === 0 ? <div className="p-12 text-center text-slate-400">No records saved yet.</div> : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-left">
-                                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
-                                        <tr>
-                                            <th className="px-4 py-3">Article Name</th>
-                                            <th className="px-4 py-3 text-center">Brand</th>
-                                            <th className="px-4 py-3 text-right">RSP Web</th>
-                                            <th className="px-4 py-3 text-right">Web GM</th>
-                                            <th className="px-4 py-3 text-right">HPP</th>
-                                            <th className="px-4 py-3 text-right font-bold text-indigo-600">RSP MP Final</th>
-                                            <th className="px-4 py-3 text-right text-emerald-600">MP GM</th>
-                                            <th className="px-4 py-3">Notes</th>
-                                            <th className="px-4 py-3 text-center">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {pricingList.map((item) => (
-                                            <tr key={item.id} className="hover:bg-slate-50">
-                                                <td className="px-4 py-3 font-medium text-slate-800">{item.articleName}</td>
-                                                <td className="px-4 py-3 text-center text-xs font-bold text-slate-500 bg-slate-100 rounded">{item.brand}</td>
-                                                <td className="px-4 py-3 text-right text-slate-600">{formatRupiah(item.rspWeb)}</td>
-                                                <td className="px-4 py-3 text-right text-slate-500">{item.webGmPct ? item.webGmPct.toFixed(1) : 0}%</td>
-                                                <td className="px-4 py-3 text-right text-slate-600">{formatRupiah(item.hpp)}</td>
-                                                <td className="px-4 py-3 text-right font-bold text-indigo-600">{formatRupiah(item.finalPrice)}</td>
-                                                <td className="px-4 py-3 text-right font-bold text-emerald-600">{item.mpGmPct.toFixed(1)}%</td>
-                                                <td className="px-4 py-3 text-slate-500 italic max-w-xs truncate text-xs">{item.notes}</td>
-                                                <td className="px-4 py-3 text-center">
-                                                    <button onClick={() => handleDeletePricing(item.id)} className="text-rose-500 hover:text-rose-700"><Icons.Trash2 size={16}/></button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2"><Icons.List className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Saved Records</h3></div>
+                        {pricingList.length === 0 ? <div className="p-12 text-center text-slate-400">No records.</div> : <div className="overflow-x-auto"><table className="w-full text-sm text-left"><thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200"><tr><th className="px-4 py-3">Article</th><th className="px-4 py-3 text-right">RSP Web</th><th className="px-4 py-3 text-right">Web GM</th><th className="px-4 py-3 text-right font-bold text-indigo-600">RSP MP</th><th className="px-4 py-3 text-right text-emerald-600">MP GM</th><th className="px-4 py-3 text-center">Action</th></tr></thead><tbody className="divide-y divide-slate-100">{pricingList.map(item => (<tr key={item.id} className="hover:bg-slate-50"><td className="px-4 py-3 font-medium text-slate-800">{item.articleName}</td><td className="px-4 py-3 text-right">{formatRupiah(item.rspWeb)}</td><td className="px-4 py-3 text-right">{Number(item.webGmPct || 0).toFixed(1)}%</td><td className="px-4 py-3 text-right font-bold text-indigo-600">{formatRupiah(item.finalPrice)}</td><td className="px-4 py-3 text-right font-bold text-emerald-600">{Number(item.mpGmPct || 0).toFixed(1)}%</td><td className="px-4 py-3 text-center"><button onClick={() => handleDeletePricing(item.id)} className="text-rose-500 hover:text-rose-700"><Icons.Trash2 size={16}/></button></td></tr>))}</tbody></table></div>}
                     </div>
                 </div>
             );
-            
-            // --- Custom Modal ---
-            const ConfirmationModal = ({ config, onConfirm, onCancel }) => {
-                if (!config.isOpen) return null;
-                return (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
-                        <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-rose-100 text-rose-600 rounded-full">
-                                    <Icons.AlertTriangle size={24} />
-                                </div>
-                                <h3 className="text-lg font-bold text-slate-800">Konfirmasi</h3>
-                            </div>
-                            <p className="text-slate-600 mb-6">{config.message}</p>
-                            <div className="flex justify-end gap-3">
-                                <button onClick={onCancel} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
-                                <button onClick={onConfirm} className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm transition-colors">Ya, Lanjutkan</button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            };
-
-            // --- Add Task Modal ---
-            const AddTaskModal = ({ isOpen, onClose, onSave }) => {
-                if (!isOpen) return null;
-                
-                const [form, setForm] = useState({
-                    name: '',
-                    planStart: '',
-                    planEnd: '',
-                    leadTime: 0
-                });
-
-                const handleChange = (e) => {
-                    const { name, value } = e.target;
-                    setForm(prev => ({ ...prev, [name]: value }));
-                };
-
-                const handleSubmit = () => {
-                    onSave(form);
-                    setForm({ name: '', planStart: '', planEnd: '', leadTime: 0 }); // Reset form
-                };
-
-                return (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
-                        <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-bold text-slate-800">Tambah Aktivitas Baru</h3>
-                                <button onClick={onClose}><Icons.X size={20} className="text-slate-400 hover:text-slate-600"/></button>
-                            </div>
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">Nama Aktivitas</label>
-                                    <input type="text" name="name" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.name} onChange={handleChange} placeholder="Contoh: Packing" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">Plan Start</label>
-                                    <input type="date" name="planStart" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.planStart} onChange={handleChange} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">Plan End</label>
-                                    <input type="date" name="planEnd" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.planEnd} onChange={handleChange} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Hari)</label>
-                                    <input type="number" name="leadTime" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={form.leadTime} onChange={handleChange} placeholder="0" />
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-3 mt-6">
-                                <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
-                                <button onClick={handleSubmit} disabled={!form.name} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors disabled:opacity-50">Tambah</button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            };
-
-            // --- Edit Task Modal ---
-            const EditTaskModal = ({ config, onClose, onSave, onChange }) => {
-                if (!config.isOpen) return null;
-                const { data: taskData } = config;
-
-                return (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
-                        <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-bold text-slate-800">Edit Aktivitas</h3>
-                                <button onClick={onClose}><Icons.X size={20} className="text-slate-400 hover:text-slate-600"/></button>
-                            </div>
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">Nama Aktivitas</label>
-                                    <input type="text" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.name} onChange={(e) => onChange('name', e.target.value)} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">Plan Start</label>
-                                    <input type="date" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.planStart} onChange={(e) => onChange('planStart', e.target.value)} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">Plan End</label>
-                                    <input type="date" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.planEnd} onChange={(e) => onChange('planEnd', e.target.value)} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Hari)</label>
-                                    <input type="number" className="w-full p-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={taskData.leadTime} onChange={(e) => onChange('leadTime', parseInt(e.target.value) || 0)} />
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-3 mt-6">
-                                <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
-                                <button onClick={onSave} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">Simpan</button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            };
 
             if (!isClient) return null;
 
@@ -1850,13 +829,7 @@
                     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
                         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between items-center h-16">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">H</div>
-                                    <div>
-                                        <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">WORLDWHITE ENTERPRISE</h1>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">RAYA 2027 PLANNER</p>
-                                    </div>
-                                </div>
+                                <div className="flex items-center gap-3"><div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">H</div><div><h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">WORLDWHITE ENTERPRISE</h1><p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">RAYA 2027 PLANNER</p></div></div>
                                 <nav className="flex space-x-1 bg-slate-100 p-1 rounded-lg">
                                     <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'dashboard' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Dashboard</button>
                                     <button onClick={() => setActiveTab('gantt')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'gantt' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Gantt Chart</button>
