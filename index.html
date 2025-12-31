@@ -99,7 +99,7 @@
             "SHUWA": 42
         };
 
-        // DATA KOMPETITOR LENGKAP (Array Object untuk kalkulasi)
+        // DATA KOMPETITOR LENGKAP (Array Object untuk kalkulasi - Harga Marketplace Only)
         const COMPETITOR_DB = {
             "Dress/Gamis Basic": [
                 { brand: "Heaven Light", price: 299000 },
@@ -621,7 +621,7 @@
                     const prices = compData.map(c => c.price);
                     const total = prices.reduce((sum, p) => sum + p, 0);
                     avgPrice = Math.round(total / prices.length);
-                    notes = `Avg based on ${compData.length} competitors`;
+                    notes = `Avg Marketplace Price based on ${compData.length} competitors`;
                 }
 
                 setPricingForm(prev => ({
@@ -745,7 +745,7 @@
                     "Web GM Abs": item.webGmAbs,
                     "Platform Fee": item.platformFee,
                     "Marketing Fee": item.marketingFee,
-                    "Competitor Price": item.competitorPrice,
+                    "Competitor Price (MP)": item.competitorPrice,
                     "Manual Price": item.manualPrice,
                     "RSP MP (Calculated)": item.finalPrice,
                     "MP GM %": item.mpGmPct ? item.mpGmPct.toFixed(2) : 0,
@@ -1303,7 +1303,7 @@
                                 
                                 {selectedCompetitors.length > 0 && (
                                     <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-2">
-                                        <div className="font-bold text-slate-600 uppercase tracking-wide border-b border-slate-200 pb-1 mb-1">Market Insight ({pricingForm.category})</div>
+                                        <div className="font-bold text-slate-600 uppercase tracking-wide border-b border-slate-200 pb-1 mb-1">Marketplace Insight ({pricingForm.category})</div>
                                         <div className="grid grid-cols-3 gap-2 text-center">
                                             <div className="bg-white p-2 rounded border border-emerald-100">
                                                 <div className="text-slate-400 text-[10px]">Lowest</div>
@@ -1355,7 +1355,7 @@
                                         </div>
 
                                         <div className="mb-4">
-                                            <div className="flex justify-between items-center mb-1"><label className="block text-xs font-bold text-slate-500 uppercase">Cek Harga Kompetitor (Input Manual/Auto)</label></div>
+                                            <div className="flex justify-between items-center mb-1"><label className="block text-xs font-bold text-slate-500 uppercase">Cek Harga Kompetitor (Marketplace)</label></div>
                                             <input type="number" className="w-full p-2 text-sm border border-slate-300 rounded-md bg-slate-50" placeholder="Pilih kategori untuk auto-fill Average..." value={pricingForm.competitorPrice} onChange={(e) => setPricingForm({...pricingForm, competitorPrice: e.target.value})} />
                                             {pricingResult.competitiveAnalysis.status !== 'neutral' && <div className={`mt-2 p-2 rounded border text-xs ${pricingResult.competitiveAnalysis.status === 'danger' ? 'bg-rose-50 border-rose-200 text-rose-700' : (pricingResult.competitiveAnalysis.status === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700')}`}><div className="font-bold flex items-center gap-1">Insight:</div><div>{pricingResult.competitiveAnalysis.message}</div>{pricingResult.competitiveAnalysis.suggestedAction && <div className="mt-1 pt-1 border-t border-black/10"><div className="font-semibold">Rekomendasi: {pricingResult.competitiveAnalysis.suggestedAction.label} ({formatRupiah(pricingResult.competitiveAnalysis.suggestedAction.price)})</div></div>}</div>}
                                         </div>
