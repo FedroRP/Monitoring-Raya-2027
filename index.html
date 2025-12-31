@@ -122,8 +122,10 @@
 
         const formatDate = (dateStr) => {
             if (!dateStr) return "-";
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return "-";
             const options = { day: 'numeric', month: 'short', year: '2-digit' };
-            return new Date(dateStr).toLocaleDateString('id-ID', options);
+            return d.toLocaleDateString('id-ID', options);
         };
 
         const addDays = (dateStr, days) => {
@@ -186,7 +188,7 @@
             return { left: `${Math.max(0, left)}%`, width: `${width}%` };
         };
 
-        // --- DEFINISI MODAL (Di Luar App untuk Mencegah Flickering) ---
+        // --- DEFINISI MODAL ---
         const ConfirmationModal = React.memo(({ config, onConfirm, onCancel }) => {
             if (!config.isOpen) return null;
             return (
@@ -327,12 +329,29 @@
             const handleSaveNewActivity = useCallback((newActivityData) => {
                 const { seriesIndex } = addModalConfig;
                 if (seriesIndex === null) return;
-                const newData = [...data];
-                const maxId = newData[seriesIndex].activities.reduce((max, act) => Math.max(max, act.id), 0);
-                newData[seriesIndex].activities.push({
-                    id: maxId + 1, name: newActivityData.name, planStart: newActivityData.planStart, planEnd: newActivityData.planEnd,
-                    leadTime: parseInt(newActivityData.leadTime) || 0, actualStart: "", actualEnd: "", status: "pending"
+                
+                // Deep Copy for Immutable Update
+                const newData = data.map((series, idx) => {
+                    if (idx !== seriesIndex) return series;
+                    const maxId = series.activities.reduce((max, act) => Math.max(max, act.id), 0);
+                    return {
+                        ...series,
+                        activities: [
+                            ...series.activities,
+                            {
+                                id: maxId + 1,
+                                name: newActivityData.name,
+                                planStart: newActivityData.planStart,
+                                planEnd: newActivityData.planEnd,
+                                leadTime: parseInt(newActivityData.leadTime) || 0,
+                                actualStart: "",
+                                actualEnd: "",
+                                status: "pending"
+                            }
+                        ]
+                    };
                 });
+                
                 setData(newData);
                 closeAddActivity();
             }, [data, addModalConfig, closeAddActivity]);
@@ -343,17 +362,29 @@
             }, [data]);
             const closeEditActivity = useCallback(() => setEditModalConfig({ isOpen: false, seriesIndex: null, activityIndex: null, data: null }), []);
             const saveEditActivity = useCallback(() => {
-                const { seriesIndex, activityIndex, data: newData } = editModalConfig;
-                if (seriesIndex !== null && activityIndex !== null && newData) {
-                    const newSeriesData = [...data];
-                    newSeriesData[seriesIndex].activities[activityIndex] = newData;
-                    setData(newSeriesData);
+                const { seriesIndex, activityIndex, data: newDataItem } = editModalConfig;
+                if (seriesIndex !== null && activityIndex !== null && newDataItem) {
+                    const newData = data.map((series, sIdx) => {
+                         if (sIdx !== seriesIndex) return series;
+                         const newActivities = [...series.activities];
+                         newActivities[activityIndex] = newDataItem;
+                         return { ...series, activities: newActivities };
+                    });
+                    setData(newData);
                     closeEditActivity();
                 }
             }, [data, editModalConfig, closeEditActivity]);
             const handleEditFormChange = useCallback((field, value) => setEditModalConfig(prev => ({ ...prev, data: { ...prev.data, [field]: value } })), []);
             
-            const deleteActivity = useCallback((sIdx, aIdx) => { const newSeriesData = [...data]; newSeriesData[sIdx].activities.splice(aIdx, 1); setData(newSeriesData); }, [data]);
+            const deleteActivity = useCallback((sIdx, aIdx) => { 
+                const newData = data.map((series, idx) => {
+                    if (idx !== sIdx) return series;
+                    const newActivities = [...series.activities];
+                    newActivities.splice(aIdx, 1);
+                    return { ...series, activities: newActivities };
+                });
+                setData(newData); 
+            }, [data]);
             const confirmDeleteActivity = useCallback((sIdx, aIdx) => showConfirm("Hapus aktivitas ini?", () => deleteActivity(sIdx, aIdx)), [showConfirm, deleteActivity]);
 
             const resetGanttData = () => {
@@ -371,7 +402,16 @@
             const confirmResetBudget = () => showConfirm("Reset Budgeting?", resetBudgetingData);
             const confirmResetPricing = () => showConfirm("Reset Pricing?", resetPricingData);
 
-            const handleUpdateActual = (sIdx, aIdx, field, val) => { const newData = [...data]; newData[sIdx].activities[aIdx][field] = val; setData(newData); };
+            // FIXED: Immutable update for input changes
+            const handleUpdateActual = (sIdx, aIdx, field, val) => {
+                const newData = data.map((series, i) => {
+                    if (i !== sIdx) return series;
+                    const newActivities = [...series.activities];
+                    newActivities[aIdx] = { ...newActivities[aIdx], [field]: val };
+                    return { ...series, activities: newActivities };
+                });
+                setData(newData);
+            };
 
             const dpNominal = useMemo(() => (parseFloat(budgetForm.totalAmount) || 0) * (parseInt(budgetForm.top) || 0) / 100, [budgetForm.totalAmount, budgetForm.top]);
             const settlementNominal = useMemo(() => (parseFloat(budgetForm.totalAmount) || 0) - dpNominal, [budgetForm.totalAmount, dpNominal]);
