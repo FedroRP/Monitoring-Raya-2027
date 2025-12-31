@@ -99,17 +99,55 @@
             "SHUWA": 42
         };
 
+        // DATA KOMPETITOR LENGKAP (Array Object untuk kalkulasi)
         const COMPETITOR_DB = {
-            "Dress/Gamis Basic": { price: 289000, note: "Avg. Market: Heaven Lights (~289k), Vanilla Hijab (~269k)" },
-            "Dress/Gamis Premium": { price: 875000, note: "Avg. Market: Buttonscarves (~1.2M), Wearing Klamby (~895k)" },
-            "Scarf Printing": { price: 335000, note: "Avg. Market: Buttonscarves (~425k), Wearing Klamby (~335k)" },
-            "Scarf Polos": { price: 149000, note: "Avg. Market: Buttonscarves (~225k), Heaven Lights (~99k)" },
-            "Blouse/Tunic": { price: 325000, note: "Avg. Market: Wearing Klamby (~450k), Heaven Lights (~299k)" },
-            "Prayer Set/Mukena": { price: 950000, note: "Avg. Market: Buttonscarves (~1.5M), Wearing Klamby (~950k)" },
-            "Pants/Bawahan": { price: 249000, note: "Avg. Market: Heaven Lights (~249k), Wearing Klamby (~375k)" },
-            "Bag/Accessories": { price: 650000, note: "Avg. Market: Buttonscarves (~1.8M), Wearing Klamby (~650k)" },
-             "Sunglasses/Eyewear": { price: 375000, note: "Avg. Market: Buttonscarves (~1.2M), Wearing Klamby (~350k)" },
-            "Outer/Jacket": { price: 495000, note: "Avg. Market: Wearing Klamby (~650k), Heaven Lights (~399k)" }
+            "Dress/Gamis Basic": [
+                { brand: "Heaven Light", price: 299000 },
+                { brand: "Nada Puspita", price: 345000 }
+            ],
+            "Dress/Gamis Premium": [
+                { brand: "Buttonscarves", price: 1200000 },
+                { brand: "Wearing Klamby", price: 895000 },
+                { brand: "Kami Idea", price: 950000 }
+            ],
+            "Scarf Printing": [
+                { brand: "Buttonscarves", price: 425000 },
+                { brand: "Nada Puspita", price: 335000 },
+                { brand: "Kami Idea", price: 350000 }
+            ],
+            "Scarf Polos": [
+                { brand: "Heaven Light", price: 149000 },
+                { brand: "Nada Puspita", price: 175000 },
+                { brand: "Kami Idea", price: 199000 }
+            ],
+            "Blouse/Tunic": [
+                { brand: "Wearing Klamby", price: 450000 },
+                { brand: "Kami Idea", price: 475000 },
+                { brand: "Nada Puspita", price: 425000 }
+            ],
+            "Prayer Set/Mukena": [
+                { brand: "Buttonscarves", price: 1500000 },
+                { brand: "Nada Puspita", price: 975000 },
+                { brand: "Wearing Klamby", price: 1200000 }
+            ],
+            "Pants/Bawahan": [
+                { brand: "Kami Idea", price: 450000 },
+                { brand: "Wearing Klamby", price: 375000 },
+                { brand: "Heaven Light", price: 249000 }
+            ],
+            "Bag/Accessories": [
+                { brand: "Buttonscarves", price: 1800000 },
+                { brand: "Kami Idea", price: 950000 }
+            ],
+            "Sunglasses/Eyewear": [
+                { brand: "Buttonscarves", price: 1200000 },
+                { brand: "Wearing Klamby", price: 350000 }
+            ],
+            "Outer/Jacket": [
+                { brand: "Wearing Klamby", price: 650000 },
+                { brand: "Kami Idea", price: 750000 },
+                { brand: "Heaven Light", price: 399000 }
+            ]
         };
 
         const TIMELINE_START = "2026-06-01";
@@ -575,11 +613,22 @@
             const handleCategoryChange = (e) => {
                 const selectedCat = e.target.value;
                 const compData = COMPETITOR_DB[selectedCat];
+                
+                let avgPrice = '';
+                let notes = '';
+
+                if (compData && compData.length > 0) {
+                    const prices = compData.map(c => c.price);
+                    const total = prices.reduce((sum, p) => sum + p, 0);
+                    avgPrice = Math.round(total / prices.length);
+                    notes = `Avg based on ${compData.length} competitors`;
+                }
+
                 setPricingForm(prev => ({
                     ...prev,
                     category: selectedCat,
-                    competitorPrice: compData ? compData.price : '',
-                    notes: compData ? `Auto-filled based on ${compData.note}` : ''
+                    competitorPrice: avgPrice, // Auto-fill with Average
+                    notes: notes
                 }));
             };
 
@@ -587,15 +636,15 @@
                 if (!pricingForm.articleName) return;
 
                 if (editingPricingId) {
-                    // Logika Update (Edit Mode)
+                    // Update Logic
                     setPricingList(pricingList.map(item => 
                         item.id === editingPricingId 
                         ? { ...item, ...pricingForm, ...pricingResult, date: new Date().toISOString().split('T')[0] } 
                         : item
                     ));
-                    setEditingPricingId(null); // Keluar dari edit mode
+                    setEditingPricingId(null);
                 } else {
-                    // Logika Create Baru
+                    // Create Logic
                     setPricingList([{ id: Date.now(), ...pricingForm, ...pricingResult, date: new Date().toISOString().split('T')[0] }, ...pricingList]);
                 }
                 
@@ -1213,7 +1262,17 @@
                 </div>
             );
 
-            const renderPricing = () => (
+            const renderPricing = () => {
+                // Kalkulasi Statistik Kompetitor untuk Tampilan
+                const selectedCompetitors = COMPETITOR_DB[pricingForm.category] || [];
+                const prices = selectedCompetitors.map(c => c.price);
+                const minPrice = prices.length ? Math.min(...prices) : 0;
+                const maxPrice = prices.length ? Math.max(...prices) : 0;
+                const avgPrice = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
+                const minBrand = selectedCompetitors.find(c => c.price === minPrice)?.brand || '-';
+                const maxBrand = selectedCompetitors.find(c => c.price === maxPrice)?.brand || '-';
+
+                return (
                 <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
                     <div id="pricing-form-container" className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
@@ -1241,6 +1300,30 @@
                                     </div>
                                 </div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Category</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white" value={pricingForm.category} onChange={handleCategoryChange}><option value="">-- Select --</option>{Object.keys(COMPETITOR_DB).map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                                
+                                {selectedCompetitors.length > 0 && (
+                                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs space-y-2">
+                                        <div className="font-bold text-slate-600 uppercase tracking-wide border-b border-slate-200 pb-1 mb-1">Market Insight ({pricingForm.category})</div>
+                                        <div className="grid grid-cols-3 gap-2 text-center">
+                                            <div className="bg-white p-2 rounded border border-emerald-100">
+                                                <div className="text-slate-400 text-[10px]">Lowest</div>
+                                                <div className="font-bold text-emerald-600">{formatRupiah(minPrice)}</div>
+                                                <div className="text-[9px] text-slate-500 truncate">{minBrand}</div>
+                                            </div>
+                                            <div className="bg-white p-2 rounded border border-blue-100">
+                                                <div className="text-slate-400 text-[10px]">Average</div>
+                                                <div className="font-bold text-blue-600">{formatRupiah(avgPrice)}</div>
+                                                <div className="text-[9px] text-slate-500">Market Avg</div>
+                                            </div>
+                                            <div className="bg-white p-2 rounded border border-rose-100">
+                                                <div className="text-slate-400 text-[10px]">Highest</div>
+                                                <div className="font-bold text-rose-600">{formatRupiah(maxPrice)}</div>
+                                                <div className="text-[9px] text-slate-500 truncate">{maxBrand}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Article Name</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={pricingForm.articleName} onChange={(e) => setPricingForm({...pricingForm, articleName: e.target.value})} /></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">RSP Web</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={pricingForm.rspWeb} onChange={(e) => setPricingForm({...pricingForm, rspWeb: e.target.value})} /></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">HPP</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={pricingForm.hpp} onChange={(e) => setPricingForm({...pricingForm, hpp: e.target.value})} /></div>
@@ -1272,8 +1355,8 @@
                                         </div>
 
                                         <div className="mb-4">
-                                            <div className="flex justify-between items-center mb-1"><label className="block text-xs font-bold text-slate-500 uppercase">Cek Harga Kompetitor (Auto)</label></div>
-                                            <input type="number" className="w-full p-2 text-sm border border-slate-300 rounded-md bg-slate-50" placeholder="Pilih kategori..." value={pricingForm.competitorPrice} onChange={(e) => setPricingForm({...pricingForm, competitorPrice: e.target.value})} />
+                                            <div className="flex justify-between items-center mb-1"><label className="block text-xs font-bold text-slate-500 uppercase">Cek Harga Kompetitor (Input Manual/Auto)</label></div>
+                                            <input type="number" className="w-full p-2 text-sm border border-slate-300 rounded-md bg-slate-50" placeholder="Pilih kategori untuk auto-fill Average..." value={pricingForm.competitorPrice} onChange={(e) => setPricingForm({...pricingForm, competitorPrice: e.target.value})} />
                                             {pricingResult.competitiveAnalysis.status !== 'neutral' && <div className={`mt-2 p-2 rounded border text-xs ${pricingResult.competitiveAnalysis.status === 'danger' ? 'bg-rose-50 border-rose-200 text-rose-700' : (pricingResult.competitiveAnalysis.status === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700')}`}><div className="font-bold flex items-center gap-1">Insight:</div><div>{pricingResult.competitiveAnalysis.message}</div>{pricingResult.competitiveAnalysis.suggestedAction && <div className="mt-1 pt-1 border-t border-black/10"><div className="font-semibold">Rekomendasi: {pricingResult.competitiveAnalysis.suggestedAction.label} ({formatRupiah(pricingResult.competitiveAnalysis.suggestedAction.price)})</div></div>}</div>}
                                         </div>
 
@@ -1317,6 +1400,7 @@
                     </div>
                 </div>
             );
+            };
 
             if (!isClient) return null;
 
