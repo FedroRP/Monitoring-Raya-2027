@@ -73,7 +73,8 @@
             Info: (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconWrapper>,
             Edit: (props) => <IconWrapper {...props}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></IconWrapper>,
             Plus: (props) => <IconWrapper {...props}><path d="M5 12h14"/><path d="M12 5v14"/></IconWrapper>,
-            WarningCircle: (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconWrapper>
+            WarningCircle: (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconWrapper>,
+            Download: (props) => <IconWrapper {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></IconWrapper>
         };
 
         // --- CONFIGURATION ---
@@ -123,15 +124,8 @@
 
         const formatDate = (dateStr) => {
             if (!dateStr) return "-";
-            if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-                return dateStr;
-            }
-            const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return "-";
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+            const options = { day: 'numeric', month: 'short', year: '2-digit' };
+            return new Date(dateStr).toLocaleDateString('id-ID', options);
         };
 
         const addDays = (dateStr, days) => {
@@ -152,6 +146,7 @@
             return new Date(y, m - 1, d);
         };
 
+        // FIXED: Safe Currency Formatting preventing crashes on re-render
         const formatRupiah = (val) => {
             const number = parseFloat(val);
             if (val === null || val === undefined || isNaN(number)) return "Rp0";
@@ -194,7 +189,32 @@
             return { left: `${Math.max(0, left)}%`, width: `${width}%` };
         };
 
-        // --- DEFINISI MODAL ---
+        const downloadTableAsCSV = (data, filename) => {
+            const csvRows = [];
+            const headers = Object.keys(data[0]);
+            csvRows.push(headers.join(','));
+
+            for (const row of data) {
+                const values = headers.map(header => {
+                    const escaped = ('' + row[header]).replace(/"/g, '\\"');
+                    return `"${escaped}"`;
+                });
+                csvRows.push(values.join(','));
+            }
+
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+
+
+        // --- DEFINISI MODAL (Di Luar App untuk Mencegah Flickering) ---
         const ConfirmationModal = React.memo(({ config, onConfirm, onCancel }) => {
             if (!config.isOpen) return null;
             return (
@@ -279,10 +299,13 @@
                         </div>
                         <div className="space-y-3">
                              <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-xs font-medium text-slate-500 mb-1">Article Name</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.article} onChange={(e) => onChange('article', e.target.value)} /></div>
+                                <div><label className="block text-xs font-medium text-slate-500 mb-1">No. PO</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.poNumber} onChange={(e) => onChange('poNumber', e.target.value)} /></div>
                                 <div><label className="block text-xs font-medium text-slate-500 mb-1">Custom Date</label><input type="date" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.date} onChange={(e) => onChange('date', e.target.value)} /></div>
                              </div>
-                             <div><label className="block text-xs font-medium text-slate-500 mb-1">Description</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.description} onChange={(e) => onChange('description', e.target.value)} placeholder="FOB/CMT/BAHAN" /></div>
+                             <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-xs font-medium text-slate-500 mb-1">Article Name</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.article} onChange={(e) => onChange('article', e.target.value)} /></div>
+                                <div><label className="block text-xs font-medium text-slate-500 mb-1">Description</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.description} onChange={(e) => onChange('description', e.target.value)} placeholder="FOB/CMT/BAHAN" /></div>
+                             </div>
                              <div className="border-t border-slate-200 my-2 pt-2"></div>
                              <div><label className="block text-xs font-medium text-slate-500 mb-1">Series</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white text-sm" value={budgetData.series} onChange={(e) => onChange('series', e.target.value)}><option value="">-- Select --</option>{SERIES_CONFIG.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}</select></div>
                              <div><label className="block text-xs font-medium text-slate-500 mb-1">Vendor</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.vendor} onChange={(e) => onChange('vendor', e.target.value)} /></div>
@@ -317,7 +340,7 @@
 
             // Budgeting & Pricing States
             const [budgetList, setBudgetList] = useState([]);
-            const [budgetForm, setBudgetForm] = useState({ seriesId: '', vendor: '', article: '', description: '', customDate: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
+            const [budgetForm, setBudgetForm] = useState({ seriesId: '', vendor: '', article: '', description: '', customDate: '', poNumber: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
             const [pricingList, setPricingList] = useState([]);
             const [pricingForm, setPricingForm] = useState({ seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: '' });
             const [dpFilterMonth, setDpFilterMonth] = useState(""); 
@@ -434,7 +457,7 @@
                 });
                 setData(initialData);
             };
-            const resetBudgetingData = () => { setBudgetList([]); setBudgetForm({ seriesId: '', vendor: '', article: '', description: '', customDate: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' }); };
+            const resetBudgetingData = () => { setBudgetList([]); setBudgetForm({ seriesId: '', vendor: '', article: '', description: '', customDate: '', poNumber: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' }); };
             const resetPricingData = () => { setPricingList([]); setPricingForm({ seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: '' }); };
 
             const confirmResetGantt = () => showConfirm("Reset Gantt Chart?", resetGanttData);
@@ -569,6 +592,76 @@
                 setPricingList(pricingList.filter(item => item.id !== id));
             };
 
+            // CSV Export Helpers
+            const downloadTableAsCSV = (data, filename) => {
+                const csvRows = [];
+                const headers = Object.keys(data[0]);
+                csvRows.push(headers.join(','));
+
+                for (const row of data) {
+                    const values = headers.map(header => {
+                        const escaped = ('' + row[header]).replace(/"/g, '\\"');
+                        return `"${escaped}"`;
+                    });
+                    csvRows.push(values.join(','));
+                }
+
+                const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('hidden', '');
+                a.setAttribute('href', url);
+                a.setAttribute('download', filename);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+
+            const handleExportBudget = () => {
+                if (budgetList.length === 0) return;
+                const csvData = budgetList.map(item => ({
+                    "Status": item.paymentStatus,
+                    "No PO": item.poNumber || '-',
+                    "Date": item.date,
+                    "Series": item.series || item.seriesId,
+                    "Vendor": item.vendor,
+                    "Article": item.article,
+                    "Description": item.description,
+                    "Total Amount": item.totalAmount,
+                    "TOP (%)": item.top,
+                    "Lead Time": item.leadTime,
+                    "Payment Term": item.paymentTerm,
+                    "Jadwal DP": item.dpDate,
+                    "Nominal DP": item.dpNominal,
+                    "Jadwal Pelunasan": item.repaymentDate,
+                    "Nominal Pelunasan": item.settlementNominal
+                }));
+                downloadTableAsCSV(csvData, `Budgeting_Export_${new Date().toISOString().slice(0,10)}.csv`);
+            };
+
+            const handleExportPricing = () => {
+                if (pricingList.length === 0) return;
+                const csvData = pricingList.map(item => ({
+                    "Article Name": item.articleName,
+                    "Brand": item.brand,
+                    "Category": item.category,
+                    "RSP Web": item.rspWeb,
+                    "HPP": item.hpp,
+                    "Web GM %": item.webGmPct ? item.webGmPct.toFixed(2) : 0,
+                    "Web GM Abs": item.webGmAbs,
+                    "Platform Fee": item.platformFee,
+                    "Marketing Fee": item.marketingFee,
+                    "Competitor Price": item.competitorPrice,
+                    "Manual Price": item.manualPrice,
+                    "RSP MP (Calculated)": item.finalPrice,
+                    "MP GM %": item.mpGmPct ? item.mpGmPct.toFixed(2) : 0,
+                    "MP GM Abs": item.mpGmAbs,
+                    "Date": item.date
+                }));
+                downloadTableAsCSV(csvData, `Pricing_Export_${new Date().toISOString().slice(0,10)}.csv`);
+            };
+
+
             const uniqueDpMonths = useMemo(() => { const s = new Set(); budgetList.forEach(i => i.dpDate && i.dpDate !== '-' && s.add(i.dpDate.substring(0, 7))); return Array.from(s).sort(); }, [budgetList]);
             const uniqueRepaymentMonths = useMemo(() => { const s = new Set(); budgetList.forEach(i => i.repaymentDate && i.repaymentDate !== '-' && s.add(i.repaymentDate.substring(0, 7))); return Array.from(s).sort(); }, [budgetList]);
             const filteredBudgetList = useMemo(() => budgetList.filter(i => (!dpFilterMonth || i.dpDate?.startsWith(dpFilterMonth)) && (!repaymentFilterMonth || i.repaymentDate?.startsWith(repaymentFilterMonth))), [budgetList, dpFilterMonth, repaymentFilterMonth]);
@@ -605,7 +698,7 @@
                 const repD = addDays(baseCalcDate, pt);
                 
                 setBudgetList([{ id: Date.now(), ...budgetForm, totalAmount: parseFloat(budgetForm.totalAmount), dpNominal, settlementNominal, dpDate: dpD, repaymentDate: repD, date: baseDate, paymentStatus: 'unpaid' }, ...budgetList]);
-                setBudgetForm({ seriesId: '', vendor: '', article: '', description: '', customDate: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
+                setBudgetForm({ seriesId: '', vendor: '', article: '', description: '', customDate: '', poNumber: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
             };
 
             // --- Edit Budget Handlers ---
@@ -922,7 +1015,7 @@
                                                                     <div className="hidden group-hover/bar:block absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-50 w-max max-w-[200px]">
                                                                         <div className="bg-gray-900 text-white text-[10px] rounded-md py-1 px-2 shadow-xl border border-gray-700 relative">
                                                                             <div className="font-bold border-b border-gray-700 pb-0.5 mb-0.5">{isLate ? 'Terlambat' : (act.actualEnd ? 'Selesai' : 'Sedang Berjalan')}</div>
-                                                                            <div>{formatDate(visualStart)} - {formatDate(visualEnd)}</div>
+                                                                            <div>{formatDate(act.actualStart || visualStart)} - {formatDate(act.actualEnd || visualEnd)}</div>
                                                                             {isInProgress && !isLate && <div className="text-blue-300 font-semibold mt-0.5">Progress: {progressPercent}%</div>}
                                                                             {isLate && <div className="text-rose-300 font-semibold mt-0.5">Telat: {delay} Hari</div>}
                                                                             {/* Arrow */}
@@ -962,20 +1055,27 @@
                         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between"><div><p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Outstanding</p><p className="text-2xl font-bold text-rose-600 mt-1">{formatRupiah(budgetStats.outstanding)}</p></div><div className="p-3 bg-rose-50 text-rose-600 rounded-xl"><Icons.AlertOctagon size={24}/></div></div>
                     </div>
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2"><Icons.Wallet className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Budgeting Calculator</h3><button onClick={confirmResetBudget} className="ml-auto px-3 py-1 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 text-xs font-medium">Reset</button></div>
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                            <div className="flex items-center gap-2"><Icons.Wallet className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Budgeting Calculator</h3></div>
+                            <div className="flex gap-2">
+                                <button onClick={handleExportBudget} className="px-3 py-1 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center gap-1 text-xs font-medium"><Icons.Download size={12}/> Export CSV</button>
+                                <button onClick={confirmResetBudget} className="px-3 py-1 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 text-xs font-medium">Reset</button>
+                            </div>
+                        </div>
                         <div className="p-8"><div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">No. PO</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.poNumber} onChange={(e) => setBudgetForm({...budgetForm, poNumber: e.target.value})} placeholder="Input No. PO" /></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Series</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white" value={budgetForm.seriesId} onChange={(e) => setBudgetForm({...budgetForm, seriesId: e.target.value})}><option value="">-- Select --</option>{SERIES_CONFIG.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}</select></div>
-                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Vendor</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.vendor} onChange={(e) => setBudgetForm({...budgetForm, vendor: e.target.value})} /></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Article</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.article} onChange={(e) => setBudgetForm({...budgetForm, article: e.target.value})} placeholder="Article Name" /></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Description</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.description} onChange={(e) => setBudgetForm({...budgetForm, description: e.target.value})} placeholder="FOB/CMT/BAHAN" /></div>
-                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Date</label><input type="date" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.customDate} onChange={(e) => setBudgetForm({...budgetForm, customDate: e.target.value})} /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Vendor</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.vendor} onChange={(e) => setBudgetForm({...budgetForm, vendor: e.target.value})} /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Launching Date</label><input type="date" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.customDate} onChange={(e) => setBudgetForm({...budgetForm, customDate: e.target.value})} /></div>
                             </div>
                             <div className="space-y-4">
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Total Amount</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.totalAmount} onChange={(e) => setBudgetForm({...budgetForm, totalAmount: e.target.value})} /></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">TOP (%)</label><div className="grid grid-cols-5 gap-2">{[0, 10, 20, 30, 40, 50, 60, 70, 80, 90].map(v => <label key={v} className={`cursor-pointer border rounded-md px-1 py-2 text-center text-xs ${budgetForm.top === v ? 'bg-blue-600 text-white' : 'bg-white'}`}><input type="radio" name="top" value={v} className="hidden" checked={budgetForm.top === v} onChange={() => setBudgetForm({...budgetForm, top: v})} />{v}%</label>)}</div></div>
-                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Lead Time (Days)</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.leadTime} onChange={(e) => setBudgetForm({...budgetForm, leadTime: e.target.value})} /></div>
-                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Payment Term (Days)</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.paymentTerm} onChange={(e) => setBudgetForm({...budgetForm, paymentTerm: e.target.value})} /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Lead Time</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.leadTime} onChange={(e) => setBudgetForm({...budgetForm, leadTime: e.target.value})} /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Payment Term</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.paymentTerm} onChange={(e) => setBudgetForm({...budgetForm, paymentTerm: e.target.value})} /></div>
                             </div>
                         </div>
                         <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
@@ -991,14 +1091,17 @@
                         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2"><Icons.Coins className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Records</h3></div>
                         {budgetList.length === 0 ? <div className="p-12 text-center text-slate-400">No records.</div> : <div className="overflow-x-auto"><table className="w-full text-sm text-left"><thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                             <tr>
-                                <th className="px-4 py-3 text-center">Status</th>
-                                <th className="px-4 py-3 text-center">Date</th>
+                                <th className="px-4 py-3 text-center w-[120px]">Status</th>
+                                <th className="px-4 py-3 text-center">No. PO</th>
                                 <th className="px-4 py-3 text-center">Series</th>
                                 <th className="px-4 py-3 text-center">Vendor</th>
                                 <th className="px-4 py-3 text-center">Article</th>
                                 <th className="px-4 py-3 text-center">Desc</th>
+                                <th className="px-4 py-3 text-center">Launching Date</th>
                                 <th className="px-4 py-3 text-center">Total</th>
                                 <th className="px-4 py-3 text-center">TOP</th>
+                                <th className="px-4 py-3 text-center">Lead Time</th>
+                                <th className="px-4 py-3 text-center">Payment Term</th>
                                 <th className="px-4 py-3 text-center bg-blue-50/50">
                                     <div className="flex flex-col items-center gap-1">
                                         <span>Jadwal DP</span>
@@ -1026,11 +1129,11 @@
                             const isDpOverdue = item.paymentStatus === 'unpaid' && item.dpDate && new Date(item.dpDate) < today; 
                             const isRepaymentOverdue = item.paymentStatus !== 'fully_paid' && item.repaymentDate && new Date(item.repaymentDate) < today; 
                             
-                            // Fix Series Display by using item.series (which holds name)
                             const displaySeries = item.series || item.seriesId;
 
                             return (<tr key={item.id} className="hover:bg-slate-50">
                                 <td className="px-4 py-3 text-center"><button onClick={() => handleCycleStatus(item.id)} className="focus:outline-none hover:scale-105 transition-transform">{renderStatusBadge(item.paymentStatus)}</button></td>
+                                <td className="px-4 py-3 text-center text-slate-700 font-mono">{item.poNumber || '-'}</td>
                                 <td className="px-4 py-3 text-center text-slate-500 text-xs">{item.date}</td>
                                 <td className="px-4 py-3 text-center font-medium text-slate-800">{displaySeries}</td>
                                 <td className="px-4 py-3 text-center font-medium text-slate-800">{item.vendor}</td>
@@ -1038,6 +1141,8 @@
                                 <td className="px-4 py-3 text-center text-slate-500 italic truncate max-w-[100px]">{item.description}</td>
                                 <td className="px-4 py-3 text-center text-slate-600 font-bold">{formatRupiah(item.totalAmount)}</td>
                                 <td className="px-4 py-3 text-center"><span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">{item.top}%</span></td>
+                                <td className="px-4 py-3 text-center text-slate-600 text-xs">{item.leadTime}</td>
+                                <td className="px-4 py-3 text-center text-slate-600 text-xs">{item.paymentTerm}</td>
                                 <td className="px-4 py-3 text-center bg-blue-50/30 text-blue-700 font-medium text-xs">
                                     <div className={`flex items-center justify-center gap-1 ${isDpOverdue ? 'text-rose-600 font-bold' : ''}`}>
                                         {isDpOverdue && <Icons.WarningCircle size={12}/>}
@@ -1066,7 +1171,13 @@
             const renderPricing = () => (
                 <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2"><Icons.Tag className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Pricing Calculator</h3><button onClick={confirmResetPricing} className="ml-auto px-3 py-1 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 text-xs font-medium">Reset</button></div>
+                        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                            <div className="flex items-center gap-2"><Icons.Tag className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Pricing Calculator</h3></div>
+                            <div className="flex gap-2">
+                                <button onClick={handleExportPricing} className="px-3 py-1 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center gap-1 text-xs font-medium"><Icons.Download size={12}/> Export CSV</button>
+                                <button onClick={confirmResetPricing} className="ml-auto px-3 py-1 bg-slate-100 text-slate-500 rounded-md hover:bg-slate-200 text-xs font-medium">Reset</button>
+                            </div>
+                        </div>
                         <div className="p-8"><div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Brand</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white" value={pricingForm.brand} onChange={(e) => setPricingForm({...pricingForm, brand: e.target.value})}>{Object.keys(BRAND_TARGETS).map(b => <option key={b} value={b}>{b} (Target: {BRAND_TARGETS[b]}%)</option>)}</select></div>
