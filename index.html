@@ -72,7 +72,8 @@
             Search: (props) => <IconWrapper {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></IconWrapper>,
             Info: (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconWrapper>,
             Edit: (props) => <IconWrapper {...props}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></IconWrapper>,
-            Plus: (props) => <IconWrapper {...props}><path d="M5 12h14"/><path d="M12 5v14"/></IconWrapper>
+            Plus: (props) => <IconWrapper {...props}><path d="M5 12h14"/><path d="M12 5v14"/></IconWrapper>,
+            WarningCircle: (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconWrapper>
         };
 
         // --- CONFIGURATION ---
@@ -122,10 +123,15 @@
 
         const formatDate = (dateStr) => {
             if (!dateStr) return "-";
+            if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                return dateStr;
+            }
             const d = new Date(dateStr);
             if (isNaN(d.getTime())) return "-";
-            const options = { day: 'numeric', month: 'short', year: '2-digit' };
-            return d.toLocaleDateString('id-ID', options);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         };
 
         const addDays = (dateStr, days) => {
@@ -261,6 +267,39 @@
             );
         };
 
+        const EditBudgetModal = ({ config, onClose, onSave, onChange }) => {
+            if (!config.isOpen) return null;
+            const { data: budgetData } = config;
+            return (
+                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity modal-enter-active">
+                    <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-slate-800">Edit Budget</h3>
+                            <button onClick={onClose}><Icons.X size={20} className="text-slate-400 hover:text-slate-600"/></button>
+                        </div>
+                        <div className="space-y-3">
+                             <div className="grid grid-cols-2 gap-4">
+                                <div><label className="block text-xs font-medium text-slate-500 mb-1">Article Name</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.article} onChange={(e) => onChange('article', e.target.value)} /></div>
+                                <div><label className="block text-xs font-medium text-slate-500 mb-1">Custom Date</label><input type="date" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.date} onChange={(e) => onChange('date', e.target.value)} /></div>
+                             </div>
+                             <div><label className="block text-xs font-medium text-slate-500 mb-1">Description</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.description} onChange={(e) => onChange('description', e.target.value)} placeholder="FOB/CMT/BAHAN" /></div>
+                             <div className="border-t border-slate-200 my-2 pt-2"></div>
+                             <div><label className="block text-xs font-medium text-slate-500 mb-1">Series</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white text-sm" value={budgetData.series} onChange={(e) => onChange('series', e.target.value)}><option value="">-- Select --</option>{SERIES_CONFIG.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}</select></div>
+                             <div><label className="block text-xs font-medium text-slate-500 mb-1">Vendor</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.vendor} onChange={(e) => onChange('vendor', e.target.value)} /></div>
+                             <div><label className="block text-xs font-medium text-slate-500 mb-1">Total Amount</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.totalAmount} onChange={(e) => onChange('totalAmount', e.target.value)} /></div>
+                             <div><label className="block text-xs font-medium text-slate-500 mb-1">TOP (%)</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.top} onChange={(e) => onChange('top', e.target.value)} /></div>
+                             <div><label className="block text-xs font-medium text-slate-500 mb-1">Lead Time (Days)</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.leadTime} onChange={(e) => onChange('leadTime', e.target.value)} /></div>
+                             <div><label className="block text-xs font-medium text-slate-500 mb-1">Payment Term (Days)</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.paymentTerm} onChange={(e) => onChange('paymentTerm', e.target.value)} /></div>
+                        </div>
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Batal</button>
+                            <button onClick={onSave} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">Simpan</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         // --- MAIN APP COMPONENT ---
         function App() {
             const [activeTab, setActiveTab] = useState('dashboard');
@@ -274,10 +313,11 @@
             const [modalConfig, setModalConfig] = useState({ isOpen: false, message: '', onConfirm: null });
             const [editModalConfig, setEditModalConfig] = useState({ isOpen: false, seriesIndex: null, activityIndex: null, data: null });
             const [addModalConfig, setAddModalConfig] = useState({ isOpen: false, seriesIndex: null });
+            const [editBudgetConfig, setEditBudgetConfig] = useState({ isOpen: false, data: null });
 
             // Budgeting & Pricing States
             const [budgetList, setBudgetList] = useState([]);
-            const [budgetForm, setBudgetForm] = useState({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
+            const [budgetForm, setBudgetForm] = useState({ seriesId: '', vendor: '', article: '', description: '', customDate: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
             const [pricingList, setPricingList] = useState([]);
             const [pricingForm, setPricingForm] = useState({ seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: '' });
             const [dpFilterMonth, setDpFilterMonth] = useState(""); 
@@ -394,7 +434,7 @@
                 });
                 setData(initialData);
             };
-            const resetBudgetingData = () => { setBudgetList([]); setBudgetForm({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' }); };
+            const resetBudgetingData = () => { setBudgetList([]); setBudgetForm({ seriesId: '', vendor: '', article: '', description: '', customDate: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' }); };
             const resetPricingData = () => { setPricingList([]); setPricingForm({ seriesId: '', brand: 'HEYLOCAL', category: '', articleName: '', rspWeb: '', hpp: '', competitorPrice: '', platformFee: 17.5, marketingFee: 15, notes: '', manualPrice: '' }); };
 
             const confirmResetGantt = () => showConfirm("Reset Gantt Chart?", resetGanttData);
@@ -402,16 +442,7 @@
             const confirmResetBudget = () => showConfirm("Reset Budgeting?", resetBudgetingData);
             const confirmResetPricing = () => showConfirm("Reset Pricing?", resetPricingData);
 
-            // FIXED: Immutable update for input changes
-            const handleUpdateActual = (sIdx, aIdx, field, val) => {
-                const newData = data.map((series, i) => {
-                    if (i !== sIdx) return series;
-                    const newActivities = [...series.activities];
-                    newActivities[aIdx] = { ...newActivities[aIdx], [field]: val };
-                    return { ...series, activities: newActivities };
-                });
-                setData(newData);
-            };
+            const handleUpdateActual = (sIdx, aIdx, field, val) => { const newData = data.map((series, i) => { if (i !== sIdx) return series; const newActivities = [...series.activities]; newActivities[aIdx] = { ...newActivities[aIdx], [field]: val }; return { ...series, activities: newActivities }; }); setData(newData); };
 
             const dpNominal = useMemo(() => (parseFloat(budgetForm.totalAmount) || 0) * (parseInt(budgetForm.top) || 0) / 100, [budgetForm.totalAmount, budgetForm.top]);
             const settlementNominal = useMemo(() => (parseFloat(budgetForm.totalAmount) || 0) - dpNominal, [budgetForm.totalAmount, dpNominal]);
@@ -559,16 +590,73 @@
 
             const handleSaveBudget = () => {
                 if (!budgetForm.vendor) return;
-                const s = SERIES_CONFIG.find(x => x.name === budgetForm.seriesId);
-                let dpD = "-", repD = "-";
-                if (s) {
-                    const base = subtractDays(s.launchDate, 14);
-                    dpD = subtractDays(base, parseInt(budgetForm.leadTime)||0);
-                    repD = addDays(base, parseInt(budgetForm.paymentTerm)||0);
-                }
-                setBudgetList([{ id: Date.now(), ...budgetForm, totalAmount: parseFloat(budgetForm.totalAmount), dpNominal, settlementNominal, dpDate: dpD, repaymentDate: repD, date: new Date().toISOString().split('T')[0], paymentStatus: 'unpaid' }, ...budgetList]);
-                setBudgetForm({ seriesId: '', vendor: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
+                
+                // RUMUS BARU: Calculate dates based on the input DATE
+                const baseDate = budgetForm.customDate || new Date().toISOString().split('T')[0];
+                const lt = parseInt(budgetForm.leadTime) || 0;
+                const pt = parseInt(budgetForm.paymentTerm) || 0;
+                
+                // RUMUS JADWAL DP = kolom date - 14 - lead time
+                // RUMUS JADWAL PELUNASAN = kolom date - 14 + Payment term
+                // First, calculate (date - 14)
+                const baseCalcDate = subtractDays(baseDate, 14);
+                
+                const dpD = subtractDays(baseCalcDate, lt);
+                const repD = addDays(baseCalcDate, pt);
+                
+                setBudgetList([{ id: Date.now(), ...budgetForm, totalAmount: parseFloat(budgetForm.totalAmount), dpNominal, settlementNominal, dpDate: dpD, repaymentDate: repD, date: baseDate, paymentStatus: 'unpaid' }, ...budgetList]);
+                setBudgetForm({ seriesId: '', vendor: '', article: '', description: '', customDate: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
             };
+
+            // --- Edit Budget Handlers ---
+            const openEditBudget = useCallback((id) => {
+                const item = budgetList.find(b => b.id === id);
+                if (item) setEditBudgetConfig({ isOpen: true, data: { ...item } });
+            }, [budgetList]);
+
+            const closeEditBudget = useCallback(() => setEditBudgetConfig({ isOpen: false, data: null }), []);
+
+            const handleEditBudgetFormChange = useCallback((field, value) => {
+                setEditBudgetConfig(prev => ({ ...prev, data: { ...prev.data, [field]: value } }));
+            }, []);
+
+            const saveEditBudget = useCallback(() => {
+                const { data: item } = editBudgetConfig;
+                if (!item) return;
+
+                // Recalculate fields based on edited values
+                const total = parseFloat(item.totalAmount) || 0;
+                const top = parseInt(item.top) || 0;
+                const lt = parseInt(item.leadTime) || 0;
+                const pt = parseInt(item.paymentTerm) || 0;
+                
+                const dp = total * (top / 100);
+                const settlement = total - dp;
+                
+                // RUMUS BARU EDIT: Calculate based on item.date
+                const baseDate = item.date || new Date().toISOString().split('T')[0];
+                const baseCalcDate = subtractDays(baseDate, 14);
+                
+                const dpD = subtractDays(baseCalcDate, lt);
+                const repD = addDays(baseCalcDate, pt);
+
+                const updatedItem = {
+                    ...item,
+                    totalAmount: total,
+                    top: top,
+                    leadTime: lt,
+                    paymentTerm: pt,
+                    dpNominal: dp,
+                    settlementNominal: settlement,
+                    dpDate: dpD,
+                    repaymentDate: repD
+                };
+
+                const newList = budgetList.map(b => b.id === updatedItem.id ? updatedItem : b);
+                setBudgetList(newList);
+                closeEditBudget();
+            }, [budgetList, editBudgetConfig, closeEditBudget]);
+
 
             const handleCycleStatus = (id) => {
                 setBudgetList(budgetList.map(item => {
@@ -834,7 +922,7 @@
                                                                     <div className="hidden group-hover/bar:block absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-50 w-max max-w-[200px]">
                                                                         <div className="bg-gray-900 text-white text-[10px] rounded-md py-1 px-2 shadow-xl border border-gray-700 relative">
                                                                             <div className="font-bold border-b border-gray-700 pb-0.5 mb-0.5">{isLate ? 'Terlambat' : (act.actualEnd ? 'Selesai' : 'Sedang Berjalan')}</div>
-                                                                            <div>{formatDate(act.actualStart || visualStart)} - {formatDate(act.actualEnd || visualEnd)}</div>
+                                                                            <div>{formatDate(visualStart)} - {formatDate(visualEnd)}</div>
                                                                             {isInProgress && !isLate && <div className="text-blue-300 font-semibold mt-0.5">Progress: {progressPercent}%</div>}
                                                                             {isLate && <div className="text-rose-300 font-semibold mt-0.5">Telat: {delay} Hari</div>}
                                                                             {/* Arrow */}
@@ -879,23 +967,98 @@
                             <div className="space-y-4">
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Series</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white" value={budgetForm.seriesId} onChange={(e) => setBudgetForm({...budgetForm, seriesId: e.target.value})}><option value="">-- Select --</option>{SERIES_CONFIG.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}</select></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Vendor</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.vendor} onChange={(e) => setBudgetForm({...budgetForm, vendor: e.target.value})} /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Article</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.article} onChange={(e) => setBudgetForm({...budgetForm, article: e.target.value})} placeholder="Article Name" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Description</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.description} onChange={(e) => setBudgetForm({...budgetForm, description: e.target.value})} placeholder="FOB/CMT/BAHAN" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Date</label><input type="date" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.customDate} onChange={(e) => setBudgetForm({...budgetForm, customDate: e.target.value})} /></div>
+                            </div>
+                            <div className="space-y-4">
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Total Amount</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.totalAmount} onChange={(e) => setBudgetForm({...budgetForm, totalAmount: e.target.value})} /></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">TOP (%)</label><div className="grid grid-cols-5 gap-2">{[0, 10, 20, 30, 40, 50, 60, 70, 80, 90].map(v => <label key={v} className={`cursor-pointer border rounded-md px-1 py-2 text-center text-xs ${budgetForm.top === v ? 'bg-blue-600 text-white' : 'bg-white'}`}><input type="radio" name="top" value={v} className="hidden" checked={budgetForm.top === v} onChange={() => setBudgetForm({...budgetForm, top: v})} />{v}%</label>)}</div></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Lead Time (Days)</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.leadTime} onChange={(e) => setBudgetForm({...budgetForm, leadTime: e.target.value})} /></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Payment Term (Days)</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.paymentTerm} onChange={(e) => setBudgetForm({...budgetForm, paymentTerm: e.target.value})} /></div>
                             </div>
-                            <div className="flex flex-col justify-between bg-slate-50 p-6 rounded-xl border border-slate-100">
-                                <div><h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Calculation</h4><div className="space-y-3 text-sm">
-                                    <div className="flex justify-between"><span className="text-slate-500">DP</span><span className="text-xl font-bold text-slate-900">{formatRupiah(dpNominal)}</span></div>
-                                    <div className="flex justify-between"><span className="text-slate-500">Pelunasan</span><span className="text-xl font-bold text-emerald-600">{formatRupiah(settlementNominal)}</span></div>
-                                </div></div>
-                                <button onClick={handleSaveBudget} disabled={!budgetForm.vendor} className="mt-6 w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50">Save</button>
-                            </div>
-                        </div></div>
+                        </div>
+                        <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+                             <div className="flex gap-8">
+                                <div><span className="block text-xs text-slate-500 font-medium uppercase">DP Nominal</span><span className="text-xl font-bold text-slate-900">{formatRupiah(dpNominal)}</span></div>
+                                <div><span className="block text-xs text-slate-500 font-medium uppercase">Pelunasan</span><span className="text-xl font-bold text-emerald-600">{formatRupiah(settlementNominal)}</span></div>
+                             </div>
+                             <button onClick={handleSaveBudget} disabled={!budgetForm.vendor} className="bg-slate-900 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2"><Icons.Save size={18}/> Save Entry</button>
+                        </div>
+                        </div>
                     </div>
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2"><Icons.Coins className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Records</h3></div>
-                        {budgetList.length === 0 ? <div className="p-12 text-center text-slate-400">No records.</div> : <div className="overflow-x-auto"><table className="w-full text-sm text-left"><thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200"><tr><th className="px-4 py-3">Status</th><th className="px-4 py-3">Series</th><th className="px-4 py-3">Vendor</th><th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3 text-right">DP</th><th className="px-4 py-3 text-right">Pelunasan</th><th className="px-4 py-3 text-center">Action</th></tr></thead><tbody className="divide-y divide-slate-100">{filteredBudgetList.map(item => (<tr key={item.id} className="hover:bg-slate-50"><td className="px-4 py-3 text-center"><button onClick={() => handleCycleStatus(item.id)}>{renderStatusBadge(item.paymentStatus)}</button></td><td className="px-4 py-3">{item.series}</td><td className="px-4 py-3">{item.vendor}</td><td className="px-4 py-3 text-right">{formatRupiah(item.totalAmount)}</td><td className="px-4 py-3 text-right">{formatRupiah(item.dpNominal)}<div className="text-[10px] text-slate-400">{item.dpDate}</div></td><td className="px-4 py-3 text-right">{formatRupiah(item.settlementNominal)}<div className="text-[10px] text-slate-400">{item.repaymentDate}</div></td><td className="px-4 py-3 text-center"><button onClick={() => handleDeleteBudget(item.id)} className="text-rose-500 hover:text-rose-700"><Icons.Trash2 size={16}/></button></td></tr>))}</tbody></table></div>}
+                        {budgetList.length === 0 ? <div className="p-12 text-center text-slate-400">No records.</div> : <div className="overflow-x-auto"><table className="w-full text-sm text-left"><thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                            <tr>
+                                <th className="px-4 py-3 text-center">Status</th>
+                                <th className="px-4 py-3 text-center">Date</th>
+                                <th className="px-4 py-3 text-center">Series</th>
+                                <th className="px-4 py-3 text-center">Vendor</th>
+                                <th className="px-4 py-3 text-center">Article</th>
+                                <th className="px-4 py-3 text-center">Desc</th>
+                                <th className="px-4 py-3 text-center">Total</th>
+                                <th className="px-4 py-3 text-center">TOP</th>
+                                <th className="px-4 py-3 text-center bg-blue-50/50">
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span>Jadwal DP</span>
+                                        <select className="text-[10px] border border-blue-200 rounded px-1" value={dpFilterMonth} onChange={(e) => setDpFilterMonth(e.target.value)}>
+                                            <option value="">All</option>
+                                            {uniqueDpMonths.map(m => <option key={m} value={m}>{new Date(m + "-01").toLocaleDateString('id-ID', {month: 'short', year: '2-digit'})}</option>)}
+                                        </select>
+                                    </div>
+                                </th>
+                                <th className="px-4 py-3 text-center text-blue-700 bg-blue-50/30">Nominal DP</th>
+                                <th className="px-4 py-3 text-center bg-emerald-50/50">
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span>Jadwal Pelunasan</span>
+                                        <select className="text-[10px] border border-emerald-200 rounded px-1" value={repaymentFilterMonth} onChange={(e) => setRepaymentFilterMonth(e.target.value)}>
+                                            <option value="">All</option>
+                                            {uniqueRepaymentMonths.map(m => <option key={m} value={m}>{new Date(m + "-01").toLocaleDateString('id-ID', {month: 'short', year: '2-digit'})}</option>)}
+                                        </select>
+                                    </div>
+                                </th>
+                                <th className="px-4 py-3 text-center text-emerald-700 bg-emerald-50/30">Nominal Pelunasan</th>
+                                <th className="px-4 py-3 text-center">Action</th>
+                            </tr>
+                        </thead><tbody className="divide-y divide-slate-100">{filteredBudgetList.map(item => { 
+                            const today = new Date(); 
+                            const isDpOverdue = item.paymentStatus === 'unpaid' && item.dpDate && new Date(item.dpDate) < today; 
+                            const isRepaymentOverdue = item.paymentStatus !== 'fully_paid' && item.repaymentDate && new Date(item.repaymentDate) < today; 
+                            
+                            // Fix Series Display by using item.series (which holds name)
+                            const displaySeries = item.series || item.seriesId;
+
+                            return (<tr key={item.id} className="hover:bg-slate-50">
+                                <td className="px-4 py-3 text-center"><button onClick={() => handleCycleStatus(item.id)} className="focus:outline-none hover:scale-105 transition-transform">{renderStatusBadge(item.paymentStatus)}</button></td>
+                                <td className="px-4 py-3 text-center text-slate-500 text-xs">{item.date}</td>
+                                <td className="px-4 py-3 text-center font-medium text-slate-800">{displaySeries}</td>
+                                <td className="px-4 py-3 text-center font-medium text-slate-800">{item.vendor}</td>
+                                <td className="px-4 py-3 text-center text-slate-600">{item.article}</td>
+                                <td className="px-4 py-3 text-center text-slate-500 italic truncate max-w-[100px]">{item.description}</td>
+                                <td className="px-4 py-3 text-center text-slate-600 font-bold">{formatRupiah(item.totalAmount)}</td>
+                                <td className="px-4 py-3 text-center"><span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">{item.top}%</span></td>
+                                <td className="px-4 py-3 text-center bg-blue-50/30 text-blue-700 font-medium text-xs">
+                                    <div className={`flex items-center justify-center gap-1 ${isDpOverdue ? 'text-rose-600 font-bold' : ''}`}>
+                                        {isDpOverdue && <Icons.WarningCircle size={12}/>}
+                                        {item.dpDate ? formatDate(item.dpDate) : '-'}
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3 text-center font-bold text-blue-600 bg-blue-50/30">{formatRupiah(item.dpNominal)}</td>
+                                <td className="px-4 py-3 text-center bg-emerald-50/30 text-emerald-700 font-medium text-xs">
+                                    <div className={`flex items-center justify-center gap-1 ${isRepaymentOverdue ? 'text-rose-600 font-bold' : ''}`}>
+                                        {isRepaymentOverdue && <Icons.WarningCircle size={12}/>}
+                                        {item.repaymentDate ? formatDate(item.repaymentDate) : '-'}
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3 text-center font-bold text-emerald-600 bg-emerald-50/30">{formatRupiah(item.settlementNominal)}</td>
+                                <td className="px-4 py-3 text-center">
+                                    <div className="flex items-center justify-center gap-2">
+                                        <button onClick={() => openEditBudget(item.id)} className="text-slate-400 hover:text-blue-600 transition-colors"><Icons.Edit size={16}/></button>
+                                        <button onClick={() => handleDeleteBudget(item.id)} className="text-rose-500 hover:text-rose-700"><Icons.Trash2 size={16}/></button>
+                                    </div>
+                                </td>
+                            </tr>)})}</tbody></table></div>}
                     </div>
                 </div>
             );
@@ -960,7 +1123,7 @@
                     </div>
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2"><Icons.List className="text-slate-600" size={20}/><h3 className="font-bold text-slate-800">Saved Records</h3></div>
-                        {pricingList.length === 0 ? <div className="p-12 text-center text-slate-400">No records.</div> : <div className="overflow-x-auto"><table className="w-full text-sm text-left"><thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200"><tr><th className="px-4 py-3">Article</th><th className="px-4 py-3 text-right">RSP Web</th><th className="px-4 py-3 text-right">Web GM</th><th className="px-4 py-3 text-right font-bold text-indigo-600">RSP MP</th><th className="px-4 py-3 text-right text-emerald-600">MP GM</th><th className="px-4 py-3 text-center">Action</th></tr></thead><tbody className="divide-y divide-slate-100">{pricingList.map(item => (<tr key={item.id} className="hover:bg-slate-50"><td className="px-4 py-3 font-medium text-slate-800">{item.articleName}</td><td className="px-4 py-3 text-right">{formatRupiah(item.rspWeb)}</td><td className="px-4 py-3 text-right">{Number(item.webGmPct || 0).toFixed(1)}%</td><td className="px-4 py-3 text-right font-bold text-indigo-600">{formatRupiah(item.finalPrice)}</td><td className="px-4 py-3 text-right font-bold text-emerald-600">{Number(item.mpGmPct || 0).toFixed(1)}%</td><td className="px-4 py-3 text-center"><button onClick={() => handleDeletePricing(item.id)} className="text-rose-500 hover:text-rose-700"><Icons.Trash2 size={16}/></button></td></tr>))}</tbody></table></div>}
+                        {pricingList.length === 0 ? <div className="p-12 text-center text-slate-400">No records.</div> : <div className="overflow-x-auto"><table className="w-full text-sm text-left"><thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200"><tr><th className="px-4 py-3 text-center">Article</th><th className="px-4 py-3 text-center">RSP Web</th><th className="px-4 py-3 text-center">Web GM</th><th className="px-4 py-3 text-center">RSP MP</th><th className="px-4 py-3 text-center">MP GM</th><th className="px-4 py-3 text-center">Action</th></tr></thead><tbody className="divide-y divide-slate-100">{pricingList.map(item => (<tr key={item.id} className="hover:bg-slate-50"><td className="px-4 py-3 text-center font-medium text-slate-800">{item.articleName}</td><td className="px-4 py-3 text-center">{formatRupiah(item.rspWeb)}</td><td className="px-4 py-3 text-center">{Number(item.webGmPct || 0).toFixed(1)}%</td><td className="px-4 py-3 text-center font-bold text-indigo-600">{formatRupiah(item.finalPrice)}</td><td className="px-4 py-3 text-center font-bold text-emerald-600">{Number(item.mpGmPct || 0).toFixed(1)}%</td><td className="px-4 py-3 text-center"><button onClick={() => handleDeletePricing(item.id)} className="text-rose-500 hover:text-rose-700"><Icons.Trash2 size={16}/></button></td></tr>))}</tbody></table></div>}
                     </div>
                 </div>
             );
@@ -982,7 +1145,6 @@
                                 <nav className="flex space-x-1 bg-slate-100 p-1 rounded-lg">
                                     <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'dashboard' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Dashboard</button>
                                     <button onClick={() => setActiveTab('gantt')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'gantt' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Gantt Chart</button>
-                                    <button onClick={() => setActiveTab('activities')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${activeTab === 'activities' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Activities</button>
                                     <button onClick={() => setActiveTab('budgeting')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${activeTab === 'budgeting' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Icons.Wallet size={14}/> Budgeting</button>
                                     <button onClick={() => setActiveTab('pricing')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 ${activeTab === 'pricing' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><Icons.Tag size={14}/> Pricing</button>
                                 </nav>
@@ -992,13 +1154,13 @@
                     <main className="max-w-[1900px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
                         {activeTab === 'dashboard' && renderDashboard()}
                         {activeTab === 'gantt' && renderGantt()}
-                        {activeTab === 'activities' && renderActivities()}
                         {activeTab === 'budgeting' && renderBudgeting()}
                         {activeTab === 'pricing' && renderPricing()}
                     </main>
                     <ConfirmationModal config={modalConfig} onConfirm={handleConfirm} onCancel={handleCancel} />
                     <EditTaskModal config={editModalConfig} onClose={closeEditActivity} onSave={saveEditActivity} onChange={handleEditFormChange} />
                     <AddTaskModal isOpen={addModalConfig.isOpen} onClose={closeAddActivity} onSave={handleSaveNewActivity} />
+                    <EditBudgetModal config={editBudgetConfig} onClose={closeEditBudget} onSave={saveEditBudget} onChange={handleEditBudgetFormChange} />
                 </div>
             );
         }
