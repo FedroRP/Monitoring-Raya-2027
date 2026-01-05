@@ -108,6 +108,17 @@
             "SHUWA": 42
         };
 
+        const BUDGET_BRANDS = [
+            "HEYMALE",
+            "HEYLOCAL",
+            "SHUWA MODEST",
+            "BOONABOO",
+            "LADY FIT",
+            "PREPPSTUDIO",
+            "ZOMA BASIC",
+            "ANSHARIYA"
+        ];
+
         // DATA KOMPETITOR LENGKAP (Array Object untuk kalkulasi - Harga Marketplace Only)
         // KATEGORI BARU SESUAI REQUEST
         const COMPETITOR_DB = {
@@ -368,6 +379,7 @@
                                 <div><label className="block text-xs font-medium text-slate-500 mb-1">Description</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.description} onChange={(e) => onChange('description', e.target.value)} placeholder="FOB/CMT/BAHAN" /></div>
                              </div>
                              <div className="border-t border-slate-200 my-2 pt-2"></div>
+                             <div><label className="block text-xs font-medium text-slate-500 mb-1">Brand</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white text-sm" value={budgetData.brand} onChange={(e) => onChange('brand', e.target.value)}><option value="">-- Select --</option>{BUDGET_BRANDS.map(b => <option key={b} value={b}>{b}</option>)}</select></div>
                              <div><label className="block text-xs font-medium text-slate-500 mb-1">Series</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white text-sm" value={budgetData.series} onChange={(e) => onChange('series', e.target.value)}><option value="">-- Select --</option>{SERIES_CONFIG.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}</select></div>
                              <div><label className="block text-xs font-medium text-slate-500 mb-1">Vendor</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.vendor} onChange={(e) => onChange('vendor', e.target.value)} /></div>
                              <div><label className="block text-xs font-medium text-slate-500 mb-1">Total Amount</label><input type="number" className="w-full p-2 border border-slate-300 rounded-md text-sm" value={budgetData.totalAmount} onChange={(e) => onChange('totalAmount', e.target.value)} /></div>
@@ -401,7 +413,7 @@
 
             // Budgeting & Pricing States
             const [budgetList, setBudgetList] = useState([]);
-            const [budgetForm, setBudgetForm] = useState({ seriesId: '', vendor: '', article: '', description: '', customDate: '', poNumber: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
+            const [budgetForm, setBudgetForm] = useState({ brand: '', seriesId: '', vendor: '', article: '', description: '', customDate: '', poNumber: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
             const [pricingList, setPricingList] = useState([]);
             const [editingPricingId, setEditingPricingId] = useState(null); 
             // UPDATED: Added otherFee to state with default 0
@@ -645,6 +657,8 @@
                 const naikAbsolute = rspMpSuggest - rWeb;
 
                 // 5. GM Baru (at Ideal Price)
+                // Fix NaN: Gunakan harga ideal (rspBaru) yang sudah dihitung di atas
+                // Recalculate GM for Ideal Price just for display
                 const gmAbsBaru = rspBaru - feeNominalBaru - rHpp;
                 const gmPctBaru = rspBaru > 0 ? (gmAbsBaru / rspBaru) * 100 : 0;
 
@@ -908,7 +922,7 @@
                 const repD = addDays(baseCalcDate, pt);
                 
                 setBudgetList([{ id: Date.now(), ...budgetForm, totalAmount: parseFloat(budgetForm.totalAmount), dpNominal, settlementNominal, dpDate: dpD, repaymentDate: repD, date: baseDate, paymentStatus: 'unpaid' }, ...budgetList]);
-                setBudgetForm({ seriesId: '', vendor: '', article: '', description: '', customDate: '', poNumber: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
+                setBudgetForm({ brand: '', seriesId: '', vendor: '', article: '', description: '', customDate: '', poNumber: '', totalAmount: '', top: 0, leadTime: '', paymentTerm: '' });
             };
 
             // --- Edit Budget Handlers ---
@@ -1275,6 +1289,7 @@
                         <div className="p-8"><div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">No. PO</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.poNumber} onChange={(e) => setBudgetForm({...budgetForm, poNumber: e.target.value})} placeholder="Input No. PO" /></div>
+                                <div><label className="block text-sm font-medium text-slate-700 mb-1">Brand</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white" value={budgetForm.brand} onChange={(e) => setBudgetForm({...budgetForm, brand: e.target.value})}><option value="">-- Select --</option>{BUDGET_BRANDS.map(b => <option key={b} value={b}>{b}</option>)}</select></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Series</label><select className="w-full p-2 border border-slate-300 rounded-md bg-white" value={budgetForm.seriesId} onChange={(e) => setBudgetForm({...budgetForm, seriesId: e.target.value})}><option value="">-- Select --</option>{SERIES_CONFIG.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}</select></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Article</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.article} onChange={(e) => setBudgetForm({...budgetForm, article: e.target.value})} placeholder="Article Name" /></div>
                                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Description</label><input type="text" className="w-full p-2 border border-slate-300 rounded-md" value={budgetForm.description} onChange={(e) => setBudgetForm({...budgetForm, description: e.target.value})} placeholder="FOB/CMT/BAHAN" /></div>
@@ -1303,6 +1318,7 @@
                             <tr>
                                 <th className="px-4 py-3 text-center w-[120px]">Status</th>
                                 <th className="px-4 py-3 text-center">No. PO</th>
+                                <th className="px-4 py-3 text-center">Brand</th>
                                 <th className="px-4 py-3 text-center">Series</th>
                                 <th className="px-4 py-3 text-center">Vendor</th>
                                 <th className="px-4 py-3 text-center">Article</th>
@@ -1344,6 +1360,7 @@
                             return (<tr key={item.id} className="hover:bg-slate-50">
                                 <td className="px-4 py-3 text-center"><button onClick={() => handleCycleStatus(item.id)} className="focus:outline-none hover:scale-105 transition-transform">{renderStatusBadge(item.paymentStatus)}</button></td>
                                 <td className="px-4 py-3 text-center text-slate-700 font-mono">{item.poNumber || '-'}</td>
+                                <td className="px-4 py-3 text-center font-medium text-slate-800">{item.brand}</td>
                                 <td className="px-4 py-3 text-center text-slate-500 text-xs">{item.date}</td>
                                 <td className="px-4 py-3 text-center font-medium text-slate-800">{displaySeries}</td>
                                 <td className="px-4 py-3 text-center font-medium text-slate-800">{item.vendor}</td>
