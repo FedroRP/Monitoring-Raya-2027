@@ -561,20 +561,11 @@
                 const totalFeeDecimal = totalFeePct / 100;
                 
                 // 2. RSP Baru (Ideal Price - Cost Plus Basis)
-                // Rumus: RSP Web / (1 - Total Fee)
-                // Cek agar tidak pembagian dengan nol
                 let rspMpRaw = (1 - totalFeeDecimal) > 0.01 ? rWeb / (1 - totalFeeDecimal) : 0;
-                
-                // Harga Ideal yang sudah dibulatkan (Charm Pricing)
                 let rspBaru = applyCharmPricing(rspMpRaw); 
 
                 // 3. Biaya Tambahan Baru (Locked Fee Nominal based on Ideal Price)
                 const feeNominalBaru = Math.round(rspBaru * totalFeeDecimal);
-
-                // 5. GM Baru (at Ideal Price)
-                // Hitung GM berdasarkan harga yang SUDAH DIBULATKAN agar real
-                const gmAbsBaru = rspBaru - feeNominalBaru - rHpp;
-                const gmPctBaru = rspBaru > 0 ? (gmAbsBaru / rspBaru) * 100 : 0;
 
                 // --- SMART RECOMMENDATION ENGINE (COMPETITOR BASED) ---
                 let recommendation = {
@@ -588,8 +579,15 @@
 
                 // Calculate Minimum Safe Price (Floor Price) to hit Target GM
                 const marginDecimal = target / 100;
+                // Rumus: P = HPP / (1 - fee - margin)
                 const floorPriceRaw = (1 - totalFeeDecimal - marginDecimal) > 0 ? rHpp / (1 - totalFeeDecimal - marginDecimal) : rHpp;
-                const floorPrice = Math.ceil(floorPriceRaw / 1000) * 1000; 
+                
+                // FIX: Floor Price harus CHARM (Berakhiran 9000) dan AMAN (>= Raw Floor)
+                let floorPrice = applyCharmPricing(floorPriceRaw);
+                // Jika hasil charm pricing malah di bawah floor raw (misal raw 401rb, charm jadi 399rb), maka harus naik ke level berikutnya (409rb)
+                if (floorPrice < floorPriceRaw) {
+                    floorPrice += 10000;
+                }
 
                 if (cPrice > 0) {
                     if (cPrice > floorPrice) {
@@ -597,6 +595,7 @@
                         const gap = 10000; 
                         let targetPrice = cPrice - gap;
                         targetPrice = applyCharmPricing(targetPrice);
+                        // Pastikan undercut tidak menembus lantai (floor price)
                         if (targetPrice < floorPrice) targetPrice = floorPrice;
 
                         recommendation.price = targetPrice;
@@ -609,7 +608,7 @@
                         recommendation.reason = `Harga kompetitor Rp${formatRupiah(cPrice)} cukup tinggi. \nSistem menyarankan **Rp${formatRupiah(targetPrice)}** (Undercut strategy). \nAnda menang harga (lebih murah Rp${formatRupiah(cPrice-targetPrice)}) tapi margin tetap tebal (${recommendation.gmPct.toFixed(1)}%).`;
 
                     } else {
-                        // Strategy: Floor Limit
+                        // Strategy: Floor Limit (Kompetitor Hancur Harga)
                         recommendation.price = floorPrice;
                         recommendation.status = 'warning';
                         
@@ -617,17 +616,21 @@
                         recommendation.gmAbs = floorPrice - feeRec - rHpp;
                         recommendation.gmPct = floorPrice > 0 ? (recommendation.gmAbs / floorPrice) * 100 : 0;
 
-                        recommendation.reason = `Harga kompetitor Rp${formatRupiah(cPrice)} terlalu rendah (di bawah target margin ${target}%). \nSaran sistem: **Rp${formatRupiah(floorPrice)}** (Harga terendah aman). \nJangan perang harga, fokus ke kualitas/brand value.`;
+                        recommendation.reason = `Harga kompetitor Rp${formatRupiah(cPrice)} terlalu rendah (di bawah target margin ${target}%). \nSaran sistem: **Rp${formatRupiah(floorPrice)}** (Batas bawah aman). \nJangan ikuti perang harga di bawah ini agar profit terjaga.`;
                     }
                 } else {
                     // No Competitor Data: Use Ideal Cost-Plus Price
                     recommendation.price = rspBaru;
                     recommendation.status = 'neutral';
-                    recommendation.gmPct = gmPctBaru;
+                    const feeRec = rspBaru * totalFeeDecimal;
+                    recommendation.gmAbs = rspBaru - feeRec - rHpp;
+                    recommendation.gmPct = rspBaru > 0 ? (recommendation.gmAbs / rspBaru) * 100 : 0;
                     recommendation.reason = "Belum ada data kompetitor. Menggunakan harga ideal berbasis RSP Web.";
                 }
 
-                // Calculate Max Discount
+                // Calculate Max Discount for the RECOMMENDED Price
+                // Max Disc = (RecPrice - FloorPrice) / RecPrice
+                // Floor price di sini adalah batas absolut untuk target GM.
                 if (recommendation.price > floorPrice) {
                     recommendation.maxDiscount = ((recommendation.price - floorPrice) / recommendation.price) * 100;
                 } else {
@@ -641,15 +644,71 @@
                 const gmPctMp = rspMpSuggest > 0 ? (gmAbsMp / rspMpSuggest) * 100 : 0;
                 const naikAbsolute = rspMpSuggest - rWeb;
 
+                // 5. GM Baru (at Ideal Price)
+                const gmAbsBaru = rspBaru - feeNominalBaru - rHpp;
+                const gmPctBaru = rspBaru > 0 ? (gmAbsBaru / rspBaru) * 100 : 0;
+
                 // Web Metrics
                 const webGmAbs = rWeb - rHpp;
                 const webGmPct = rWeb > 0 ? (webGmAbs / rWeb) * 100 : 0;
+
+                // Max Discount Calculation for MANUAL Price
+                let maxDiscountSafe = 0;
+                if (rspMpSuggest > floorPrice) {
+                    maxDiscountSafe = ((rspMpSuggest - floorPrice) / rspMpSuggest) * 100;
+                }
+
+                // Competitor Analysis & Reasoning
+                let compAnalysis = { 
+                    status: 'neutral', 
+                    message: 'Masukkan harga kompetitor untuk perbandingan.', 
+                    reasoning: '',
+                    suggestedAction: null 
+                };
+                
+                const gap = rspMpSuggest - cPrice;
+                const isExpensive = gap > 0;
+                const isCheaper = gap < 0;
+                const gapFormatted = formatRupiah(Math.abs(gap));
+
+                // Reasoning Text Construction
+                let reasoningText = `**Analisis Finansial:**\n`;
+                reasoningText += `• **Profitabilitas:** Dengan harga ${formatRupiah(rspMpSuggest)}, Anda mendapatkan GM **${gmPctMp.toFixed(1)}%**.\n`;
+                
+                if (gmPctMp >= target - 0.1) { // Tolerance 0.1% for float rounding
+                    reasoningText += `• **Status Target:** ✅ Aman (Di atas target ${target}%).\n`;
+                    if (maxDiscountSafe > 0) {
+                        reasoningText += `• **Max Diskon:** Anda bisa memberikan diskon hingga **${maxDiscountSafe.toFixed(1)}%** agar margin tetap aman di ${target}%.\n`;
+                    } else {
+                         reasoningText += `• **Max Diskon:** 0%. Harga ini sudah berada di batas minimal (Floor Price) untuk target margin ${target}%.\n`;
+                    }
+                } else {
+                    reasoningText += `• **Status Target:** ⚠️ Berisiko (Di bawah target ${target}%). Pertimbangkan menaikkan harga ke minimal **${formatRupiah(floorPrice)}**.\n`;
+                }
+
+                reasoningText += `\n**Analisis Pasar & Psikologi:**\n`;
+                if (cPrice > 0) {
+                    if (isExpensive) {
+                        reasoningText += `• **Posisi:** Lebih mahal ${gapFormatted} dari kompetitor.\n`;
+                        reasoningText += `• **Saran:** Gunakan akhiran harga ganjil (9000) untuk menyamarkan selisih harga (Left-Digit Effect). Fokuskan promosi pada kualitas.`;
+                    } else if (isCheaper) {
+                        reasoningText += `• **Posisi:** Lebih murah ${gapFormatted} dari kompetitor.\n`;
+                        reasoningText += `• **Saran:** Tampilkan harga ini dengan font besar/warna kontras (Visual Salience) karena harga adalah kekuatan utama Anda.`;
+                    } else {
+                        reasoningText += `• **Posisi:** Harga setara kompetitor.\n`;
+                        reasoningText += `• **Saran:** Permudah tampilan harga agar terlihat lebih ringkas (Cognitive Ease).`;
+                    }
+                } else {
+                    reasoningText += `• Masukkan harga kompetitor untuk melihat perbandingan pasar.`;
+                }
+
+                compAnalysis.reasoning = reasoningText;
 
                 return { 
                     webGmPct, webGmAbs, 
                     rspBaru, 
                     feeNominalBaru,
-                    gmPctBaru, // Fixed NaN issue here
+                    gmPctBaru, 
                     
                     recommendation, 
 
@@ -659,6 +718,7 @@
                     naikAbsolute,
                     
                     brandTarget: target, 
+                    competitiveAnalysis: compAnalysis, // Includes reasoningText
                     finalPrice: rspMpSuggest 
                 };
             }, [pricingForm]);
