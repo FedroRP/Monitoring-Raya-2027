@@ -536,136 +536,129 @@
             // Pricing Logic
             const pricingResult = useMemo(() => {
                 const { rspWeb, hpp, platformFee, marketingFee, otherFee, competitorPrice, brand, manualPrice } = pricingForm;
-                const rWeb = parseFloat(rspWeb) || 0; 
-                const rHpp = parseFloat(hpp) || 0; 
-                const cPrice = parseFloat(competitorPrice) || 0;
                 
-                // Helper: Pricing Psychology - Charm Pricing (Left Digit Effect)
-                // Membulatkan ke 10.000 terdekat ke atas, lalu kurangi 1.000
-                // Contoh: 413.333 -> 420.000 -> 419.000
+                // FIX: Gunakan helper safeParse agar tidak NaN saat input kosong
+                const safeParse = (val) => {
+                    const parsed = parseFloat(val);
+                    return isNaN(parsed) ? 0 : parsed;
+                };
+
+                const rWeb = safeParse(rspWeb); 
+                const rHpp = safeParse(hpp); 
+                const cPrice = safeParse(competitorPrice);
+                const selectedBrand = brand || 'HEYLOCAL';
+                const target = BRAND_TARGETS[selectedBrand] || 0;
+                
+                // Helper: Pricing Psychology - Charm Pricing
                 const applyCharmPricing = (val) => {
                     if (val <= 0) return 0;
                     let rounded = Math.ceil(val / 10000) * 10000;
-                    return rounded - 1000; 
+                    return rounded - 1000; // e.g. 399.000
                 };
 
-                // 1. Web Metrics
-                const webGmAbs = rWeb - rHpp;
-                const webGmPct = rWeb > 0 ? (webGmAbs / rWeb) * 100 : 0;
+                // 1. Fee Calculation
+                const totalFeePct = safeParse(platformFee) + safeParse(marketingFee) + safeParse(otherFee);
+                const totalFeeDecimal = totalFeePct / 100;
                 
-                // 2. Fee Calculation (Total Percentage)
-                const totalFeePct = parseFloat(platformFee) + parseFloat(marketingFee) + parseFloat(otherFee || 0);
+                // 2. RSP Baru (Ideal Price - Cost Plus Basis)
+                // Rumus: RSP Web / (1 - Total Fee)
+                // Cek agar tidak pembagian dengan nol
+                let rspMpRaw = (1 - totalFeeDecimal) > 0.01 ? rWeb / (1 - totalFeeDecimal) : 0;
                 
-                // 3. RSP Baru (Ideal Price to maintain Revenue) = RSP Web / (1 - Total Fee)
-                let rspMpRaw = (1 - (totalFeePct/100)) > 0 ? rWeb / (1 - (totalFeePct/100)) : 0;
-                
-                // UPDATED: Langsung terapkan Charm Pricing pada RSP Baru
+                // Harga Ideal yang sudah dibulatkan (Charm Pricing)
                 let rspBaru = applyCharmPricing(rspMpRaw); 
 
-                // 4. Biaya Tambahan Baru (Locked Fee Nominal based on Rounded Ideal Price)
-                // Fee dihitung dari harga jual yang sudah dibulatkan agar akurat
-                const feeNominalBaru = Math.round(rspBaru * (totalFeePct/100));
+                // 3. Biaya Tambahan Baru (Locked Fee Nominal based on Ideal Price)
+                const feeNominalBaru = Math.round(rspBaru * totalFeeDecimal);
 
                 // 5. GM Baru (at Ideal Price)
+                // Hitung GM berdasarkan harga yang SUDAH DIBULATKAN agar real
                 const gmAbsBaru = rspBaru - feeNominalBaru - rHpp;
                 const gmPctBaru = rspBaru > 0 ? (gmAbsBaru / rspBaru) * 100 : 0;
 
-                // 6. Manual Price Simulation (RSP MP Suggest)
-                // Default ke RSP Baru yang sudah "cantik"
-                const rspMpSuggest = parseFloat(manualPrice) || rspBaru; 
-                
-                // 7. GM MP (Using Locked Fee Logic as per Excel)
-                // Fee dikunci berdasarkan scenario Ideal (rspBaru)
-                const gmAbsMp = rspMpSuggest - feeNominalBaru - rHpp;
-                const gmPctMp = rspMpSuggest > 0 ? (gmAbsMp / rspMpSuggest) * 100 : 0;
-
-                const naikAbsolute = rspMpSuggest - rWeb;
-                
-                // Competitor Analysis & Psychology Insight
-                let compAnalysis = { 
-                    status: 'neutral', 
-                    message: 'Masukkan harga kompetitor untuk analisis.', 
-                    psychologyTip: 'Gunakan angka "9" atau "5" di akhir harga untuk kesan lebih murah (Left Digit Effect).',
-                    suggestedAction: null 
+                // --- SMART RECOMMENDATION ENGINE (COMPETITOR BASED) ---
+                let recommendation = {
+                    price: 0,
+                    reason: "",
+                    gmPct: 0,
+                    gmAbs: 0,
+                    maxDiscount: 0,
+                    status: 'neutral'
                 };
-                
-                if (cPrice > 0) {
-                    const gap = rspMpSuggest - cPrice;
-                    
-                    if (gap > 0) {
-                        // Harga kita lebih mahal
-                        if (cPrice < rWeb) {
-                             // Case: Kompetitor sangat murah (di bawah RSP Web kita)
-                             const safeFloor = applyCharmPricing(rWeb * 1.05); 
-                             compAnalysis = {
-                                status: 'danger',
-                                message: `⚠️ Harga kompetitor (Rp${formatRupiah(cPrice)}) jauh di bawah RSP Web. Berisiko perang harga.`,
-                                psychologyTip: 'Fokus pada "Value" bukan harga. Gunakan font kecil untuk harga agar terlihat ringan secara visual.',
-                                gap: gap,
-                                suggestedAction: {
-                                    label: "Gunakan Harga Aman (RSP Web + Margin Tipis)",
-                                    price: safeFloor
-                                }
-                            };
-                        } else {
-                            // Case: Kita sedikit lebih mahal
-                            const prettyCompetitor = applyCharmPricing(cPrice);
-                            compAnalysis = {
-                                status: 'warning',
-                                message: `Harga Anda lebih tinggi Rp${formatRupiah(gap)} dari kompetitor.`,
-                                psychologyTip: 'Gunakan "Charm Pricing" (akhiran 9) untuk mengurangi digit kiri agar harga terasa jauh lebih murah.',
-                                gap: gap,
-                                suggestedAction: {
-                                    label: "Samakan dengan Kompetitor (Charm)",
-                                    price: prettyCompetitor
-                                }
-                            };
-                        }
 
-                    } else if (gap < 0) {
-                        // Harga kita lebih murah
-                        const prettyCompetitorMinus = applyCharmPricing(cPrice); 
-                        compAnalysis = {
-                            status: 'good',
-                            message: `✅ Harga Anda kompetitif (Lebih murah Rp${formatRupiah(Math.abs(gap))}).`,
-                            psychologyTip: 'Karena harga Anda lebih murah, tampilkan harga ini dengan font besar atau warna merah untuk menarik perhatian pria (Visual Salience).',
-                            gap: gap,
-                            suggestedAction: {
-                                label: "Naikkan Sedikit (Maksimalkan Profit)",
-                                price: prettyCompetitorMinus 
-                            }
-                        };
+                // Calculate Minimum Safe Price (Floor Price) to hit Target GM
+                const marginDecimal = target / 100;
+                const floorPriceRaw = (1 - totalFeeDecimal - marginDecimal) > 0 ? rHpp / (1 - totalFeeDecimal - marginDecimal) : rHpp;
+                const floorPrice = Math.ceil(floorPriceRaw / 1000) * 1000; 
+
+                if (cPrice > 0) {
+                    if (cPrice > floorPrice) {
+                        // Strategy: Smart Undercut
+                        const gap = 10000; 
+                        let targetPrice = cPrice - gap;
+                        targetPrice = applyCharmPricing(targetPrice);
+                        if (targetPrice < floorPrice) targetPrice = floorPrice;
+
+                        recommendation.price = targetPrice;
+                        recommendation.status = 'good';
+                        
+                        const feeRec = targetPrice * totalFeeDecimal;
+                        recommendation.gmAbs = targetPrice - feeRec - rHpp;
+                        recommendation.gmPct = targetPrice > 0 ? (recommendation.gmAbs / targetPrice) * 100 : 0;
+
+                        recommendation.reason = `Harga kompetitor Rp${formatRupiah(cPrice)} cukup tinggi. \nSistem menyarankan **Rp${formatRupiah(targetPrice)}** (Undercut strategy). \nAnda menang harga (lebih murah Rp${formatRupiah(cPrice-targetPrice)}) tapi margin tetap tebal (${recommendation.gmPct.toFixed(1)}%).`;
+
                     } else {
-                        compAnalysis = {
-                            status: 'neutral',
-                            message: `Harga sama dengan kompetitor.`,
-                            psychologyTip: 'Jika harga sama, bedakan secara visual (misal: hapus koma/titik desimal tidak perlu) agar terlihat lebih ringkas.',
-                            gap: 0,
-                            suggestedAction: null
-                        };
+                        // Strategy: Floor Limit
+                        recommendation.price = floorPrice;
+                        recommendation.status = 'warning';
+                        
+                        const feeRec = floorPrice * totalFeeDecimal;
+                        recommendation.gmAbs = floorPrice - feeRec - rHpp;
+                        recommendation.gmPct = floorPrice > 0 ? (recommendation.gmAbs / floorPrice) * 100 : 0;
+
+                        recommendation.reason = `Harga kompetitor Rp${formatRupiah(cPrice)} terlalu rendah (di bawah target margin ${target}%). \nSaran sistem: **Rp${formatRupiah(floorPrice)}** (Harga terendah aman). \nJangan perang harga, fokus ke kualitas/brand value.`;
                     }
+                } else {
+                    // No Competitor Data: Use Ideal Cost-Plus Price
+                    recommendation.price = rspBaru;
+                    recommendation.status = 'neutral';
+                    recommendation.gmPct = gmPctBaru;
+                    recommendation.reason = "Belum ada data kompetitor. Menggunakan harga ideal berbasis RSP Web.";
                 }
-                
-                const selectedBrand = brand || 'HEYLOCAL';
-                const target = BRAND_TARGETS[selectedBrand] || 0;
+
+                // Calculate Max Discount
+                if (recommendation.price > floorPrice) {
+                    recommendation.maxDiscount = ((recommendation.price - floorPrice) / recommendation.price) * 100;
+                } else {
+                    recommendation.maxDiscount = 0;
+                }
+
+                // --- MANUAL PRICE CALCULATION (User Input) ---
+                const rspMpSuggest = safeParse(manualPrice) || recommendation.price; 
+                const feeNominalSuggest = rspMpSuggest * totalFeeDecimal; 
+                const gmAbsMp = rspMpSuggest - feeNominalSuggest - rHpp;
+                const gmPctMp = rspMpSuggest > 0 ? (gmAbsMp / rspMpSuggest) * 100 : 0;
+                const naikAbsolute = rspMpSuggest - rWeb;
+
+                // Web Metrics
+                const webGmAbs = rWeb - rHpp;
+                const webGmPct = rWeb > 0 ? (webGmAbs / rWeb) * 100 : 0;
 
                 return { 
-                    webGmPct, 
-                    webGmAbs, 
-                    isBelowTarget: webGmPct < target, 
-                    
-                    rspBaru,
+                    webGmPct, webGmAbs, 
+                    rspBaru, 
                     feeNominalBaru,
-                    gmAbsBaru,
-                    gmPctBaru,
+                    gmPctBaru, // Fixed NaN issue here
+                    
+                    recommendation, 
 
                     rspMpSuggest,
                     gmAbsMp,
                     gmPctMp,
                     naikAbsolute,
-
+                    
                     brandTarget: target, 
-                    competitiveAnalysis: compAnalysis, 
                     finalPrice: rspMpSuggest 
                 };
             }, [pricingForm]);
@@ -1425,43 +1418,52 @@
                                             <div className="flex justify-between items-center mb-1"><label className="block text-xs font-bold text-slate-500 uppercase">Cek Harga Kompetitor (Marketplace)</label></div>
                                             <input type="number" className="w-full p-2 text-sm border border-slate-300 rounded-md bg-slate-50 mb-2" placeholder="Pilih kategori untuk auto-fill Average..." value={pricingForm.competitorPrice} onChange={(e) => setPricingForm({...pricingForm, competitorPrice: e.target.value})} />
                                             
-                                            {/* RESTORED & ENHANCED: Insight & Recommendation Block */}
-                                            {pricingResult.competitiveAnalysis.message && (
-                                                <div className={`p-3 rounded-lg border text-xs space-y-2 ${pricingResult.competitiveAnalysis.status === 'danger' ? 'bg-rose-50 border-rose-200 text-rose-800' : (pricingResult.competitiveAnalysis.status === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' : (pricingResult.competitiveAnalysis.status === 'good' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-600'))}`}>
-                                                    <div className="flex gap-2">
-                                                        <div className="shrink-0 mt-0.5"><Icons.Info size={14}/></div>
-                                                        <div>
-                                                            <div className="font-bold mb-1">Market Analysis:</div>
-                                                            <div className="mb-2">{pricingResult.competitiveAnalysis.message}</div>
-                                                            
-                                                            <div className="font-bold mb-1 text-indigo-700 flex items-center gap-1"><Icons.Lightbulb size={12}/> Pricing Psychology:</div>
-                                                            <div className="italic text-slate-600 mb-2">"{pricingResult.competitiveAnalysis.psychologyTip}"</div>
-                                                            
-                                                            {pricingResult.competitiveAnalysis.suggestedAction && (
-                                                                <div className="mt-2 pt-2 border-t border-black/5">
-                                                                    <div className="font-semibold">Rekomendasi Harga:</div>
-                                                                    <div className="flex justify-between items-center mt-1">
-                                                                        <span>{pricingResult.competitiveAnalysis.suggestedAction.label}</span>
-                                                                        <button 
-                                                                            onClick={() => setPricingForm({...pricingForm, manualPrice: pricingResult.competitiveAnalysis.suggestedAction.price})}
-                                                                            className="bg-white border border-slate-300 px-2 py-1 rounded shadow-sm hover:bg-slate-100 font-mono font-bold text-indigo-600"
-                                                                        >
-                                                                            {formatRupiah(pricingResult.competitiveAnalysis.suggestedAction.price)}
-                                                                        </button>
-                                                                    </div>
+                                            {/* SYSTEM RECOMMENDATION BLOCK */}
+                                            <div className={`p-4 rounded-lg border text-xs space-y-3 ${pricingResult.recommendation.status === 'good' ? 'bg-emerald-50 border-emerald-200' : (pricingResult.recommendation.status === 'warning' ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200')}`}>
+                                                <div className="flex gap-3">
+                                                    <div className="shrink-0 mt-1 p-1.5 bg-white/60 rounded-full h-fit text-slate-600"><Icons.Lightbulb size={18}/></div>
+                                                    <div className="w-full">
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <div className="font-bold text-sm text-slate-800 mb-1">Rekomendasi Sistem</div>
+                                                                <div className="text-2xl font-bold text-indigo-700 tracking-tight">{formatRupiah(pricingResult.recommendation.price)}</div>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block ${pricingResult.recommendation.gmPct >= pricingResult.brandTarget ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                                                    GM: {pricingResult.recommendation.gmPct.toFixed(2)}%
                                                                 </div>
-                                                            )}
+                                                                <div className="text-[10px] text-slate-500 mt-1">Target: {pricingResult.brandTarget}%</div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="mt-3 mb-2 text-slate-700 leading-relaxed whitespace-pre-line font-medium border-l-2 border-indigo-200 pl-3">
+                                                            {pricingResult.recommendation.reason}
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-black/5">
+                                                            <div>
+                                                                <span className="block text-[10px] text-slate-500 uppercase font-bold">Max Diskon Aman</span>
+                                                                <span className="text-sm font-bold text-slate-700">{pricingResult.recommendation.maxDiscount.toFixed(1)}%</span>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <button 
+                                                                    onClick={() => setPricingForm({...pricingForm, manualPrice: pricingResult.recommendation.price})}
+                                                                    className="bg-indigo-600 text-white px-3 py-1.5 rounded shadow-sm hover:bg-indigo-700 font-bold text-xs"
+                                                                >
+                                                                    Pakai Harga Ini
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
 
-                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Manual Price (Final)</label><input type="number" className="w-full p-2 border border-indigo-200 rounded-md font-bold text-indigo-700" placeholder={pricingResult.rspMpSuggest} value={pricingForm.manualPrice} onChange={(e) => setPricingForm({...pricingForm, manualPrice: e.target.value})} /><div className="text-[10px] text-slate-400 mt-1 text-right">Harga ini yang akan disimpan</div></div>
+                                        <div className="mb-4"><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Manual Price (Final)</label><input type="number" className="w-full p-2 border border-indigo-200 rounded-md font-bold text-indigo-700" placeholder={pricingResult.recommendation.price} value={pricingForm.manualPrice} onChange={(e) => setPricingForm({...pricingForm, manualPrice: e.target.value})} /><div className="text-[10px] text-slate-400 mt-1 text-right">Harga ini yang akan disimpan</div></div>
                                         
-                                        <div className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Estimasi Potongan & Profit MP (Final)</div>
-                                        <div className="flex justify-between"><span className="text-slate-500">Total Fee ({parseFloat(pricingForm.platformFee)+parseFloat(pricingForm.marketingFee)+parseFloat(pricingForm.otherFee || 0)}%)</span><span className="font-medium text-rose-500">-{formatRupiah(pricingResult.feeNominalBaru)}</span></div>
-                                        <div className="flex justify-between"><span className="text-slate-500">Sisa Bersih (Net)</span><span className="font-bold text-slate-800">{formatRupiah(pricingResult.finalPrice - pricingResult.feeNominalBaru)}</span></div>
+                                        <div className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Analisis Profit (Live)</div>
+                                        <div className="flex justify-between"><span className="text-slate-500">Total Fee ({parseFloat(pricingForm.platformFee)+parseFloat(pricingForm.marketingFee)+parseFloat(pricingForm.otherFee || 0)}%)</span><span className="font-medium text-rose-500">-{formatRupiah(pricingResult.rspMpSuggest * (parseFloat(pricingForm.platformFee)+parseFloat(pricingForm.marketingFee)+parseFloat(pricingForm.otherFee || 0))/100)}</span></div>
+                                        <div className="flex justify-between"><span className="text-slate-500">Sisa Bersih (Net)</span><span className="font-bold text-slate-800">{formatRupiah(pricingResult.rspMpSuggest - (pricingResult.rspMpSuggest * (parseFloat(pricingForm.platformFee)+parseFloat(pricingForm.marketingFee)+parseFloat(pricingForm.otherFee || 0))/100))}</span></div>
                                         <div className="flex justify-between"><span className="text-slate-500">MP GM Absolute</span><span className="font-bold text-emerald-600">{formatRupiah(pricingResult.gmAbsMp)}</span></div>
                                         <div className="flex justify-between"><span className="text-slate-500">MP GM %</span><span className="font-medium text-blue-600">{Number(pricingResult.gmPctMp || 0).toFixed(2)}%</span></div>
                                         <div className="flex justify-between mt-2 pt-2 border-t border-slate-200"><span className="text-slate-500 font-bold">Growth (MP - Web)</span><span className="font-bold text-indigo-600">+{formatRupiah(pricingResult.naikAbsolute)}</span></div>
